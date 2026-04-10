@@ -9716,28 +9716,5 @@ Object.assign(HELP_TEXTS, {
 
 
 </script>
-<script>
-(function() {
-  function sendHeight() {
-    const height = Math.max(
-      document.documentElement.scrollHeight || 0,
-      document.body.scrollHeight || 0,
-      document.documentElement.offsetHeight || 0,
-      document.body.offsetHeight || 0
-    );
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({
-        type: 'setIframeHeight',
-        height: height
-      }, '*');
-    }
-  }
-  window.addEventListener('load', sendHeight);
-  window.addEventListener('resize', sendHeight);
-  var observer = new MutationObserver(sendHeight);
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-  sendHeight();
-})();
-</script>
 </body>
 </html>

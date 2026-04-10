@@ -9720,10 +9720,10 @@ Object.assign(HELP_TEXTS, {
 (function() {
   function sendHeight() {
     const height = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-      document.documentElement.offsetHeight,
-      document.body.offsetHeight
+      document.documentElement.scrollHeight || 0,
+      document.body.scrollHeight || 0,
+      document.documentElement.offsetHeight || 0,
+      document.body.offsetHeight || 0
     );
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({
@@ -9734,11 +9734,8 @@ Object.assign(HELP_TEXTS, {
   }
   window.addEventListener('load', sendHeight);
   window.addEventListener('resize', sendHeight);
-  
-  // ✅ POPRAWNIE – deklaracja observera
-  const observer = new MutationObserver(sendHeight);
+  var observer = new MutationObserver(sendHeight);
   observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-  
   sendHeight();
 })();
 </script>

@@ -9734,8 +9734,11 @@ Object.assign(HELP_TEXTS, {
   }
   window.addEventListener('load', sendHeight);
   window.addEventListener('resize', sendHeight);
+  
+  // ✅ POPRAWNIE – deklaracja observera
   const observer = new MutationObserver(sendHeight);
   observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+  
   sendHeight();
 })();
 </script>

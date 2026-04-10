@@ -9716,5 +9716,39 @@ Object.assign(HELP_TEXTS, {
 
 
 </script>
+  (function() {
+  // Funkcja wysyłająca aktualną wysokość do rodzica (WordPress)
+  function sendHeight() {
+    // Pobierz wysokość całego dokumentu
+    const height = document.documentElement.scrollHeight || document.body.scrollHeight;
+    // Wyślij wiadomość do okna nadrzędnego (jeśli istnieje)
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'setIframeHeight',
+        height: height
+      }, '*'); // '*' oznacza dowolną domenę – w produkcyjnym środowisku możesz podać konkretną domenę WordPressa
+    }
+  }
+
+  // Wyślij wysokość po załadowaniu strony
+  window.addEventListener('load', sendHeight);
+  
+  // Wyślij wysokość za każdym razem, gdy zmieni się rozmiar okna
+  window.addEventListener('resize', sendHeight);
+
+  // Ponieważ aplikacja dynamicznie zmienia zawartość (np. wyniki, dashboard),
+  // używamy MutationObserver do wykrywania zmian w DOM i ponownego wysłania wysokości.
+  const observer = new MutationObserver(sendHeight);
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: false,
+    characterData: false
+  });
+
+  // Natychmiastowe wysłanie początkowej wysokości
+  sendHeight();
+})();
+</script>
 </body>
 </html>

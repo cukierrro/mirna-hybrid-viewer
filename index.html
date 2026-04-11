@@ -506,9 +506,9 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
   <div class="dual-grid">
     <!-- LEFT -->
     <div class="dual-card">
-      <div class="dual-card-title">🔵 miRNA A</div>
+      <div class="dual-card-title" data-i18n="dual_card_title_a">🔵 miRNA A</div>
       <div class="dual-select-row">
-        <select id="dualSelA" onchange="dualDraw('A')"><option value="">— wybierz miRNA —</option></select>
+        <select id="dualSelA" onchange="dualDraw('A')"><option value="" data-i18n="dual_select_placeholder">— wybierz miRNA —</option></select>
         <span id="dualOrgA" style="font-size:.65rem;color:var(--muted)"></span>
       </div>
       <div class="dual-canvas-wrap"><canvas id="dualCanvasA" width="580" height="175"></canvas></div>
@@ -516,9 +516,9 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     </div>
     <!-- RIGHT -->
     <div class="dual-card">
-      <div class="dual-card-title">🟠 miRNA B</div>
+      <div class="dual-card-title" data-i18n="dual_card_title_b">🟠 miRNA B</div>
       <div class="dual-select-row">
-        <select id="dualSelB" onchange="dualDraw('B')"><option value="">— wybierz miRNA —</option></select>
+        <select id="dualSelB" onchange="dualDraw('B')"><option value="" data-i18n="dual_select_placeholder">— wybierz miRNA —</option></select>
         <span id="dualOrgB" style="font-size:.65rem;color:var(--muted)"></span>
       </div>
       <div class="dual-canvas-wrap"><canvas id="dualCanvasB" width="580" height="175"></canvas></div>
@@ -8489,16 +8489,18 @@ function toggleDualView() {
     dualViewOpen = !dualViewOpen;
     const sec = document.getElementById('dualViewSection');
     const btn = document.getElementById('dualViewBtn');
+    const t = I18N[_lang] || I18N.pl;
+    const span = btn.querySelector('span');
     if (dualViewOpen) {
         sec.classList.add('show');
-        btn.textContent = '⚖ Dual View ✓';
+        if (span) span.textContent = `${t.btn_dualview} ✓`;
         btn.style.borderColor = 'var(--accent3)';
         btn.style.color = 'var(--accent3)';
         populateDualSelects();
         sec.scrollIntoView({behavior:'smooth', block:'start'});
     } else {
         sec.classList.remove('show');
-        btn.textContent = '⚖ Dual View';
+        if (span) span.textContent = t.btn_dualview;
         btn.style.borderColor = '';
         btn.style.color = '';
     }
@@ -8509,11 +8511,12 @@ function populateDualSelects() {
     ['A','B'].forEach(side => {
         const sel = document.getElementById(`dualSel${side}`);
         const prev = sel.value;
-        sel.innerHTML = '<option value="">— wybierz miRNA —</option>';
+        const t = I18N[_lang] || I18N.pl;
+        sel.innerHTML = `<option value="">${t.dual_select_placeholder}</option>`;
         RESULTS.forEach((r, i) => {
             const opt = document.createElement('option');
             opt.value = i;
-            opt.textContent = `${r.name} (${r.hit.seedType}, ΔG ${r.hit.dg})`;
+            opt.textContent = `${r.name} (${r.hit.seedType}, ${t.dual_stat_dg.replace(':','')} ${r.hit.dg})`;
             sel.appendChild(opt);
         });
         // auto-select first two
@@ -8530,6 +8533,7 @@ function dualDraw(side) {
     const r = RESULTS[idx];
     const canvas = document.getElementById(`dualCanvas${side}`);
     const orgEl = document.getElementById(`dualOrg${side}`);
+    const t = I18N[_lang] || I18N.pl;
     orgEl.textContent = `${r.org} · ${r.transcript || ''}`;
     drawDuplex2D(canvas, r.hit.aln, r.name, r.hit.pos, r.hit.centeredRange, r.hit.comp3Range);
     // Reset sponge state when pair changes — stale dilution factors would corrupt titration
@@ -8537,18 +8541,18 @@ function dualDraw(side) {
     // Clear sponge result panel to avoid showing stale data
     const spongeRes = document.getElementById('spongeResult');
     if (spongeRes && spongeRes.innerHTML) {
-        spongeRes.innerHTML = '<span style="color:var(--muted);font-size:.65rem">⚠ Zmieniono parę miRNA — uruchom ponownie analizę gąbki.</span>';
+        spongeRes.innerHTML = `<span style="color:var(--muted);font-size:.65rem">${t.dual_pair_changed_note}</span>`;
     }
     const statsEl = document.getElementById(`dualStats${side}`);
     const dgCol = r.hit.dg < -10 ? 'var(--accent)' : r.hit.dg < -6 ? 'var(--gu)' : 'var(--muted)';
     statsEl.innerHTML = `
-        <span>ΔG: <span class="dual-stat-val" style="color:${dgCol}">${r.hit.dg}</span></span>
-        <span>ΔG(1M): <span class="dual-stat-val">${r.hit.dg1M ?? r.hit.dg}</span></span>
-        <span>Seed: <span class="dual-stat-val">${r.hit.seedType}</span></span>
-        <span>WC: <span class="dual-stat-val">${r.hit.wc}</span></span>
-        <span>G:U: <span class="dual-stat-val">${r.hit.gu}</span></span>
-        <span>AU%: <span class="dual-stat-val">${r.hit.auPct}%</span></span>
-        <span>Pos: <span class="dual-stat-val">${r.hit.pos + 1}</span></span>
+        <span>${t.dual_stat_dg} <span class="dual-stat-val" style="color:${dgCol}">${r.hit.dg}</span></span>
+        <span>${t.dual_stat_dg1m} <span class="dual-stat-val">${r.hit.dg1M ?? r.hit.dg}</span></span>
+        <span>${t.dual_stat_seed} <span class="dual-stat-val">${r.hit.seedType}</span></span>
+        <span>${t.dual_stat_wc} <span class="dual-stat-val">${r.hit.wc}</span></span>
+        <span>${t.dual_stat_gu} <span class="dual-stat-val">${r.hit.gu}</span></span>
+        <span>${t.dual_stat_au} <span class="dual-stat-val">${r.hit.auPct}%</span></span>
+        <span>${t.dual_stat_pos} <span class="dual-stat-val">${r.hit.pos + 1}</span></span>
     `;
     dualCompare();
 }
@@ -8565,6 +8569,7 @@ function dualCompare() {
         [diffEl,compEl,shadowWr,exportRow].forEach(e=>e&&(e.style.display='none')); return;
     }
     const A = RESULTS[idxA], B = RESULTS[idxB];
+    const t = I18N[_lang] || I18N.pl;
     if (idxA === idxB) { [diffEl,compEl,shadowWr,exportRow].forEach(e=>e&&(e.style.display='none')); return; }
 
     // ── 1. BASIC DIFF ──────────────────────────────────────────────
@@ -8572,7 +8577,7 @@ function dualCompare() {
     const wcDiff  = B.hit.wc - A.hit.wc;
     const auDiff  = (B.hit.auPct - A.hit.auPct).toFixed(1);
     const posDiff = B.hit.pos - A.hit.pos;
-    const better  = B.hit.dg < A.hit.dg ? '🟠 B silniejsze' : A.hit.dg < B.hit.dg ? '🔵 A silniejsze' : '⚪ Równe ΔG';
+    const better  = B.hit.dg < A.hit.dg ? t.dual_better_b : A.hit.dg < B.hit.dg ? t.dual_better_a : t.dual_equal;
 
     const startA = A.hit.pos, endA = A.hit.pos + A.mirna.length;
     const startB = B.hit.pos, endB = B.hit.pos + B.mirna.length;
@@ -8582,19 +8587,19 @@ function dualCompare() {
 
     let coopNote;
     if (overlapNt > 0) {
-        coopNote = `⚠️ Nakładanie się miejsc (${overlapNt} nt) — wiązanie wzajemnie wykluczone`;
+        coopNote = t.dual_overlap_note.replace('{overlap}', overlapNt);
     } else if (dist >= 13 && dist <= 35) {
-        coopNote = `✅ Odległość ${dist} nt — potencjalny efekt kooperatywny (13–35 nt)`;
+        coopNote = t.dual_coop_note.replace('{dist}', dist);
     } else {
-        coopNote = `📍 Odległość ${dist} nt — brak efektu kooperatywnego`;
+        coopNote = t.dual_no_coop_note.replace('{dist}', dist);
     }
 
     diffEl.style.display = '';
     diffEl.innerHTML = `
-        <strong style="color:var(--accent3)">Porównanie A vs B:</strong><br>
+        <strong style="color:var(--accent3)">${t.dual_compare_title}</strong><br>
         ${better} &nbsp;|&nbsp; ΔΔG = <strong>${dgDiff > 0 ? '+' : ''}${dgDiff}</strong> kcal/mol<br>
         ΔWC = ${wcDiff > 0 ? '+' : ''}${wcDiff} &nbsp;|&nbsp; ΔAU% = ${auDiff > 0 ? '+' : ''}${auDiff}%<br>
-        Pozycje: A=${startA+1}–${endA}, B=${startB+1}–${endB} (Δstart = ${posDiff > 0 ? '+' : ''}${posDiff} nt)<br>
+        ${t.dual_positions}: A=${startA+1}–${endA}, B=${startB+1}–${endB} (Δstart = ${posDiff > 0 ? '+' : ''}${posDiff} nt)<br>
         ${coopNote}
     `;
 
@@ -8611,6 +8616,7 @@ function dualCompare() {
 function dualCompetitionModel(A, B, overlapNt, el) {
     el.style.display = '';
     const RT = 0.593; // kcal/mol at 37°C
+    const t = I18N[_lang] || I18N.pl;
 
     if (overlapNt <= 0) {
         // Non-competing — independent binding probabilities
@@ -8620,18 +8626,18 @@ function dualCompetitionModel(A, B, overlapNt, el) {
         const pNone = (1 - pA) * (1 - pB);
 
         el.innerHTML = `
-            <strong style="color:var(--seed)">Model niezależnego wiązania (brak nakładania)</strong><br>
-            Prawdopodobieństwo zajętości (Boltzmann, 37°C):<br>
+            <strong style="color:var(--seed)">${t.comp_independent_title}</strong><br>
+            ${t.comp_boltzmann_note}<br>
             <div class="compete-bar-wrap">
-              🔵 A: <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
+              ${t.comp_prob_a} <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
               <span style="color:#60a5fa;font-weight:700">${(pA*100).toFixed(1)}%</span>
             </div>
             <div class="compete-bar-wrap">
-              🟠 B: <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
+              ${t.comp_prob_b} <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
               <span style="color:#fb923c;font-weight:700">${(pB*100).toFixed(1)}%</span>
             </div>
-            P(oba zajęte) = ${(pBoth*100).toFixed(1)}% &nbsp;|&nbsp; P(wolne) = ${(pNone*100).toFixed(1)}%<br>
-            <span style="color:var(--muted);font-size:.63rem">Model: p = 1/(1+exp(ΔG/RT)), RT=0.593 kcal/mol @ 37°C. Zakłada równe stężenia miRNA i brak efektów strukturalnych mRNA.</span>
+            ${t.comp_both_free_line.replace('{both}', (pBoth*100).toFixed(1)).replace('{free}', (pNone*100).toFixed(1))}<br>
+            <span style="color:var(--muted);font-size:.63rem">${t.comp_model_note}</span>
         `;
     } else {
         // Competing — mutual exclusion model
@@ -8645,21 +8651,21 @@ function dualCompetitionModel(A, B, overlapNt, el) {
 
         // Winner probability ratio
         const ratio = (pA / pB).toFixed(2);
-        const winner = pA > pB ? `🔵 A dominuje (${ratio}× częściej zajmuje)` : pB > pA ? `🟠 B dominuje (${(1/ratio).toFixed(2)}× częściej zajmuje)` : '⚪ Równa konkurencja';
+        const winner = pA > pB ? t.comp_winner_a.replace('{ratio}', ratio) : pB > pA ? t.comp_winner_b.replace('{ratio}', (1/ratio).toFixed(2)) : t.comp_winner_equal;
 
         el.innerHTML = `
-            <strong style="color:var(--seed)">Model konkurencji wzajemnie wykluczającej (${overlapNt} nt overlap)</strong><br>
-            Równowagowe prawdopodobieństwo zajęcia miejsca:<br>
+            <strong style="color:var(--seed)">${t.comp_mutual_title.replace('{overlap}', overlapNt)}</strong><br>
+            ${t.comp_equil_note}<br>
             <div class="compete-bar-wrap">
-              🔵 A: <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
+              ${t.comp_prob_a} <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
               <span style="color:#60a5fa;font-weight:700">${(pA*100).toFixed(1)}%</span>
             </div>
             <div class="compete-bar-wrap">
-              🟠 B: <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
+              ${t.comp_prob_b} <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
               <span style="color:#fb923c;font-weight:700">${(pB*100).toFixed(1)}%</span>
             </div>
-            P(wolne) = ${(pFree*100).toFixed(1)}% &nbsp;|&nbsp; ${winner}<br>
-            <span style="color:var(--muted);font-size:.63rem">Model: stany wzajemnie wykluczające się, funkcja podziału Z=1+exp(-ΔG_A/RT)+exp(-ΔG_B/RT). Zakłada równe stężenia i brak kooperatywności trzeciorzędowej.</span>
+            ${t.comp_free_line.replace('{free}', (pFree*100).toFixed(1)).replace('{winner}', winner)}<br>
+            <span style="color:var(--muted);font-size:.63rem">${t.comp_mutual_note}</span>
         `;
     }
 }
@@ -9054,13 +9060,14 @@ function updateBoltzmannSlider() {
     const idxB = parseInt(document.getElementById('dualSelB').value);
     if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) return;
     const A = RESULTS[idxA], B = RESULTS[idxB];
+    const t = I18N[_lang] || I18N.pl;
 
     const sliderVal = parseInt(document.getElementById('boltSlider').value); // -20..+20
     // Convert to concentration ratio: 2^(sliderVal/4), range ~0.03x to ~32x
     const ratioB = Math.pow(2, sliderVal / 4);
     const label = document.getElementById('boltRatioLabel');
-    label.textContent = ratioB < 0.99 ? `${(1/ratioB).toFixed(1)}× mniej B` :
-                        ratioB > 1.01 ? `${ratioB.toFixed(1)}× więcej B` : '1.0× (równe)';
+    label.textContent = ratioB < 0.99 ? `${(1/ratioB).toFixed(1)}× ${t.bolt_less_b}` :
+                        ratioB > 1.01 ? `${ratioB.toFixed(1)}× ${t.bolt_more_b}` : t.bolt_equal;
 
     const RT = 0.593;
     const ZA = Math.exp(-A.hit.dg / RT);           // partition weight A
@@ -9078,11 +9085,11 @@ function updateBoltzmannSlider() {
     }
 
     const res = document.getElementById('boltSliderResult');
-    const winner = pA > pB ? `🔵 A dominuje` : pB > pA ? `🟠 B dominuje` : '⚪ Równe';
+    const winner = pA > pB ? t.winner_a : pB > pA ? t.winner_b : t.winner_equal;
     res.innerHTML = `
-        <span style="color:#60a5fa">P(A) = ${(pA*100).toFixed(1)}%</span> &nbsp;|&nbsp;
-        <span style="color:#fb923c">P(B) = ${(pB*100).toFixed(1)}%</span>
-        ${pFree !== null ? `&nbsp;|&nbsp; P(wolne) = ${(pFree*100).toFixed(1)}%` : ''}
+        <span style="color:#60a5fa">${t.bolt_pa} ${(pA*100).toFixed(1)}%</span> &nbsp;|&nbsp;
+        <span style="color:#fb923c">${t.bolt_pb} ${(pB*100).toFixed(1)}%</span>
+        ${pFree !== null ? `&nbsp;|&nbsp; ${t.bolt_pfree} ${(pFree*100).toFixed(1)}%` : ''}
         &nbsp;→&nbsp; <strong>${winner}</strong>
     `;
 }
@@ -9818,6 +9825,26 @@ const I18N = {
     shadow_legend:'🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Nakładanie &nbsp;|&nbsp; ⬜ wolny region',
     btn_dual_pdf:'📋 Eksport PDF (porównanie)',
     btn_dual_docx:'📝 Eksport DOCX (porównanie)',
+    dual_stat_dg:'ΔG:', dual_stat_dg1m:'ΔG(1M):', dual_stat_seed:'Seed:', dual_stat_wc:'WC:', dual_stat_gu:'G:U:', dual_stat_au:'AU%:', dual_stat_pos:'Pos:',
+    dual_compare_title:'Porównanie A vs B:', dual_better_a:'🔵 A silniejsze', dual_better_b:'🟠 B silniejsze', dual_equal:'⚪ Równe ΔG', dual_positions:'Pozycje',
+    dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— wybierz miRNA —', dual_pair_changed_note:'⚠ Zmieniono parę miRNA — uruchom ponownie analizę gąbki.',
+    dual_overlap_note:'⚠ Nakładanie się miejsc ({overlap} nt) — wiązanie wzajemnie wykluczone',
+    dual_coop_note:'✅ Odległość {dist} nt — potencjalny efekt kooperatywny (13–35 nt)',
+    dual_no_coop_note:'📍 Odległość {dist} nt — brak efektu kooperatywnego',
+    comp_boltzmann_note:'Prawdopodobieństwo zajętości (Boltzmann, 37°C):',
+    comp_prob_a:'🔵 A:', comp_prob_b:'🟠 B:',
+    comp_both_free_line:'P(oba zajęte) = {both}% &nbsp;|&nbsp; P(wolne) = {free}%',
+    comp_model_note:'Model: p = 1/(1+exp(ΔG/RT)), RT=0.593 kcal/mol @ 37°C. Zakłada równe stężenia i brak efektów strukturalnych mRNA.',
+    comp_mutual_title:'Model konkurencji wzajemnie wykluczającej ({overlap} nt overlap)',
+    comp_equil_note:'Równowagowe prawdopodobieństwo zajęcia miejsca:',
+    comp_free_line:'P(wolne) = {free}% &nbsp;|&nbsp; {winner}',
+    comp_winner_a:'🔵 A dominuje ({ratio}× częściej zajmuje)',
+    comp_winner_b:'🟠 B dominuje ({ratio}× częściej zajmuje)',
+    comp_winner_equal:'⚪ Równa konkurencja',
+    winner_a:'🔵 A silniejsze', winner_b:'🟠 B silniejsze', winner_equal:'⚪ Równe',
+    comp_mutual_note:'Model: stany wzajemnie wykluczające się, funkcja podziału Z=1+exp(-ΔG_A/RT)+exp(-ΔG_B/RT). Zakłada równe stężenia i brak kooperatywności trzeciorzędowej.',
+    bolt_less_b:'mniej B', bolt_more_b:'więcej B', bolt_equal:'1.0× (równe)',
+    bolt_pa:'P(A) =', bolt_pb:'P(B) =', bolt_pfree:'P(wolne) =',
     btn_titration:'📈 Krzywa miareczkowania',
     btn_sponge:'🧽 Efekt gąbki',
     // Titration
@@ -9897,6 +9924,26 @@ const I18N = {
     shadow_legend:'🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Overlap &nbsp;|&nbsp; ⬜ free region',
     btn_dual_pdf:'📋 Export PDF (comparison)',
     btn_dual_docx:'📝 Export DOCX (comparison)',
+    dual_stat_dg:'ΔG:', dual_stat_dg1m:'ΔG(1M):', dual_stat_seed:'Seed:', dual_stat_wc:'WC:', dual_stat_gu:'G:U:', dual_stat_au:'AU%:', dual_stat_pos:'Pos:',
+    dual_compare_title:'Comparison A vs B:', dual_better_a:'🔵 A stronger', dual_better_b:'🟠 B stronger', dual_equal:'⚪ Equal ΔG', dual_positions:'Positions',
+    dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— select miRNA —', dual_pair_changed_note:'⚠ miRNA pair changed — rerun sponge analysis.',
+    dual_overlap_note:'⚠ Overlapping sites ({overlap} nt) — binding mutually exclusive',
+    dual_coop_note:'✅ Distance {dist} nt — potential cooperative effect (13–35 nt)',
+    dual_no_coop_note:'📍 Distance {dist} nt — no cooperative effect',
+    comp_boltzmann_note:'Occupancy probabilities (Boltzmann, 37°C):',
+    comp_prob_a:'🔵 A:', comp_prob_b:'🟠 B:',
+    comp_both_free_line:'P(both bound) = {both}% &nbsp;|&nbsp; P(free) = {free}%',
+    comp_model_note:'Model: p = 1/(1+exp(ΔG/RT)), RT=0.593 kcal/mol @ 37°C. Assumes equal concentrations and no mRNA structural effects.',
+    comp_mutual_title:'Mutually exclusive competition model ({overlap} nt overlap)',
+    comp_equil_note:'Equilibrium site occupancy:',
+    comp_free_line:'P(free) = {free}% &nbsp;|&nbsp; {winner}',
+    comp_winner_a:'🔵 A dominates ({ratio}× more likely)',
+    comp_winner_b:'🟠 B dominates ({ratio}× more likely)',
+    comp_winner_equal:'⚪ Equal competition',
+    winner_a:'🔵 A stronger', winner_b:'🟠 B stronger', winner_equal:'⚪ Equal',
+    comp_mutual_note:'Model: mutually exclusive states, partition function Z=1+exp(-ΔG_A/RT)+exp(-ΔG_B/RT). Assumes equal concentrations and no third-order cooperativity.',
+    bolt_less_b:'less B', bolt_more_b:'more B', bolt_equal:'1.0× (equal)',
+    bolt_pa:'P(A) =', bolt_pb:'P(B) =', bolt_pfree:'P(free) =',
     btn_titration:'📈 Titration curve',
     btn_sponge:'🧽 Sponge effect',
     titration_title:'📈 Titration curve — P(occupancy) vs concentration',
@@ -9955,10 +10002,20 @@ function applyLang(lang) {
       sbtn.textContent = '♻ '+t.session_prefix+' ('+m[1]+' '+t.session_ago+', '+m[2]+' '+t.session_results+')';
     }
   }
+  if (typeof dualViewOpen !== 'undefined' && dualViewOpen) {
+    const dualBtn = document.getElementById('dualViewBtn');
+    const span = dualBtn && dualBtn.querySelector('span');
+    if (span) span.textContent = `${t.btn_dualview} ✓`;
+  }
   // Update status bar if showing default message
   const st = document.getElementById('st');
   if(st && (st.textContent === I18N.pl.status_ready || st.textContent === I18N.en.status_ready)) {
     st.textContent = t.status_ready;
+  }
+  if (typeof dualViewOpen !== 'undefined' && dualViewOpen) {
+    dualDraw('A');
+    dualDraw('B');
+    updateBoltzmannSlider();
   }
   document.documentElement.lang = lang;
 }

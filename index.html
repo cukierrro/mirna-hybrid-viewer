@@ -186,7 +186,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.min.js"></script>
 <script src="https://3dmol.org/build/3Dmol-min.js"></script>
 </head>
 <body>
@@ -7746,25 +7746,83 @@ async function updateMiRTarBaseLink(mirnaName, mrnaSeq, hitPos, hitLen, org) {
 // EXPORT PDF (html2canvas + jsPDF)
 // ============================================================
 async function exportPDF() {
-  const el=document.querySelector('.rcard');
-  if(!el||!RESULTS.length) return;
+  if(!RESULTS.length) return;
   try {
-    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#111318',useCORS:true});
-    const img=canvas.toDataURL('image/png');
-    const {jsPDF}=window.jspdf;
-    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    const pgW=pdf.internal.pageSize.getWidth()-20;
-    const pgH=pdf.internal.pageSize.getHeight()-20;
-    const ratio=canvas.width/canvas.height;
-    const iW=pgW, iH=pgW/ratio;
-    pdf.setFillColor(17,19,24);pdf.rect(0,0,300,200,'F');
-    pdf.setTextColor(0,212,170);pdf.setFontSize(12);
-    pdf.text('miRNA Hybrid Viewer v1.0 — PRAMĀ Institute',10,10);
-    pdf.setTextColor(200,200,200);pdf.setFontSize(8);
-    pdf.text(`Generated: ${new Date().toISOString().slice(0,19)} | Results: ${RESULTS.length}`,10,16);
-    pdf.addImage(img,'PNG',10,20,iW,Math.min(iH,pgH-20));
-    pdf.save('mirna_report_v1.0.pdf');
-  } catch(e){ alert('PDF export wymaga biblioteki html2canvas + jsPDF (załaduj online).'); console.error(e); }
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    const pgW = pdf.internal.pageSize.getWidth();
+    const pgH = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const rowH = 7;
+    const headerH = 28;
+    const colWidths = [8,32,8,16,16,16,16,22,12,10,10,12,16,10];
+    const headers = ['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.'];
+    const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
+    const st=(document.getElementById('fSeed')||{}).value||'';
+    const org=(document.getElementById('fOrg')||{}).value||'';
+    const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
+    const filtered=RESULTS.filter(r=>{
+      if(txt&&!r.name.toLowerCase().includes(txt))return false;
+      if(st&&r.hit.seedType!==st)return false;
+      if(org&&r.org!==org)return false;
+      if(consMin>0&&(r.hit.conservation?.score??0)<consMin)return false;
+      return true;
+    });
+    const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0};
+    const rowsPerPage=Math.floor((pgH-headerH-margin)/rowH);
+    const totalPages=Math.ceil(filtered.length/rowsPerPage)||1;
+    function drawHeader(pn,tp){
+      pdf.setFillColor(17,19,24);pdf.rect(0,0,pgW,pgH,'F');
+      pdf.setTextColor(0,212,170);pdf.setFontSize(11);pdf.setFont('helvetica','bold');
+      pdf.text('miRNA Hybrid Viewer v1.0 \u2014 PRAM\u0100 Institute',margin,8);
+      pdf.setTextColor(180,180,180);pdf.setFontSize(7);pdf.setFont('helvetica','normal');
+      pdf.text(`Generated: ${new Date().toISOString().slice(0,19)} | Wyniki: ${filtered.length} z ${RESULTS.length} | hsa:${_dbc.hsa} mmu:${_dbc.mmu} rno:${_dbc.rno} ath:${_dbc.ath}`,margin,13);
+      pdf.text(`Strona ${pn}/${tp}`,pgW-margin-18,13);
+      pdf.setFillColor(0,80,60);
+      pdf.rect(margin,16,colWidths.reduce((a,b)=>a+b,0),6,'F');
+      let x=margin;
+      pdf.setTextColor(0,212,170);pdf.setFontSize(6);pdf.setFont('helvetica','bold');
+      headers.forEach((h,i)=>{pdf.text(h,x+1,20.5,{maxWidth:colWidths[i]-2});x+=colWidths[i];});
+    }
+    for(let page=0;page<totalPages;page++){
+      if(page>0)pdf.addPage();
+      drawHeader(page+1,totalPages);
+      const start=page*rowsPerPage;
+      const end=Math.min(start+rowsPerPage,filtered.length);
+      let y=headerH;
+      for(let i=start;i<end;i++){
+        const r=filtered[i];
+        pdf.setFillColor(i%2===0?17:24,i%2===0?19:28,i%2===0?24:34);
+        pdf.rect(margin,y,colWidths.reduce((a,b)=>a+b,0),rowH,'F');
+        const dg=r.hit.dg;
+        const cells=[
+          {t:String(i+1),c:[107,114,128]},
+          {t:r.name,c:[232,234,240]},
+          {t:r.org,c:r.org==='hsa'?[0,212,170]:r.org==='mmu'?[96,165,250]:[248,113,113]},
+          {t:String(dg),c:dg<-10?[0,212,170]:dg<-6?[251,191,36]:[156,163,175]},
+          {t:String(r.hit.dg1M??dg),c:[107,114,128]},
+          {t:String(r.hit.dgCoop),c:r.hit.coopBonus<0?[167,139,250]:[107,114,128]},
+          {t:String(r.hit.dgTotal??dg),c:(r.hit.dgTotal??dg)<-10?[0,212,170]:(r.hit.dgTotal??dg)<-6?[251,191,36]:[107,114,128]},
+          {t:r.hit.seedType,c:[255,107,53]},
+          {t:String(r.hit.pos+1),c:[107,114,128]},
+          {t:String(r.hit.wc),c:[0,212,170]},
+          {t:String(r.hit.gu),c:[251,191,36]},
+          {t:r.hit.auPct+'%',c:[232,234,240]},
+          {t:String(r.hit.conservation?.score??'\u2014'),c:[232,234,240]},
+          {t:r.hit.accessibility??'\u2014',c:r.hit.accessibility==='HIGH'?[0,212,170]:r.hit.accessibility==='MED'?[251,191,36]:[248,113,113]},
+        ];
+        pdf.setFontSize(5.5);pdf.setFont('helvetica','normal');
+        let x=margin;
+        cells.forEach((cell,ci)=>{
+          pdf.setTextColor(...cell.c);
+          pdf.text(String(cell.t),x+1,y+4.5,{maxWidth:colWidths[ci]-2});
+          x+=colWidths[ci];
+        });
+        y+=rowH;
+      }
+    }
+    pdf.save(`mirna_report_v1.0_${filtered.length}wynikow.pdf`);
+  } catch(e){alert('PDF export error: '+e.message);console.error(e);}
 }
 
 // ============================================================
@@ -7772,6 +7830,10 @@ async function exportPDF() {
 // ============================================================
 async function exportDOCX() {
   if(!RESULTS.length) return;
+  if(typeof docx === 'undefined') {
+    alert('Biblioteka docx.js nie załadowała się. Sprawdź połączenie z internetem i odśwież stronę.');
+    return;
+  }
   try {
     const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType}=docx;
     const hdrStyle={bold:true,size:20,color:'000000'};

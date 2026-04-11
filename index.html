@@ -590,14 +590,14 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <div style="display:flex;align-items:center;gap:.45rem;margin-top:.35rem">
           <label style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin:0" data-i18n="sponge_lbl_threshold">Próg ΔG ≤</label>
           <input type="number" id="spongeDgThreshold" value="-3.0" step="0.5" min="-20" max="-0.5"
-            style="width:72px;font-size:.7rem" title="Minimalne ΔG uwzględniane w sponge (kcal/mol)">
+            style="width:72px;font-size:.7rem" data-i18n-title="sponge_dg_threshold_title">
           <span style="font-size:.65rem;color:var(--muted)">kcal/mol</span>
           <span class="help-badge" data-help="spongethreshold">?</span>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:.4rem;padding-top:1.4rem">
         <button class="btn btn-g" onclick="runSpongeAnalysis()" style="font-size:.68rem"><span data-i18n="btn_sponge_calc">🔬 Oblicz efekt gąbki</span></button>
-        <button class="btn btn-g" onclick="document.getElementById('spongeInput').value=''" style="font-size:.65rem">✕ Wyczyść</button>
+        <button class="btn btn-g" onclick="document.getElementById('spongeInput').value=''" style="font-size:.65rem"><span data-i18n="btn_clear_sponge">✕ Wyczyść</span></button>
       </div>
     </div>
 
@@ -9117,9 +9117,10 @@ function drawTitrationChart() {
     const idxA = parseInt(document.getElementById('dualSelA').value);
     const idxB = parseInt(document.getElementById('dualSelB').value);
     if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) {
-        alert('Wybierz oba miRNA w Dual View.'); return;
+        alert(t.alert_select_both_mirna); return;
     }
     const A = RESULTS[idxA], B = RESULTS[idxB];
+    const t = I18N[_lang] || I18N.pl;
     const wrap = document.getElementById('titrationWrap');
     wrap.style.display = '';
     wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
@@ -9167,8 +9168,8 @@ function drawTitrationChart() {
 
     // Axes labels
     ctx.fillStyle = textCol; ctx.font = '9px Inter, sans-serif';
-    ctx.fillText('P(zajętości)', 2, PAD.t - 4);
-    ctx.fillText('[miRNA] / Kd', W/2 - 25, 215);
+    ctx.fillText(t.titration_y_label, 2, PAD.t - 4);
+    ctx.fillText(t.titration_x_label, W/2 - 25, 215);
 
     // EC50 vertical line (x=0, conc=Kd)
     ctx.strokeStyle = isLight ? '#94a3b8' : '#374151';
@@ -9176,7 +9177,7 @@ function drawTitrationChart() {
     ctx.beginPath(); ctx.moveTo(toX(0), PAD.t); ctx.lineTo(toX(0), PAD.t+CH); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = textCol; ctx.font = '8px Inter, monospace';
-    ctx.fillText('Kd', toX(0)+2, PAD.t+10);
+    ctx.fillText(t.titration_kd_label, toX(0)+2, PAD.t+10);
 
     const steps = 200;
     // Get sponge dilution factor if computed
@@ -9241,14 +9242,14 @@ function drawTitrationChart() {
     ctx.fillText(`B: ${B.name} (ΔG=${B.hit.dg})`, W-172, lgY+18);
     if (relConcB !== 1.0) {
         ctx.fillStyle='#a78bfa'; ctx.font='8px JetBrains Mono,monospace';
-        ctx.fillText(`[B]/[A] = ${relConcB.toFixed(2)}× (suwak)`, W-190, lgY+32);
+        ctx.fillText(t.titration_slider_note.replace('{ratio}', relConcB.toFixed(2)), W-190, lgY+32);
     }
     if (spongeFactor > 1.01) {
         ctx.fillStyle='#a78bfa'; ctx.font='8px JetBrains Mono,monospace';
-        ctx.fillText(`Sponge A: ×${spongeFactor.toFixed(2)} / B: ×${spongeFactorB.toFixed(2)}`, W-190, lgY+(relConcB!==1?46:32));
+        ctx.fillText(t.titration_sponge_line.replace('{a}', spongeFactor.toFixed(2)).replace('{b}', spongeFactorB.toFixed(2)), W-190, lgY+(relConcB!==1?46:32));
     }
     ctx.fillStyle=textCol; ctx.font='8px Inter,sans-serif';
-    ctx.fillText(mutualExclude ? 'Model: wyklucz. wzajemne' : 'Model: niezależne', W-190, lgY+(spongeFactor>1.01?60:relConcB!==1?46:32));
+    ctx.fillText(mutualExclude ? t.titration_model_exclusive : t.titration_model_independent, W-190, lgY+(spongeFactor>1.01?60:relConcB!==1?46:32));
 }
 
 function exportTitrationPNG() {
@@ -9269,14 +9270,15 @@ function toggleSponge() {
 }
 
 function runSpongeAnalysis() {
+    const t = I18N[_lang] || I18N.pl;
     const idxA = parseInt(document.getElementById('dualSelA').value);
     const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (isNaN(idxA) || !RESULTS[idxA]) { alert('Wybierz miRNA A w Dual View.'); return; }
+    if (isNaN(idxA) || !RESULTS[idxA]) { alert(t.alert_select_mirna_a); return; }
     const rA = RESULTS[idxA];
     const rB = RESULTS[idxB] && idxA !== idxB ? RESULTS[idxB] : null;
 
     const raw = document.getElementById('spongeInput').value.trim();
-    if (!raw) { alert('Wpisz sekwencje ceRNA w polu powyżej.'); return; }
+    if (!raw) { alert(t.alert_enter_cerna); return; }
 
     const RT = 0.593;
     const saltNa = parseFloat(document.getElementById('saltConc').value) || 0.15;
@@ -9303,16 +9305,16 @@ function runSpongeAnalysis() {
         }
     }
     if (cur && cur.seq) seqs.push(cur);
-    if (!seqs.length) { alert('Nie można sparsować sekwencji.\n\nUżyj formatu FASTA:\n>nazwa_genu\nSEKWENCJA...'); return; }
+    if (!seqs.length) { alert(t.alert_parse_seq); return; }
 
     const resultEl = document.getElementById('spongeResult');
     // Always reset result div before new analysis (fix 3: no stale warnings left over)
     resultEl.innerHTML = '';
 
     const warningHtml = hasWarning
-        ? `<div style="color:var(--gu);font-size:.67rem;margin-bottom:.4rem">⚠️ Brak nagłówków FASTA (&gt;nazwa) — cały tekst potraktowany jako jedna sekwencja ceRNA-1. Dodaj nagłówki &gt;nazwa przed każdą sekwencją dla poprawnego parsowania.</div>`
+        ? `<div style="color:var(--gu);font-size:.67rem;margin-bottom:.4rem">${t.sponge_warning_no_headers}</div>`
         : '';
-    resultEl.innerHTML = warningHtml + '<span style="color:var(--muted)">⏳ Obliczanie...</span>';
+    resultEl.innerHTML = warningHtml + `<span style="color:var(--muted)">${t.sponge_calculating}</span>`;
 
     setTimeout(() => {
         try {
@@ -9351,20 +9353,20 @@ function runSpongeAnalysis() {
         window._spongeDilutionB = 1.0;
 
         let html = warningHtml;
-        html += `<strong style="color:var(--accent3)">Wyniki analizy Sponge Effect</strong><br>`;
-        html += `<span style="color:var(--muted)">Model: dilution = 1 + Σ Ka_i (suma WSZYSTKICH miejsc o ΔG ≤ ${dgThreshold} kcal/mol), zakłada [ceRNA] ≫ Kd</span><br><br>`;
+        html += `<strong style="color:var(--accent3)">${t.sponge_results_title}</strong><br>`;
+        html += `<span style="color:var(--muted)">${t.sponge_model_note.replace('{dgThreshold}', dgThreshold)}</span><br><br>`;
 
         const renderRes = (res, color) => {
             html += `<strong style="color:${color}">● ${res.mirnaName}</strong>: `;
             if (res.details.length === 0) {
-                html += `Brak miejsc wiązania (ΔG ≤ ${dgThreshold}) w podanych ceRNA → brak efektu gąbki.<br>`;
+                html += `${t.sponge_no_sites.replace('{dgThreshold}', dgThreshold)}<br>`;
             } else {
                 const totalSites = res.details.reduce((s,d) => s+d.nSites, 0);
-                html += `${totalSites} miejsc w ${res.details.length}/${seqs.length} ceRNA · `;
-                html += `Rozcieńczenie: <strong>${res.dilution.toFixed(2)}×</strong> → `;
-                html += `Wolne miRNA: <strong style="color:${parseFloat(res.pctFree)<50?'var(--seed)':'var(--accent)'}">${res.pctFree}%</strong><br>`;
+                html += t.sponge_summary_sites.replace('{count}', totalSites).replace('{found}', res.details.length).replace('{total}', seqs.length);
+                html += `${t.sponge_dilution_prefix} <strong>${res.dilution.toFixed(2)}×</strong> → `;
+                html += `${t.sponge_free_mirna_prefix} <strong style="color:${parseFloat(res.pctFree)<50?'var(--seed)':'var(--accent)'}">${res.pctFree}%</strong><br>`;
                 html += `<table style="margin:.3rem 0;border-collapse:collapse;font-size:.64rem;width:100%">`;
-                html += `<tr><td style="padding:0 .5rem 0 0;color:var(--muted)">ceRNA</td><td style="padding:0 .4rem;color:var(--muted)">Miejsc</td><td style="padding:0 .4rem;color:var(--muted)">Najlepsze ΔG</td><td style="padding:0 .4rem;color:var(--muted)">Seed</td><td style="padding:0 .35rem;color:var(--muted)">Ka</td><td></td></tr>`;
+                html += `<tr><td style="padding:0 .5rem 0 0;color:var(--muted)">${t.sponge_table_header_cerna}</td><td style="padding:0 .4rem;color:var(--muted)">${t.sponge_table_header_sites}</td><td style="padding:0 .4rem;color:var(--muted)">${t.sponge_table_header_best_dg}</td><td style="padding:0 .4rem;color:var(--muted)">${t.sponge_table_header_seed}</td><td style="padding:0 .35rem;color:var(--muted)">${t.sponge_table_header_ka}</td><td></td></tr>`;
                 res.details.sort((a,b) => a.dg - b.dg).forEach((d, di) => {
                     // Store site data on window for lazy on-click generation
                     const uid = 'spz_' + color.replace(/[^a-z0-9]/gi,'') + '_' + di;
@@ -9377,7 +9379,7 @@ function runSpongeAnalysis() {
                     html += `<td style="padding:.15rem .35rem">${d.ka.toFixed(1)}×</td>`;
                     html += `<td style="padding:.15rem 0">`;
                     html += `<button class="btn btn-g" style="font-size:.58rem;padding:.12rem .38rem;white-space:nowrap" `;
-                    html += `onclick="spongeLazyPreview('` + uid + `',this)">👁 Miejsca</button>`;
+                    html += `onclick="spongeLazyPreview('` + uid + `',this)">${t.sponge_button_preview_sites}</button>`;
                     html += `</td></tr>`;
                     html += `<tr><td colspan="6" style="padding:0"><div id="${uid}_panel" style="display:none;padding:.3rem 0 .4rem 0"></div></td></tr>`;
                 });
@@ -9393,22 +9395,22 @@ function runSpongeAnalysis() {
             window._spongeDilutionB = resB.dilution;
             renderRes(resB, '#fb923c');
             if (resA.details.length > 0 || resB.details.length > 0) {
-                html += `<br><strong style="color:var(--accent3)">Selektywność gąbki:</strong> `;
+                html += `<br><strong style="color:var(--accent3)">${t.sponge_selectivity_title}</strong> `;
                 const ratio = resA.dilution / resB.dilution;
-                if (Math.abs(ratio - 1) < 0.05) html += `Gąbka równomiernie rozcieńcza oba miRNA.`;
-                else if (ratio > 1) html += `Gąbka bardziej sekwestruje <span style="color:#60a5fa">A</span> (${ratio.toFixed(2)}× silniej niż B).`;
-                else html += `Gąbka bardziej sekwestruje <span style="color:#fb923c">B</span> (${(1/ratio).toFixed(2)}× silniej niż A).`;
+                if (Math.abs(ratio - 1) < 0.05) html += t.sponge_selectivity_balanced;
+                else if (ratio > 1) html += t.sponge_selectivity_more_a.replace('{ratio}', ratio.toFixed(2));
+                else html += t.sponge_selectivity_more_b.replace('{ratio}', (1/ratio).toFixed(2));
             }
         }
 
-        html += `<br><button class="btn btn-g" onclick="drawTitrationChart()" style="margin-top:.4rem;font-size:.65rem">🔄 Zaktualizuj krzywą miareczkowania</button>`;
+        html += `<br><button class="btn btn-g" onclick="drawTitrationChart()" style="margin-top:.4rem;font-size:.65rem">${t.sponge_update_titration}</button>`;
         resultEl.innerHTML = html;
         // Quantitative model (if enabled)
         const _resB = rB ? analyzeForMirna(rB.mirna, rB.name) : null;
         renderSpongeQuant(resA, _resB, resultEl);
         sessionSave();
         } catch(err) {
-            resultEl.innerHTML = `<div style="color:var(--seed);font-size:.7rem;padding:.4rem">❌ Błąd: ${err.message}<br><pre style="font-size:.6rem;white-space:pre-wrap">${err.stack||''}</pre></div>`;
+            resultEl.innerHTML = `<div style="color:var(--seed);font-size:.7rem;padding:.4rem">${t.sponge_error_prefix} ${err.message}<br><pre style="font-size:.6rem;white-space:pre-wrap">${err.stack||''}</pre></div>`;
             console.error('runSpongeAnalysis error:', err);
         }
     }, 10);
@@ -9418,6 +9420,7 @@ function runSpongeAnalysis() {
 // SPONGE LAZY PREVIEW — generates 2D/ASCII for ceRNA sites on demand
 // ============================================================
 function spongeLazyPreview(uid, btn) {
+    const t = I18N[_lang] || I18N.pl;
     const panel = document.getElementById(uid + '_panel');
     if (!panel) return;
 
@@ -9425,7 +9428,7 @@ function spongeLazyPreview(uid, btn) {
     if (panel.children.length > 0) {
         const open = panel.style.display !== 'none';
         panel.style.display = open ? 'none' : 'block';
-        btn.textContent = open ? '👁 Miejsca' : '▲ Ukryj';
+        btn.textContent = open ? t.sponge_button_preview_sites : t.sponge_button_hide;
         return;
     }
 
@@ -9433,7 +9436,7 @@ function spongeLazyPreview(uid, btn) {
     const data = window[uid];
     if (!data || !data.sites) return;
     panel.style.display = 'block';
-    btn.textContent = '▲ Ukryj';
+    btn.textContent = t.sponge_button_hide;
 
     data.sites.forEach((site, si) => {
         // Compute centered/3'comp lazily now (deferred from scanAllSites)
@@ -9499,7 +9502,7 @@ function spongeLazyPreview(uid, btn) {
         const mLine = aln.map(a=>a.mb).join('');
         const bLine = aln.map(a=>a.type==='wc'?'|':a.type==='gu'?':':' ').join('');
         const tLine = aln.map(a=>a.tb).join('');
-        pre.textContent = `5' miRNA  ${mLine}  3'\n          ${bLine}\n3' target ${tLine}  5'\npos: ${site.pos+1}\u20133${site.pos+alen} | ${site.seedType} | \u0394G: ${site.dg}`;
+        pre.textContent = `${t.sponge_preview_label_5p} ${mLine}  3'\n          ${bLine}\n3' ${t.sponge_preview_label_target} ${tLine}  5'\n${t.sponge_preview_pos_label} ${site.pos+1}\u2013${site.pos+alen} | ${site.seedType} | ΔG: ${site.dg}`;
         asciiWrap.appendChild(pre);
         body.appendChild(asciiWrap);
 
@@ -9828,6 +9831,19 @@ const I18N = {
     dual_stat_dg:'ΔG:', dual_stat_dg1m:'ΔG(1M):', dual_stat_seed:'Seed:', dual_stat_wc:'WC:', dual_stat_gu:'G:U:', dual_stat_au:'AU%:', dual_stat_pos:'Pos:',
     dual_compare_title:'Porównanie A vs B:', dual_better_a:'🔵 A silniejsze', dual_better_b:'🟠 B silniejsze', dual_equal:'⚪ Równe ΔG', dual_positions:'Pozycje',
     dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— wybierz miRNA —', dual_pair_changed_note:'⚠ Zmieniono parę miRNA — uruchom ponownie analizę gąbki.',
+    alert_select_both_mirna:'Wybierz oba miRNA w Dual View.', alert_select_mirna_a:'Wybierz miRNA A w Dual View.', alert_enter_cerna:'Wpisz sekwencje ceRNA w polu powyżej.', alert_parse_seq:'Nie można sparsować sekwencji.\n\nUżyj formatu FASTA:\n>nazwa_genu\nSEKWENCJA...',
+    sponge_warning_no_headers:'⚠️ Brak nagłówków FASTA (>nazwa) — cały tekst potraktowany jako jedna sekwencja ceRNA-1. Dodaj nagłówki >nazwa przed każdą sekwencją dla poprawnego parsowania.',
+    sponge_results_title:'Wyniki analizy Sponge Effect',
+    sponge_model_note:'Model: dilution = 1 + Σ Ka_i (suma WSZYSTKICH miejsc o ΔG ≤ {dgThreshold} kcal/mol), zakłada [ceRNA] ≫ Kd',
+    sponge_no_sites:'Brak miejsc wiązania (ΔG ≤ {dgThreshold}) w podanych ceRNA → brak efektu gąbki.',
+    sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Miejsc', sponge_table_header_best_dg:'Najlepsze ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
+    sponge_button_preview_sites:'👁 Miejsca', sponge_button_hide:'▲ Ukryj',
+    sponge_selectivity_title:'Selektywność gąbki:', sponge_selectivity_balanced:'Gąbka równomiernie rozcieńcza oba miRNA.', sponge_selectivity_more_a:'Gąbka bardziej sekwestruje <span style="color:#60a5fa">A</span> ({ratio}× silniej niż B).', sponge_selectivity_more_b:'Gąbka bardziej sekwestruje <span style="color:#fb923c">B</span> ({ratio}× silniej niż A).',
+    sponge_update_titration:'🔄 Zaktualizuj krzywą miareczkowania', sponge_error_prefix:'❌ Błąd:', sponge_calculating:'⏳ Obliczanie...',
+    sponge_summary_sites:'{count} miejsc w {found}/{total} ceRNA · ', sponge_dilution_prefix:'Rozcieńczenie:', sponge_free_mirna_prefix:'Wolne miRNA:',
+    sponge_preview_label_5p:"5' miRNA", sponge_preview_label_target:'target', sponge_preview_pos_label:'pos:',
+    titration_y_label:'P(zajętości)', titration_x_label:'[miRNA] / Kd', titration_kd_label:'Kd', titration_slider_note:'[B]/[A] = {ratio}× (suwak)', titration_sponge_line:'Sponge A: ×{a} / B: ×{b}', titration_model_exclusive:'Model: wyklucz. wzajemne', titration_model_independent:'Model: niezależne',
+    btn_clear_sponge:'✕ Wyczyść',
     dual_overlap_note:'⚠ Nakładanie się miejsc ({overlap} nt) — wiązanie wzajemnie wykluczone',
     dual_coop_note:'✅ Odległość {dist} nt — potencjalny efekt kooperatywny (13–35 nt)',
     dual_no_coop_note:'📍 Odległość {dist} nt — brak efektu kooperatywnego',
@@ -9927,6 +9943,19 @@ const I18N = {
     dual_stat_dg:'ΔG:', dual_stat_dg1m:'ΔG(1M):', dual_stat_seed:'Seed:', dual_stat_wc:'WC:', dual_stat_gu:'G:U:', dual_stat_au:'AU%:', dual_stat_pos:'Pos:',
     dual_compare_title:'Comparison A vs B:', dual_better_a:'🔵 A stronger', dual_better_b:'🟠 B stronger', dual_equal:'⚪ Equal ΔG', dual_positions:'Positions',
     dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— select miRNA —', dual_pair_changed_note:'⚠ miRNA pair changed — rerun sponge analysis.',
+    alert_select_both_mirna:'Select both miRNAs in Dual View.', alert_select_mirna_a:'Select miRNA A in Dual View.', alert_enter_cerna:'Enter ceRNA sequences in the field above.', alert_parse_seq:'Unable to parse sequences.\n\nUse FASTA format:\n>gene_name\nSEQUENCE...',
+    sponge_warning_no_headers:'⚠️ Missing FASTA headers (>name) — the entire input was treated as one ceRNA sequence ceRNA-1. Add >name headers before each sequence for correct parsing.',
+    sponge_results_title:'Sponge Effect results',
+    sponge_model_note:'Model: dilution = 1 + Σ Ka_i (sum of ALL sites with ΔG ≤ {dgThreshold} kcal/mol), assumes [ceRNA] ≫ Kd',
+    sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect.',
+    sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Sites', sponge_table_header_best_dg:'Best ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
+    sponge_button_preview_sites:'👁 Sites', sponge_button_hide:'▲ Hide',
+    sponge_selectivity_title:'Sponge selectivity:', sponge_selectivity_balanced:'Sponge dilutes both miRNAs evenly.', sponge_selectivity_more_a:'Sponge sequesters <span style="color:#60a5fa">A</span> ({ratio}× more than B).', sponge_selectivity_more_b:'Sponge sequesters <span style="color:#fb923c">B</span> ({ratio}× more than A).',
+    sponge_update_titration:'🔄 Update titration curve', sponge_error_prefix:'❌ Error:', sponge_calculating:'⏳ Calculating...',
+    sponge_summary_sites:'{count} sites in {found}/{total} ceRNA · ', sponge_dilution_prefix:'Dilution:', sponge_free_mirna_prefix:'Free miRNA:',
+    sponge_preview_label_5p:"5' miRNA", sponge_preview_label_target:'target', sponge_preview_pos_label:'pos:',
+    titration_y_label:'Occupancy P', titration_x_label:'[miRNA] / Kd', titration_kd_label:'Kd', titration_slider_note:'[B]/[A] = {ratio}× (slider)', titration_sponge_line:'Sponge A: ×{a} / B: ×{b}', titration_model_exclusive:'Model: mutually exclusive', titration_model_independent:'Model: independent',
+    btn_clear_sponge:'✕ Clear',
     dual_overlap_note:'⚠ Overlapping sites ({overlap} nt) — binding mutually exclusive',
     dual_coop_note:'✅ Distance {dist} nt — potential cooperative effect (13–35 nt)',
     dual_no_coop_note:'📍 Distance {dist} nt — no cooperative effect',

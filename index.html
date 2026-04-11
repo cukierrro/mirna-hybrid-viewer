@@ -190,7 +190,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- docx.js replaced with inline generator - no external CDN -->
+<!-- docx replaced with inline generator -->
 <script src="https://3dmol.org/build/3Dmol-min.js"></script>
 </head>
 <body>
@@ -208,8 +208,8 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <span class="badge" id="saltBadge">[Na⁺] 0.15M</span>
     <span class="badge">Turner 2004 + Owczarzy</span>
     <span class="badge">8mer/7mer/6mer/centered/3'comp</span>
-    <button id="themeToggle" onclick="toggleTheme()" title="Przełącz jasny/ciemny motyw">🌙 Ciemny</button>
-    <button id="langToggle" onclick="toggleLang()" title="Switch language / Zmień język" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.75rem;font-weight:600;padding:.38rem .65rem;cursor:pointer;transition:all .2s;">🌐 EN</button>
+    <button id="themeToggle" onclick="toggleTheme()" title="Przełącz jasny/ciemny motyw"><span data-i18n="theme_dark">🌙 Ciemny</span></button>
+    <button id="langToggle" onclick="toggleLang()" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.75rem;font-weight:600;padding:.38rem .65rem;cursor:pointer;transition:all .2s;"><span data-i18n="lang_btn">🌐 EN</span></button>
   </div>
 </header>
 <!-- HELP POPOVER (global) -->
@@ -218,78 +218,78 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 <div class="main-cols">
   <!-- INPUT PANEL -->
   <div class="card">
-    <div class="ctitle">Sekwencja wejściowa</div>
+    <div class="ctitle"><span data-i18n="panel_input">Sekwencja wejściowa</span></div>
 
     <!-- NCBI AUTO-FETCH -->
     <div class="ncbi-bar">
-      <span style="font-family:'Inter',sans-serif;font-size:.7rem;font-weight:700;color:var(--heading2);white-space:nowrap">🔎 ID genu / accession:</span>
+      <span style="font-family:'Inter',sans-serif;font-size:.7rem;font-weight:700;color:var(--heading2);white-space:nowrap" data-i18n="ncbi_label">🔎 ID genu / accession:</span>
       <input type="text" id="ncbiId" placeholder="np. NM_000546, OK120841.1, TP53, MK123456" style="max-width:260px">
       <select id="ncbiRegion" style="max-width:110px;font-size:.7rem">
-        <option value="utr3">3'UTR</option>
-        <option value="mrna">pełny mRNA</option>
+        <option value="utr3" data-i18n="opt_utr3">3'UTR</option>
+        <option value="mrna" data-i18n="opt_mrna">pełny mRNA</option>
         <option value="cds">CDS</option>
       </select>
-      <button class="btn btn-g" onclick="fetchFromNCBI()">⬇ Pobierz z NCBI</button>
+      <button class="btn btn-g" onclick="fetchFromNCBI()"><span data-i18n="btn_fetch">⬇ Pobierz z NCBI</span></button>
       <span id="ncbiStatus"></span>
       <span class="help-badge" data-help="ncbi">?</span>
     </div>
 
-    <label>mRNA / 3'UTR (RNA lub DNA, FASTA — jedna lub wiele sekwencji)</label>
-    <textarea id="mrna" placeholder="Wklej sekwencję mRNA lub 3'UTR...&#10;Obsługuje multi-FASTA: każda sekwencja z nagłówkiem >nazwa&#10;— lub użyj pola powyżej, aby pobrać automatycznie z NCBI —"></textarea>
+    <label data-i18n="lbl_mrna">mRNA / 3'UTR (RNA lub DNA, FASTA — jedna lub wiele sekwencji)</label>
+    <textarea id="mrna" data-i18n="ta_mrna_placeholder" data-i18n-placeholder="1" placeholder="Wklej sekwencję mRNA lub 3'UTR...&#10;Obsługuje multi-FASTA: każda sekwencja z nagłówkiem >nazwa&#10;— lub użyj pola powyżej, aby pobrać automatycznie z NCBI —"></textarea>
 
     <!-- Batch FASTA selector -->
     <div class="batch-bar" id="batchBar" style="display:none">
-      <label style="margin:0;white-space:nowrap">Wybierz sekwencję:</label>
+      <label style="margin:0;white-space:nowrap" data-i18n="lbl_select_seq">Wybierz sekwencję:</label>
       <select id="seqSelect" onchange="selectSeq()"></select>
-      <button class="btn btn-g" onclick="scanAllSeqs()" title="Skanuj wszystkie sekwencje i zbierz wyniki">⚡ Skanuj wszystkie</button>
+      <button class="btn btn-g" onclick="scanAllSeqs()" title="Skanuj wszystkie sekwencje i zbierz wyniki"><span data-i18n="btn_scan_all">⚡ Skanuj wszystkie</span></button>
     </div>
 
     <div class="crow">
-      <div><label>Organizm <span class="help-badge" data-help="organism">?</span></label>
+      <div><label><span data-i18n="lbl_organism">Organizm</span> <span class="help-badge" data-help="organism">?</span></label>
         <select id="species">
-          <option value="human">Człowiek (hsa)</option>
-          <option value="mouse">Mysz (mmu)</option>
-          <option value="rat">Szczur (rno)</option>
-          <option value="plant">Arabidopsis (ath)</option>
-          <option value="mammals" selected>Ssaki (hsa+mmu+rno)</option>
-          <option value="both">Wszystkie</option>
+          <option value="human" data-i18n="opt_human">Człowiek (hsa)</option>
+          <option value="mouse" data-i18n="opt_mouse">Mysz (mmu)</option>
+          <option value="rat" data-i18n="opt_rat">Szczur (rno)</option>
+          <option value="plant" data-i18n="opt_plant">Arabidopsis (ath)</option>
+          <option value="mammals" selected data-i18n="opt_mammals">Ssaki (hsa+mmu+rno)</option>
+          <option value="both" data-i18n="opt_all">Wszystkie</option>
         </select>
       </div>
-      <div><label>Min. seed WC <span class="help-badge" data-help="minseed">?</span></label>
+      <div><label><span data-i18n="lbl_minseed">Min. seed WC</span> <span class="help-badge" data-help="minseed">?</span></label>
         <select id="minseed">
           <option value="6">6mer</option>
           <option value="7" selected>7mer</option>
           <option value="8">8mer</option>
         </select>
       </div>
-      <div><label>Ranking wg <span class="help-badge" data-help="rankby">?</span></label>
+      <div><label><span data-i18n="lbl_rankby">Ranking wg</span> <span class="help-badge" data-help="rankby">?</span></label>
         <select id="rankby">
           <option value="dg" selected>ΔG</option>
           <option value="dgcoop">ΔG+coop</option>
           <option value="seed">Seed type</option>
           <option value="score">Score WC</option>
           <option value="au">AU%</option>
-          <option value="cons">Konserwacja</option>
-          <option value="acc">Dostępność (Acc.)</option>
+          <option value="cons" data-i18n="opt_cons">Konserwacja</option>
+          <option value="acc" data-i18n="opt_acc">Dostępność (Acc.)</option>
         </select>
       </div>
       <div><label>[Na⁺] mol/L <span class="help-badge" data-help="salt">?</span></label>
         <input type="number" id="saltConc" value="0.15" step="0.01" min="0.01" max="1.0"
           data-tip="Stężenie Na+. Turner 1M (standard), fizjologiczne 0.15M, jądro ~0.10M. Korekta: Owczarzy 2004 Eq.26, błąd ±0.14 kcal/mol">
       </div>
-      <div><label>Top wyników <span class="help-badge" data-help="topn">?</span></label>
+      <div><label><span data-i18n="lbl_topn">Top wyników</span> <span class="help-badge" data-help="topn">?</span></label>
         <input id="topn" type="number" value="30" min="5" max="500">
       </div>
-      <div><label>Próg ΔG ≤ <span class="help-badge" data-help="dgfilter">?</span></label>
+      <div><label><span data-i18n="lbl_dgfilter">Próg ΔG ≤</span> <span class="help-badge" data-help="dgfilter">?</span></label>
         <input type="number" id="dgFilter" value="-3.0" step="0.5" min="-25" max="-0.5"
           style="width:72px" title="Minimalne ΔG aby wynik był uwzględniony. -3.0 = konserwatywne, -1.0 = liberalne (słabe miejsca)">
         <span style="font-size:.65rem;color:var(--muted)">kcal/mol</span>
       </div>
-      <div><label>Niekanoniczne <span class="help-badge" data-help="noncan">?</span></label>
+      <div><label><span data-i18n="lbl_noncan">Niekanoniczne</span> <span class="help-badge" data-help="noncan">?</span></label>
         <select id="noncan">
-          <option value="all" selected>Wszystkie</option>
-          <option value="canonical">Tylko kanoniczne</option>
-          <option value="noncanonical">Tylko niekan.</option>
+          <option value="all" selected data-i18n="opt_all_noncan">Wszystkie</option>
+          <option value="canonical" data-i18n="opt_canonical">Tylko kanoniczne</option>
+          <option value="noncanonical" data-i18n="opt_noncanonical">Tylko niekan.</option>
         </select>
       </div>
     </div>
@@ -298,10 +298,10 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
       <button class="btn btn-ex" id="exBtn" onclick="loadEx()"><span data-i18n="btn_example">▶ Przykład</span></button>
       <button class="btn btn-clr" onclick="clr()"><span data-i18n="btn_clear">✕ Wyczyść</span></button>
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:var(--muted);cursor:pointer;margin-left:.2rem" title="Wyłącz obliczenia dostępności (Zuker-lite) aby przyspieszyć skanowanie">
-        <input type="checkbox" id="accEnabled" checked style="width:12px;height:12px"> Acc. <span class="help-badge" data-help="accessibility">?</span>
+        <input type="checkbox" id="accEnabled" checked style="width:12px;height:12px"><span data-i18n="lbl_acc"> Acc.</span> <span class="help-badge" data-help="accessibility">?</span>
       </label>
     </div>
-    <div class="status" id="st">Gotowe. Wklej sekwencję i kliknij Skanuj.</div>
+    <div class="status" id="st" data-i18n="status_ready">Gotowe. Wklej sekwencję i kliknij Skanuj.</div>
     <div class="prog-wrap" id="pw">
       <div class="prog-bar-outer"><div class="prog-bar-inner" id="pb"></div></div>
       <div class="prog-label" id="pl">0%</div>
@@ -310,13 +310,13 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 
   <!-- PREVIEW PANEL v2 (NEW) -->
   <div class="card">
-    <div class="ctitle">Podgląd hybrydyzacji</div>
+    <div class="ctitle"><span data-i18n="panel_preview">Podgląd hybrydyzacji</span></div>
 
     <!-- NEW redesigned header -->
     <div class="preview2-header" id="prevHeader">
       <div>
-        <div class="preview2-name" id="sn">— wybierz wiersz —</div>
-        <div class="preview2-org" id="ss">Kliknij wynik w tabeli</div>
+        <div class="preview2-name" id="sn" data-i18n="prev_select_row">— wybierz wiersz —</div>
+        <div class="preview2-org" id="ss" data-i18n="prev_click_hint">Kliknij wynik w tabeli</div>
         <div id="sp" style="margin-top:.4rem"></div>
       </div>
       <div class="preview2-stats">
@@ -324,8 +324,8 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <div class="pstat"><div class="pstat-val" style="color:var(--accent3)" id="stDGC">—</div><div class="pstat-lbl">+coop <span class="help-badge" data-help="dgcoop">?</span></div></div>
         <div class="pstat"><div class="pstat-val" style="color:var(--gu)" id="stAU">—</div><div class="pstat-lbl">AU% <span class="help-badge" data-help="au">?</span></div></div>
         <div class="pstat"><div class="pstat-val" style="color:var(--match)" id="stWC">—</div><div class="pstat-lbl">WC <span class="help-badge" data-help="wc">?</span></div></div>
-        <div class="pstat"><div class="pstat-val" style="color:var(--accent3);font-size:.72rem" id="stSd">—</div><div class="pstat-lbl">Seed <span class="help-badge" data-help="seed">?</span></div></div>
-        <div class="pstat"><div class="pstat-val" style="font-size:.85rem" id="stCons">—</div><div class="pstat-lbl">Cons. <span class="help-badge" data-help="cons">?</span></div></div>
+        <div class="pstat"><div class="pstat-val" style="color:var(--accent3);font-size:.72rem" id="stSd">—</div><div class="pstat-lbl"><span data-i18n="lbl_seed">Seed</span> <span class="help-badge" data-help="seed">?</span></div></div>
+        <div class="pstat"><div class="pstat-val" style="font-size:.85rem" id="stCons">—</div><div class="pstat-lbl"><span data-i18n="lbl_cons">Cons.</span> <span class="help-badge" data-help="cons">?</span></div></div>
         <div class="pstat"><div class="pstat-val" style="font-size:.82rem" id="stAcc">—</div><div class="pstat-lbl">Acc. <span class="help-badge" data-help="accessibility">?</span></div></div>
       </div>
     </div>
@@ -336,16 +336,16 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
       <button class="tab" id="tabtext" onclick="switchTab('text')">📝 ASCII</button>
       <button class="tab" id="tab3d" onclick="switchTab('3d')">🔮 3D</button>
       <a class="mirt-link" id="mirtLink" href="#" target="_blank" style="margin-left:auto">🔗 miRTarBase</a>
-      <button class="btn btn-g" id="snpModeBtn" style="display:none">🔬 Tryb SNP</button><span class="help-badge" data-help="snp" id="snpHelp" style="display:none">?</span>
-      <button class="btn btn-g" id="snpUndoBtn" style="display:none;border-color:var(--gu);color:var(--gu)" onclick="undoLastMutation()">↩ Cofnij SNP</button>
-      <button class="btn btn-g" id="exportPDBBtn" style="display:none">🧬 Eksport PDB</button><span class="help-badge" data-help="pdb" id="pdbHelp" style="display:none">?</span>
-      <button class="btn btn-g" id="sensitivityBtn" style="display:none">🔥 Skanuj wrażliwość</button><span class="help-badge" data-help="sensitivity" id="sensHelp" style="display:none">?</span>
-      <button class="btn btn-g" id="clearHeatmapBtn" style="display:none">🗑 Wyczyść heatmapę</button>
+      <button class="btn btn-g" id="snpModeBtn" style="display:none"><span data-i18n="btn_snp_mode">🔬 Tryb SNP</span></button><span class="help-badge" data-help="snp" id="snpHelp" style="display:none">?</span>
+      <button class="btn btn-g" id="snpUndoBtn" style="display:none;border-color:var(--gu);color:var(--gu)" onclick="undoLastMutation()"><span data-i18n="btn_snp_undo">↩ Cofnij SNP</span></button>
+      <button class="btn btn-g" id="exportPDBBtn" style="display:none"><span data-i18n="btn_pdb">🧬 Eksport PDB</span></button><span class="help-badge" data-help="pdb" id="pdbHelp" style="display:none">?</span>
+      <button class="btn btn-g" id="sensitivityBtn" style="display:none"><span data-i18n="btn_sensitivity">🔥 Skanuj wrażliwość</span></button><span class="help-badge" data-help="sensitivity" id="sensHelp" style="display:none">?</span>
+      <button class="btn btn-g" id="clearHeatmapBtn" style="display:none"><span data-i18n="btn_clear_heatmap">🗑 Wyczyść heatmapę</span></button>
     </div>
 
     <div id="panel2d">
       <div class="leg">
-        <span><span class="dot" style="background:var(--seed)"></span>Seed (2–8)</span>
+        <span><span class="dot" style="background:var(--seed)"></span><span data-i18n="leg_seed">Seed (2–8)</span></span>
         <span><span class="dot" style="background:#f472b6"></span>Centered</span>
         <span><span class="dot" style="background:#60a5fa"></span>3'comp</span>
         <span><span class="dot" style="background:var(--match)"></span>WC ‖</span>
@@ -354,11 +354,11 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
       </div>
       <div class="canvas-wrap" id="cwrap"><canvas id="duplexCanvas" width="600" height="190"></canvas></div>
     </div>
-    <div class="dbox" id="panel-text"><div class="dmono" id="dv">Uruchom skanowanie, następnie kliknij wiersz.</div></div>
+    <div class="dbox" id="panel-text"><div class="dmono" id="dv" data-i18n="txt_run_hint">Uruchom skanowanie, następnie kliknij wiersz.</div></div>
     <!-- LOCAL RNA STRUCTURE (Zuker-lite) -->
     <div id="rnaStructPanel" style="display:none;margin-bottom:.55rem">
       <div style="font-family:'Inter',sans-serif;font-size:.65rem;font-weight:700;color:var(--heading2);margin-bottom:.3rem;display:flex;align-items:center;gap:.4rem">
-        🔓 Lokalna struktura mRNA (±40 nt) <span class="help-badge" data-help="accessibility">?</span>
+        <span data-i18n="lbl_local_struct">🔓 Lokalna struktura mRNA (±40 nt)</span> <span class="help-badge" data-help="accessibility">?</span>
         <span id="rnaStructLabel" style="color:var(--muted);font-weight:400;font-family:'JetBrains Mono',monospace;font-size:.62rem"></span>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem;overflow-x:auto">
@@ -369,7 +369,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
       <div class="canvas-wrap" style="min-height:380px;position:relative;padding:0">
         <div id="3dmolviewer" style="width:100%;height:380px;border-radius:9px;overflow:hidden;"></div>
       </div>
-      <div style="font-size:.63rem;color:var(--muted);margin-top:.3rem;text-align:center">Przeciągnij myszą aby obracać · scroll = zoom · Kolory: 🟢 WC · 🟡 G:U · 🟣 mismatch · 🟠 seed region</div>
+      <div style="font-size:.63rem;color:var(--muted);margin-top:.3rem;text-align:center" data-i18n="hint_3d">Przeciągnij myszą aby obracać · scroll = zoom · Kolory: 🟢 WC · 🟡 G:U · 🟣 mismatch · 🟠 seed region</div>
     </div>
 
     <!-- stats now in preview2-header -->
@@ -380,42 +380,42 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 <div class="dashboard2" id="dashboard">
   <div class="dash2-grid">
     <div class="dash2-card accent">
-      <div class="dash2-title">Trafień</div>
+      <div class="dash2-title" data-i18n="dash_hits">Trafień</div>
       <div class="dash2-val" id="dHits" style="color:var(--accent)">—</div>
       <div class="dash2-sub" id="dHitsSub">—</div>
     </div>
     <div class="dash2-card">
-      <div class="dash2-title">Śr. ΔG</div>
+      <div class="dash2-title" data-i18n="dash_mean_dg">Śr. ΔG</div>
       <div class="dash2-val" id="dMeanDG" style="color:var(--gu)">—</div>
       <div class="dash2-sub">kcal/mol</div>
     </div>
     <div class="dash2-card">
-      <div class="dash2-title">Śr. AU-rich</div>
+      <div class="dash2-title" data-i18n="dash_mean_au">Śr. AU-rich</div>
       <div class="dash2-val" id="dMeanAU" style="color:var(--gu)">—</div>
-      <div class="dash2-sub">% okno ±30nt</div>
+      <div class="dash2-sub" data-i18n="dash_mean_au_sub">% okno ±30nt</div>
     </div>
     <div class="dash2-card">
-      <div class="dash2-title">8mer / Niekan.</div>
+      <div class="dash2-title" data-i18n="dash_8mer">8mer / Niekan.</div>
       <div class="dash2-val" id="d8mer" style="color:var(--accent)">—</div>
       <div class="dash2-sub" id="dNoncan">—</div>
     </div>
     <div class="dash2-card" style="grid-column:span 1">
-      <div class="dash2-title">Histogram ΔG (kcal/mol)</div>
+      <div class="dash2-title" data-i18n="dash_histogram">Histogram ΔG (kcal/mol)</div>
       <canvas id="histCanvas" width="280" height="72"></canvas>
-      <div style="font-size:.58rem;color:var(--muted);margin-top:.25rem">← stabilniejsze | mniej stabilne →</div>
+      <div style="font-size:.58rem;color:var(--muted);margin-top:.25rem" data-i18n="dash_histogram_axis">← stabilniejsze | mniej stabilne →</div>
     </div>
   </div>
   <div style="margin-top:.7rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem">
     <div class="dash2-card">
-      <div class="dash2-title">Top 5 — ΔG</div>
+      <div class="dash2-title" data-i18n="dash_top5_dg">Top 5 — ΔG</div>
       <div class="dash2-top-list" id="dTop5DG"></div>
     </div>
     <div class="dash2-card">
-      <div class="dash2-title">Top 5 — AU%</div>
+      <div class="dash2-title" data-i18n="dash_top5_au">Top 5 — AU%</div>
       <div class="dash2-top-list" id="dTop5AU"></div>
     </div>
     <div class="dash2-card">
-      <div class="dash2-title">Top 5 — Konserwacja</div>
+      <div class="dash2-title" data-i18n="dash_top5_cons">Top 5 — Konserwacja</div>
       <div class="dash2-top-list" id="dTop5Cons"></div>
     </div>
   </div>
@@ -424,14 +424,14 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 <!-- RESULTS TABLE -->
 <div class="card rcard">
   <div class="ctitle" style="justify-content:space-between;display:flex;align-items:center;">
-    <span>Tabela wyników</span>
+    <span data-i18n="panel_results">Tabela wyników</span>
     <span id="rc" style="font-size:.68rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0"></span>
   </div>
   <div class="filter-row" id="filterRow">
-    <div><label>Filtruj miRNA</label><input type="text" id="fMirna" placeholder="np. miR-21" oninput="applyFilters()"></div>
-    <div><label>Seed type</label>
+    <div><label data-i18n="lbl_filter_mirna">Filtruj miRNA</label><input type="text" id="fMirna" placeholder="np. miR-21" oninput="applyFilters()"></div>
+    <div><label data-i18n="lbl_filter_seed">Seed type</label>
       <select id="fSeed" onchange="applyFilters()">
-        <option value="">Wszystkie</option>
+        <option value="" data-i18n="opt_filter_all">Wszystkie</option>
         <option value="8mer">8mer</option>
         <option value="7mer-m8">7mer-m8</option>
         <option value="7mer-A1">7mer-A1</option>
@@ -440,59 +440,59 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <option value="3prime-comp">3prime-comp</option>
       </select>
     </div>
-    <div><label>Organizm</label>
+    <div><label data-i18n="lbl_filter_org">Organizm</label>
       <select id="fOrg" onchange="applyFilters()">
-        <option value="">Wszystkie</option>
+        <option value="" data-i18n="opt_filter_all">Wszystkie</option>
         <option value="hsa">hsa</option>
         <option value="mmu">mmu</option>
         <option value="rno">rno</option>
         <option value="ath">ath</option>
       </select>
     </div>
-    <div><label>Min. konserwacja</label>
+    <div><label data-i18n="lbl_filter_cons">Min. konserwacja</label>
       <select id="fCons" onchange="applyFilters()">
-        <option value="0">Dowolna</option>
-        <option value="1">≥1 gatunek</option>
-        <option value="2">≥2 gatunki</option>
-        <option value="3">Wszystkie 3</option>
+        <option value="0" data-i18n="opt_cons_any">Dowolna</option>
+        <option value="1" data-i18n="opt_cons_1">≥1 gatunek</option>
+        <option value="2" data-i18n="opt_cons_2">≥2 gatunki</option>
+        <option value="3" data-i18n="opt_cons_3">Wszystkie 3</option>
       </select>
     </div>
-    <button class="btn btn-g" onclick="resetFilters()">✕ Reset</button>
-    <button class="btn btn-g" id="copyBtn" onclick="copyTable()" title="Kopiuj tabelę do schowka">📋 Kopiuj</button>
+    <button class="btn btn-g" onclick="resetFilters()"><span data-i18n="btn_reset">✕ Reset</span></button>
+    <button class="btn btn-g" id="copyBtn" onclick="copyTable()" title="Kopiuj tabelę do schowka"><span data-i18n="btn_copy">📋 Kopiuj</span></button>
   </div>
 
-  <div id="es" class="empty"><div class="empty-i">🔬</div><p>Wyniki pojawią się po uruchomieniu skanowania.</p></div>
+  <div id="es" class="empty"><div class="empty-i">🔬</div><p data-i18n="txt_empty_results">Wyniki pojawią się po uruchomieniu skanowania.</p></div>
   <div class="twrap" id="tw" style="display:none">
     <table id="resTable">
       <thead><tr>
         <th onclick="sortTable(0)">#</th>
         <th onclick="sortTable(1)">miRNA</th>
-        <th onclick="sortTable(2)">Org</th>
+        <th onclick="sortTable(2)" data-i18n="th_org">Org</th>
         <th onclick="sortTable(3)">ΔG</th>
         <th onclick="sortTable(4)">ΔG(1M)</th>
         <th onclick="sortTable(5)">ΔG coop</th>
         <th onclick="sortTable(6)" data-tip="ΔG_total = ΔG_binding + ΔG_open. Uwzględnia zarówno termodynamikę hybrydyzacji jak i koszt otwarcia struktury wtórnej mRNA. Im niższy tym lepszy kandydat biologiczny.">ΔG_tot <span class="help-badge" data-help="dgtotal" style="vertical-align:middle">?</span></th>
         <th onclick="sortTable(7)" data-tip="8mer: seed 2-8 + pos1A + pos8&#10;7mer-m8: seed 2-8 + pos8&#10;7mer-A1: seed 2-8 + pos1A&#10;6mer: seed 2-7&#10;centered: 11+ WC pos4-15&#10;3prime-comp: 3+ WC pos13-16">Seed type ℹ</th>
-        <th onclick="sortTable(8)">Pos</th>
+        <th onclick="sortTable(8)" data-i18n="th_pos">Pos</th>
         <th onclick="sortTable(9)">WC</th>
         <th onclick="sortTable(10)">G:U</th>
         <th onclick="sortTable(11)" data-tip="% zasad A/U w oknie ±30nt wokół miejsca wiązania. Wyższy AU% → lepsza dostępność strukturalna mRNA.">AU% ℹ</th>
         <th onclick="sortTable(12)" data-tip="Obecność homologicznego seed u myszy (mmu) i szczura (rno). Wysoka konserwacja = silna przesłanka biologiczna.">Konserw. ℹ</th>
         <th onclick="sortTable(13)" data-tip="Dostępność strukturalna mRNA w regionie wiązania (Zuker-lite MFE). Im niższy koszt ΔG_open, tym bardziej region jest dostępny (otwarta struktura RNA). Kolor: zielony=dostępne, żółty=średnie, czerwony=zamknięte.">Acc. ℹ</th>
-        <th>Sekwencja 5'→3'</th>
+        <th data-i18n="th_seq">Sekwencja 5'→3'</th>
       </tr></thead>
       <tbody id="rb"></tbody>
     </table>
   </div>
   <div class="erow">
-    <button class="btn btn-g" id="expBtn" onclick="exportCSV()" style="display:none">⬇ CSV</button>
-    <button class="btn btn-g" id="expManBtn" onclick="exportManuscript()" style="display:none">📄 Manuskrypt</button>
-    <button class="btn btn-g" id="expPNG" onclick="exportPNG()" style="display:none">🖼 PNG duplex</button>
-    <button class="btn btn-g" id="expPDF" onclick="exportPDF()" style="display:none">📋 PDF</button>
-    <button class="btn btn-g" id="expDOCX" onclick="exportDOCX()" style="display:none">📝 DOCX</button>
+    <button class="btn btn-g" id="expBtn" onclick="exportCSV()" style="display:none"><span data-i18n="btn_csv">⬇ CSV</span></button>
+    <button class="btn btn-g" id="expManBtn" onclick="exportManuscript()" style="display:none"><span data-i18n="btn_manuscript">📄 Manuskrypt</span></button>
+    <button class="btn btn-g" id="expPNG" onclick="exportPNG()" style="display:none"><span data-i18n="btn_png">🖼 PNG duplex</span></button>
+    <button class="btn btn-g" id="expPDF" onclick="exportPDF()" style="display:none"><span data-i18n="btn_pdf">📋 PDF</span></button>
+    <button class="btn btn-g" id="expDOCX" onclick="exportDOCX()" style="display:none"><span data-i18n="btn_docx">📝 DOCX</span></button>
     <button class="btn btn-g" id="expJSON" onclick="exportJSON()" style="display:none">{ } JSON</button>
-    <button class="btn btn-g" id="dualViewBtn" onclick="toggleDualView()" style="display:none">⚖ Dual View</button>
-    <button class="btn btn-g" id="sessionRestoreBtn" onclick="sessionRestore()" style="display:none;border-color:var(--accent3);color:var(--accent3)">♻ Przywróć sesję</button>
+    <button class="btn btn-g" id="dualViewBtn" onclick="toggleDualView()" style="display:none"><span data-i18n="btn_dualview">⚖ Dual View</span></button>
+    <button class="btn btn-g" id="sessionRestoreBtn" onclick="sessionRestore()" style="display:none;border-color:var(--accent3);color:var(--accent3)"><span data-i18n="btn_session">♻ Przywróć sesję</span></button>
   </div>
 </div>
 
@@ -501,7 +501,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
   <div class="dual-header">
     <div class="ctitle"><span data-i18n="dual_title">⚖ Porównywarka miRNA — Dual View</span></div>
     <span class="help-badge" data-help="dualview">?</span>
-    <button class="btn btn-g" style="margin-left:auto;font-size:.68rem" onclick="toggleDualView()"><span data-i18n="dual_close">✕ Zamknij</span></button>
+    <button class="btn btn-g" style="margin-left:auto;font-size:.68rem" onclick="toggleDualView()"><span data-i18n="btn_close">✕ Zamknij</span></button>
   </div>
   <div class="dual-grid">
     <!-- LEFT -->
@@ -535,7 +535,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
   <!-- BOLTZMANN SLIDER -->
   <div id="boltSliderWrap" style="display:none;margin-top:.5rem;padding:.5rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:7px;">
     <div style="font-family:'Inter',sans-serif;font-size:.7rem;font-weight:700;color:var(--heading2);margin-bottom:.35rem">
-      🧪 Względna liczebność miRNA B vs A <span class="help-badge" data-help="boltslider">?</span>
+      <span data-i18n="lbl_boltslider">🧪 Względna liczebność miRNA B vs A</span> <span class="help-badge" data-help="boltslider">?</span>
       <span id="boltRatioLabel" style="color:var(--accent);margin-left:.5rem">1.0× (równe)</span>
     </div>
     <input type="range" id="boltSlider" min="-20" max="20" value="0" step="1"
@@ -545,25 +545,25 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 
   <!-- SHADOWING TRACK -->
   <div class="dual-shadow-wrap" id="dualShadowWrap" style="display:none">
-    <div class="dual-shadow-title">🗺 Mapa zajętości mRNA — Shadowing Track <span class="help-badge" data-help="shadowing">?</span></div>
+    <div class="dual-shadow-title"><span data-i18n="lbl_shadowing">🗺 Mapa zajętości mRNA — Shadowing Track</span> <span class="help-badge" data-help="shadowing">?</span></div>
     <canvas id="shadowCanvas" height="64"></canvas>
     <div style="font-family:'JetBrains Mono',monospace;font-size:.63rem;color:var(--muted);margin-top:.3rem">
-      🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Nakładanie &nbsp;|&nbsp; ⬜ wolny region
+      <span data-i18n="shadow_legend">🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Nakładanie &nbsp;|&nbsp; ⬜ wolny region</span>
     </div>
   </div>
 
   <!-- EXPORT ROW -->
   <div class="dual-export-row" id="dualExportRow" style="display:none">
-    <button class="btn btn-g" onclick="exportDualPDF()" style="font-size:.68rem"><span data-i18n="dual_pdf">📋 Eksport PDF (porównanie)</span></button>
-    <button class="btn btn-g" onclick="exportDualDOCX()" style="font-size:.68rem"><span data-i18n="dual_docx">📝 Eksport DOCX (porównanie)</span></button>
-    <button class="btn btn-g" onclick="drawTitrationChart()" style="font-size:.68rem"><span data-i18n="dual_titration">📈 Krzywa miareczkowania</span></button><span class="help-badge" data-help="titration" style="margin-left:.1rem">?</span>
-    <button class="btn btn-g" onclick="toggleSponge()" style="font-size:.68rem"><span data-i18n="dual_sponge">🧽 Efekt gąbki</span></button><span class="help-badge" data-help="sponge" style="margin-left:.1rem">?</span>
+    <button class="btn btn-g" onclick="exportDualPDF()" style="font-size:.68rem"><span data-i18n="btn_dual_pdf">📋 Eksport PDF (porównanie)</span></button>
+    <button class="btn btn-g" onclick="exportDualDOCX()" style="font-size:.68rem"><span data-i18n="btn_dual_docx">📝 Eksport DOCX (porównanie)</span></button>
+    <button class="btn btn-g" onclick="drawTitrationChart()" style="font-size:.68rem"><span data-i18n="btn_titration">📈 Krzywa miareczkowania</span></button><span class="help-badge" data-help="titration" style="margin-left:.1rem">?</span>
+    <button class="btn btn-g" onclick="toggleSponge()" style="font-size:.68rem"><span data-i18n="btn_sponge">🧽 Efekt gąbki</span></button><span class="help-badge" data-help="sponge" style="margin-left:.1rem">?</span>
   </div>
 
   <!-- TITRATION CHART -->
   <div id="titrationWrap" style="display:none;margin-top:.7rem;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:.9rem;">
     <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
-      <div class="ctitle" style="margin:0">📈 Krzywa miareczkowania — P(zajętości) vs stężenie</div>
+      <div class="ctitle" style="margin:0"><span data-i18n="titration_title">📈 Krzywa miareczkowania — P(zajętości) vs stężenie</span></div>
       <span class="help-badge" data-help="titration">?</span>
       <button class="btn btn-g" style="margin-left:auto;font-size:.65rem" onclick="document.getElementById('titrationWrap').style.display='none'">✕</button>
     </div>
@@ -571,24 +571,24 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <div style="display:flex;gap:1.2rem;margin-top:.35rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted)">
       <span><span style="color:#60a5fa">●</span> miRNA A</span>
       <span><span style="color:#fb923c">●</span> miRNA B</span>
-      <span style="color:var(--muted)">Os X: log₁₀([miRNA]/[Kd]) · Os Y: prawdopodobieństwo zajętości</span>
+      <span style="color:var(--muted)" data-i18n="titration_axis">Os X: log₁₀([miRNA]/[Kd]) · Os Y: prawdopodobieństwo zajętości</span>
     </div>
-    <button class="btn btn-g" onclick="exportTitrationPNG()" style="margin-top:.4rem;font-size:.65rem">🖼 Zapisz PNG</button>
+    <button class="btn btn-g" onclick="exportTitrationPNG()" style="margin-top:.4rem;font-size:.65rem"><span data-i18n="btn_save_png">🖼 Zapisz PNG</span></button>
   </div>
 
   <!-- SPONGE EFFECT -->
   <div id="spongeWrap" style="display:none;margin-top:.7rem;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:.9rem;">
     <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
-      <div class="ctitle" style="margin:0">🧽 Sponge Effect — efekt gąbki ceRNA</div>
+      <div class="ctitle" style="margin:0"><span data-i18n="sponge_title">🧽 Sponge Effect — efekt gąbki ceRNA</span></div>
       <span class="help-badge" data-help="sponge">?</span>
       <button class="btn btn-g" style="margin-left:auto;font-size:.65rem" onclick="document.getElementById('spongeWrap').style.display='none'">✕</button>
     </div>
     <div style="display:flex;gap:.5rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:.5rem">
       <div style="flex:1;min-width:200px">
-        <label style="font-size:.7rem;margin-bottom:.25rem;display:block">Lista sekwencji ceRNA / sponge (multi-FASTA lub jedna linia na gen):</label>
+        <label style="font-size:.7rem;margin-bottom:.25rem;display:block" data-i18n="sponge_lbl_input">Lista sekwencji ceRNA / sponge (multi-FASTA lub jedna linia na gen):</label>
         <textarea id="spongeInput" rows="4" style="width:100%;font-size:.7rem;resize:vertical" placeholder=">LINC00673&#10;AUGCUAGCUAGCUAGC...&#10;>HOTAIR&#10;GCUAGCUAGCUA..."></textarea>
         <div style="display:flex;align-items:center;gap:.45rem;margin-top:.35rem">
-          <label style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin:0">Próg ΔG ≤</label>
+          <label style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin:0" data-i18n="sponge_lbl_threshold">Próg ΔG ≤</label>
           <input type="number" id="spongeDgThreshold" value="-3.0" step="0.5" min="-20" max="-0.5"
             style="width:72px;font-size:.7rem" title="Minimalne ΔG uwzględniane w sponge (kcal/mol)">
           <span style="font-size:.65rem;color:var(--muted)">kcal/mol</span>
@@ -596,7 +596,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:.4rem;padding-top:1.4rem">
-        <button class="btn btn-g" onclick="runSpongeAnalysis()" style="font-size:.68rem">🔬 Oblicz efekt gąbki</button>
+        <button class="btn btn-g" onclick="runSpongeAnalysis()" style="font-size:.68rem"><span data-i18n="btn_sponge_calc">🔬 Oblicz efekt gąbki</span></button>
         <button class="btn btn-g" onclick="document.getElementById('spongeInput').value=''" style="font-size:.65rem">✕ Wyczyść</button>
       </div>
     </div>
@@ -604,34 +604,33 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <!-- QUANTITATIVE MODEL — copy numbers -->
     <div style="border:1px solid var(--border);border-radius:8px;padding:.55rem .7rem;margin-bottom:.5rem;background:var(--surface2)">
       <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.45rem;font-size:.67rem;font-weight:700;color:var(--heading2)">
-        🔢 Model ilościowy (kopie/komórkę)
+        <span data-i18n="quant_title">🔢 Model ilościowy (kopie/komórkę)</span>
         <span class="help-badge" data-help="spongequant">?</span>
         <label style="margin-left:auto;display:flex;align-items:center;gap:.3rem;font-size:.64rem;font-weight:400;color:var(--muted);cursor:pointer">
-          <input type="checkbox" id="spongeQuantEnabled" style="width:12px;height:12px"> Włącz
+          <input type="checkbox" id="spongeQuantEnabled" style="width:12px;height:12px"><span data-i18n="quant_enable">Włącz</span>
         </label>
       </div>
       <div id="spongeQuantInputs" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;margin-bottom:.4rem">
           <div>
-            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block">Kopie miRNA A / komórkę</label>
+            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block" data-i18n="quant_copies_a">Kopie miRNA A / komórkę</label>
             <input type="number" id="sqMirnaA" value="5000" min="1" max="1000000" step="100" style="width:100%;font-size:.7rem">
           </div>
           <div>
-            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block">Kopie miRNA B / komórkę</label>
+            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block" data-i18n="quant_copies_b">Kopie miRNA B / komórkę</label>
             <input type="number" id="sqMirnaB" value="5000" min="1" max="1000000" step="100" style="width:100%;font-size:.7rem">
           </div>
           <div>
-            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block">Kopie ceRNA / komórkę</label>
+            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block" data-i18n="quant_copies_cerna">Kopie ceRNA / komórkę</label>
             <input type="number" id="sqCeRNA" value="1000" min="1" max="1000000" step="100" style="width:100%;font-size:.7rem">
           </div>
           <div>
-            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block">Objętość komórki (μm³)</label>
+            <label style="font-size:.63rem;color:var(--muted);margin-bottom:.15rem;display:block" data-i18n="quant_volume">Objętość komórki (μm³)</label>
             <input type="number" id="sqVolume" value="1000" min="100" max="100000" step="100" style="width:100%;font-size:.7rem">
           </div>
         </div>
         <div style="font-size:.61rem;color:var(--muted);line-height:1.5">
-          Przykłady: hepatocyt 5000 μm³ · limfocyt 300 μm³ · komórka mięśnia 10 000 μm³<br>
-          miRNA: typowe 1 000–50 000 · silnie eksp. do 500 000 · długie RNA syntetyczne (szczyt) 1 000–100 000
+          <span data-i18n="quant_hint" data-i18n-html="1">Przykłady: hepatocyt 5000 μm³ · limfocyt 300 μm³ · komórka mięśnia 10 000 μm³<br>miRNA: typowe 1 000–50 000 · silnie eksp. do 500 000 · długie RNA syntetyczne (szczyt) 1 000–100 000</span>
         </div>
       </div>
     </div>
@@ -7161,12 +7160,17 @@ const EXAMPLE="AUGCUACCGUGAUGAAGAACUGAUGCUUACCUACCUCACUGGAAUGUAAAGAAGUAUGUAUGACC
 // Global HTML escape — available in all closures and setTimeout callbacks
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-let RESULTS=[], CURRENT_MRNA='';
+let RESULTS=[], CURRENT_MRNA='', snpHistory=[], dualViewOpen = false;
 
 let _exIdx=0;
 const _EXAMPLES=[EXAMPLE,BNT_UTR3];
-const _EXAMPLE_LABELS=["Załadowano sekwencję przykładową (let-7 / hepatocyt).","Załadowano przykładową sekwencję syntetyczną 3'UTR."];
-function loadEx(){document.getElementById('mrna').value=_EXAMPLES[_exIdx];snpHistory=[];updateSnpUndoBtn();setst(_EXAMPLE_LABELS[_exIdx]);_exIdx=(_exIdx+1)%_EXAMPLES.length;}
+function loadEx(){
+  document.getElementById('mrna').value=_EXAMPLES[_exIdx];
+  snpHistory=[];updateSnpUndoBtn();
+  const t=typeof I18N!=='undefined'?I18N[_lang||'pl']:null;
+  setst(_exIdx===0?(t?t.status_ex1:"Załadowano sekwencję przykładową (let-7 / hepatocyt)."):(t?t.status_ex2:"Załadowano przykładową sekwencję syntetyczną 3'UTR."));
+  _exIdx=(_exIdx+1)%_EXAMPLES.length;
+}
 function clr(){
   document.getElementById('mrna').value='';RESULTS=[];CURRENT_MRNA='';FASTA_SEQS=[];
   snpHistory = [];
@@ -7749,10 +7753,11 @@ async function updateMiRTarBaseLink(mirnaName, mrnaSeq, hitPos, hitLen, org) {
 }
 
 // ============================================================
-// EXPORT PDF — data-driven, multi-page, all rows
+// EXPORT PDF (html2canvas + jsPDF)
 // ============================================================
 async function exportPDF() {
   if(!RESULTS.length) return;
+  const t=typeof I18N!=='undefined'?I18N[_lang||'pl']:null;
   try {
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
@@ -7761,26 +7766,28 @@ async function exportPDF() {
     const colWidths=[8,32,8,16,16,16,16,22,12,10,10,12,16,10];
     const headers=['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.'];
     const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
-    const st=(document.getElementById('fSeed')||{}).value||'';
-    const org=(document.getElementById('fOrg')||{}).value||'';
+    const st2=(document.getElementById('fSeed')||{}).value||'';
+    const org2=(document.getElementById('fOrg')||{}).value||'';
     const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
     const filtered=RESULTS.filter(r=>{
       if(txt&&!r.name.toLowerCase().includes(txt))return false;
-      if(st&&r.hit.seedType!==st)return false;
-      if(org&&r.org!==org)return false;
+      if(st2&&r.hit.seedType!==st2)return false;
+      if(org2&&r.org!==org2)return false;
       if(consMin>0&&(r.hit.conservation?.score??0)<consMin)return false;
       return true;
     });
     const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0};
     const rowsPerPage=Math.floor((pgH-headerH-margin)/rowH);
     const totalPages=Math.ceil(filtered.length/rowsPerPage)||1;
+    const pageWord=t?t.pdf_page:'Strona';
+    const resultsWord=t?t.pdf_results:'Wyniki';
     function drawHeader(pn,tp){
       pdf.setFillColor(17,19,24);pdf.rect(0,0,pgW,pgH,'F');
       pdf.setTextColor(0,212,170);pdf.setFontSize(11);pdf.setFont('helvetica','bold');
       pdf.text('miRNA Hybrid Viewer v1.0 \u2014 PRAM\u0100 Institute',margin,8);
       pdf.setTextColor(180,180,180);pdf.setFontSize(7);pdf.setFont('helvetica','normal');
-      pdf.text(`Generated: ${new Date().toISOString().slice(0,19)} | Wyniki: ${filtered.length} z ${RESULTS.length} | hsa:${_dbc.hsa} mmu:${_dbc.mmu} rno:${_dbc.rno} ath:${_dbc.ath}`,margin,13);
-      pdf.text(`Strona ${pn}/${tp}`,pgW-margin-18,13);
+      pdf.text(`Generated: ${new Date().toISOString().slice(0,19)} | ${resultsWord}: ${filtered.length} / ${RESULTS.length} | hsa:${_dbc.hsa} mmu:${_dbc.mmu} rno:${_dbc.rno} ath:${_dbc.ath}`,margin,13);
+      pdf.text(`${pageWord} ${pn}/${tp}`,pgW-margin-20,13);
       pdf.setFillColor(0,80,60);pdf.rect(margin,16,colWidths.reduce((a,b)=>a+b,0),6,'F');
       let x=margin;pdf.setTextColor(0,212,170);pdf.setFontSize(6);pdf.setFont('helvetica','bold');
       headers.forEach((h,i)=>{pdf.text(h,x+1,20.5,{maxWidth:colWidths[i]-2});x+=colWidths[i];});
@@ -7818,167 +7825,65 @@ async function exportPDF() {
   } catch(e){alert('PDF export error: '+e.message);console.error(e);}
 }
 
-
 // ============================================================
 // ============================================================
-// MINIMAL DOCX GENERATOR — no external CDN needed
-// OOXML ZIP built from native browser APIs only
-// A4 landscape usable width = 32400 twips (23811 wide, 720 margins each side)
+// MINIMAL DOCX GENERATOR — no external CDN
 // ============================================================
-const _docxBuilder = (() => {
+const _docxBuilder=(()=>{
   function u8(s){return new TextEncoder().encode(s);}
   function le2(n){return[n&0xff,(n>>8)&0xff];}
   function le4(n){return[n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff];}
   function crc32(d){let c=0xffffffff;for(let i=0;i<d.length;i++){c^=d[i];for(let j=0;j<8;j++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);}return(c^0xffffffff)>>>0;}
-  function zipFile(name,data){
-    const n=u8(name),crc=crc32(data),sz=data.length;
-    const local=[0x50,0x4b,0x03,0x04,20,0,0,0,0,0,0,0,0,0,...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...n,...data];
-    const central=[0x50,0x4b,0x01,0x02,20,0,20,0,0,0,0,0,0,0,0,0,...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...le2(0),...le2(0),...le2(0),...le4(0),...le4(0),...n];
-    return{local:new Uint8Array(local),central:new Uint8Array(central),offset:0};
-  }
-  function buildZip(files){
-    const entries=[];let off=0;
-    for(const f of files){const e=zipFile(f.name,f.data);e.offset=off;entries.push(e);off+=e.local.length;}
-    let cs=0;const cp=[];
-    for(const e of entries){const c=new Uint8Array(e.central);const l=le4(e.offset);c[42]=l[0];c[43]=l[1];c[44]=l[2];c[45]=l[3];cp.push(c);cs+=c.length;}
-    const eocd=[0x50,0x4b,0x05,0x06,0,0,0,0,...le2(entries.length),...le2(entries.length),...le4(cs),...le4(off),...le2(0)];
-    const buf=new Uint8Array(off+cs+eocd.length);let pos=0;
-    for(const e of entries){buf.set(e.local,pos);pos+=e.local.length;}
-    for(const c of cp){buf.set(c,pos);pos+=c.length;}
-    buf.set(new Uint8Array(eocd),pos);return buf;
-  }
+  function zf(nm,data){const n=u8(nm),crc=crc32(data),sz=data.length;const local=[0x50,0x4b,0x03,0x04,20,0,0,0,0,0,0,0,0,0,...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...n,...data];const central=[0x50,0x4b,0x01,0x02,20,0,20,0,0,0,0,0,0,0,0,0,...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...le2(0),...le2(0),...le2(0),...le4(0),...le4(0),...n];return{local:new Uint8Array(local),central:new Uint8Array(central),offset:0};}
+  function bz(files){const es=[];let off=0;for(const f of files){const e=zf(f.name,f.data);e.offset=off;es.push(e);off+=e.local.length;}let cs=0;const cp=[];for(const e of es){const c=new Uint8Array(e.central);const l=le4(e.offset);c[42]=l[0];c[43]=l[1];c[44]=l[2];c[45]=l[3];cp.push(c);cs+=c.length;}const eocd=[0x50,0x4b,0x05,0x06,0,0,0,0,...le2(es.length),...le2(es.length),...le4(cs),...le4(off),...le2(0)];const buf=new Uint8Array(off+cs+eocd.length);let pos=0;for(const e of es){buf.set(e.local,pos);pos+=e.local.length;}for(const c of cp){buf.set(c,pos);pos+=c.length;}buf.set(new Uint8Array(eocd),pos);return buf;}
   function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-  const PAGE_W=32400; // twips, A4 landscape minus 720 margins each side
-  function mkCell(text,opts={}){
-    const sz=opts.sz||16,bold=opts.bold?'<w:b/>':'',color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
-    const shading=opts.bg?`<w:shd w:val="clear" w:color="auto" w:fill="${opts.bg}"/>`:'';
-    const w=opts.w?`<w:tcW w:w="${opts.w}" w:type="dxa"/>`:'<w:tcW w:w="0" w:type="auto"/>';
-    return `<w:tc><w:tcPr>${shading}${w}<w:tcMar><w:top w:w="40" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar></w:tcPr><w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p></w:tc>`;
-  }
-  function mkRow(cells,isHdr){return`<w:tr>${isHdr?'<w:trPr><w:tblHeader/></w:trPr>':''}${cells.join('')}</w:tr>`;}
-  function mkPara(text,opts={}){
-    const sz=opts.sz||20,bold=opts.bold?'<w:b/>':'',color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
-    return`<w:p><w:pPr><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p>`;
-  }
-  function mkTable(rows,colW){
-    const grid=colW.map(w=>`<w:gridCol w:w="${w}"/>`).join('');
-    const borders=`<w:tblBorders><w:top w:val="single" w:sz="4" w:color="444444"/><w:left w:val="single" w:sz="4" w:color="444444"/><w:bottom w:val="single" w:sz="4" w:color="444444"/><w:right w:val="single" w:sz="4" w:color="444444"/><w:insideH w:val="single" w:sz="4" w:color="333333"/><w:insideV w:val="single" w:sz="4" w:color="333333"/></w:tblBorders>`;
-    return`<w:tbl><w:tblPr><w:tblW w:w="${PAGE_W}" w:type="dxa"/>${borders}</w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows.join('')}</w:tbl>`;
-  }
-  function pack(bodyXml){
-    const e=s=>u8(s);
-    const rel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
-    const wrel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
-    const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="20"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
-    const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
-    const zip=buildZip([{name:'[Content_Types].xml',data:e(ct)},{name:'_rels/.rels',data:e(rel)},{name:'word/_rels/document.xml.rels',data:e(wrel)},{name:'word/styles.xml',data:e(styles)},{name:'word/document.xml',data:e(bodyXml)}]);
-    return new Blob([zip],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-  }
-  return {
-    results(results,meta){
-      // 15 columns, proportional widths summing to PAGE_W
+  const PW=32400;
+  function mc(text,o={}){const sz=o.sz||16,bold=o.bold?'<w:b/>':'',color=o.color?`<w:color w:val="${o.color}"/>`:'';const shd=o.bg?`<w:shd w:val="clear" w:color="auto" w:fill="${o.bg}"/>`:'';const w=o.w?`<w:tcW w:w="${o.w}" w:type="dxa"/>`:'<w:tcW w:w="0" w:type="auto"/>';return`<w:tc><w:tcPr>${shd}${w}<w:tcMar><w:top w:w="40" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar></w:tcPr><w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p></w:tc>`;}
+  function mr(cells,hdr){return`<w:tr>${hdr?'<w:trPr><w:tblHeader/></w:trPr>':''}${cells.join('')}</w:tr>`;}
+  function mp(text,o={}){const sz=o.sz||20,bold=o.bold?'<w:b/>':'',color=o.color?`<w:color w:val="${o.color}"/>`:'';return`<w:p><w:pPr><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p>`;}
+  function mt(rows,cw){const g=cw.map(w=>`<w:gridCol w:w="${w}"/>`).join('');const b='<w:tblBorders><w:top w:val="single" w:sz="4" w:color="444444"/><w:left w:val="single" w:sz="4" w:color="444444"/><w:bottom w:val="single" w:sz="4" w:color="444444"/><w:right w:val="single" w:sz="4" w:color="444444"/><w:insideH w:val="single" w:sz="4" w:color="333333"/><w:insideV w:val="single" w:sz="4" w:color="333333"/></w:tblBorders>';return`<w:tbl><w:tblPr><w:tblW w:w="${PW}" w:type="dxa"/>${b}</w:tblPr><w:tblGrid>${g}</w:tblGrid>${rows.join('')}</w:tbl>`;}
+  function pack(bodyXml){const e=s=>u8(s);const rel='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';const wrel='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="20"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>';const ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>';const zip=bz([{name:'[Content_Types].xml',data:e(ct)},{name:'_rels/.rels',data:e(rel)},{name:'word/_rels/document.xml.rels',data:e(wrel)},{name:'word/styles.xml',data:e(styles)},{name:'word/document.xml',data:e(bodyXml)}]);return new Blob([zip],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});}
+  return{
+    results(res,meta){
       const raw=[480,2600,500,1080,1080,1080,1080,1500,780,680,680,880,960,880,1220];
-      const sum=raw.reduce((a,b)=>a+b,0);
-      const cw=raw.map(w=>Math.round(w/sum*PAGE_W));
-      cw[1]+=PAGE_W-cw.reduce((a,b)=>a+b,0); // fix rounding
-      const hdrs=['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.','Sekwencja'];
-      const hdrRow=mkRow(hdrs.map((h,i)=>mkCell(h,{bold:true,bg:'1a3a2a',color:'00d4aa',sz:13,w:cw[i]})),true);
-      const dataRows=results.map((r,i)=>{
-        const bg=i%2===0?'1a1e26':'151820',dg=r.hit.dg;
-        return mkRow([
-          mkCell(String(i+1),{bg,color:'6b7280',sz:12,w:cw[0]}),
-          mkCell(r.name,{bg,sz:13,w:cw[1]}),
-          mkCell(r.org,{bg,color:r.org==='hsa'?'00d4aa':r.org==='mmu'?'60a5fa':'f87171',sz:12,w:cw[2]}),
-          mkCell(String(dg),{bg,color:dg<-10?'00d4aa':dg<-6?'fbbf24':'9ca3af',sz:13,w:cw[3]}),
-          mkCell(String(r.hit.dg1M??dg),{bg,color:'9ca3af',sz:12,w:cw[4]}),
-          mkCell(String(r.hit.dgCoop),{bg,color:r.hit.coopBonus<0?'a78bfa':'9ca3af',sz:12,w:cw[5]}),
-          mkCell(String(r.hit.dgTotal??dg),{bg,color:(r.hit.dgTotal??dg)<-10?'00d4aa':(r.hit.dgTotal??dg)<-6?'fbbf24':'9ca3af',sz:12,w:cw[6]}),
-          mkCell(r.hit.seedType,{bg,color:'ff6b35',sz:12,w:cw[7]}),
-          mkCell(String(r.hit.pos+1),{bg,color:'9ca3af',sz:12,w:cw[8]}),
-          mkCell(String(r.hit.wc),{bg,color:'00d4aa',sz:13,w:cw[9]}),
-          mkCell(String(r.hit.gu),{bg,color:'fbbf24',sz:12,w:cw[10]}),
-          mkCell(r.hit.auPct+'%',{bg,sz:12,w:cw[11]}),
-          mkCell(String(r.hit.conservation?.score??'\u2014'),{bg,sz:12,w:cw[12]}),
-          mkCell(r.hit.accessibility??'\u2014',{bg,color:r.hit.accessibility==='HIGH'?'00d4aa':r.hit.accessibility==='MED'?'fbbf24':'f87171',sz:12,w:cw[13]}),
-          mkCell(r.mirna,{bg,color:'6b7280',sz:11,w:cw[14]}),
-        ]);
-      });
-      const body=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
-${mkPara('miRNA Target Prediction Report',{bold:true,sz:32,color:'00d4aa'})}
-${mkPara(`Date: ${new Date().toISOString().slice(0,10)} | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: ${meta.na}M`,{sz:15,color:'6b7280'})}
-${mkPara(`miRBase v22.1: hsa:${meta.hsa} mmu:${meta.mmu} rno:${meta.rno} ath:${meta.ath} | Hits: ${results.length}`,{sz:15,color:'6b7280'})}
-${mkPara('')}
-${mkTable([hdrRow,...dataRows],cw)}
-<w:sectPr><w:pgSz w:w="23811" w:h="16838" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>
-</w:body></w:document>`;
+      const sum=raw.reduce((a,b)=>a+b,0);const cw=raw.map(w=>Math.round(w/sum*PW));cw[1]+=PW-cw.reduce((a,b)=>a+b,0);
+      const hdrs=['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.','Seq'];
+      const hdrRow=mr(hdrs.map((h,i)=>mc(h,{bold:true,bg:'1a3a2a',color:'00d4aa',sz:13,w:cw[i]})),true);
+      const rows=res.map((r,i)=>{const bg=i%2===0?'1a1e26':'151820',dg=r.hit.dg;return mr([mc(String(i+1),{bg,color:'6b7280',sz:12,w:cw[0]}),mc(r.name,{bg,sz:13,w:cw[1]}),mc(r.org,{bg,color:r.org==='hsa'?'00d4aa':r.org==='mmu'?'60a5fa':'f87171',sz:12,w:cw[2]}),mc(String(dg),{bg,color:dg<-10?'00d4aa':dg<-6?'fbbf24':'9ca3af',sz:13,w:cw[3]}),mc(String(r.hit.dg1M??dg),{bg,color:'9ca3af',sz:12,w:cw[4]}),mc(String(r.hit.dgCoop),{bg,color:r.hit.coopBonus<0?'a78bfa':'9ca3af',sz:12,w:cw[5]}),mc(String(r.hit.dgTotal??dg),{bg,sz:12,w:cw[6]}),mc(r.hit.seedType,{bg,color:'ff6b35',sz:12,w:cw[7]}),mc(String(r.hit.pos+1),{bg,color:'9ca3af',sz:12,w:cw[8]}),mc(String(r.hit.wc),{bg,color:'00d4aa',sz:13,w:cw[9]}),mc(String(r.hit.gu),{bg,color:'fbbf24',sz:12,w:cw[10]}),mc(r.hit.auPct+'%',{bg,sz:12,w:cw[11]}),mc(String(r.hit.conservation?.score??'\u2014'),{bg,sz:12,w:cw[12]}),mc(r.hit.accessibility??'\u2014',{bg,color:r.hit.accessibility==='HIGH'?'00d4aa':r.hit.accessibility==='MED'?'fbbf24':'f87171',sz:12,w:cw[13]}),mc(r.mirna,{bg,color:'6b7280',sz:11,w:cw[14]})]);});
+      const body='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n'+mp('miRNA Target Prediction Report',{bold:true,sz:32,color:'00d4aa'})+'\n'+mp('Date: '+new Date().toISOString().slice(0,10)+' | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: '+meta.na+'M',{sz:15,color:'6b7280'})+'\n'+mp('miRBase v22.1: hsa:'+meta.hsa+' mmu:'+meta.mmu+' rno:'+meta.rno+' ath:'+meta.ath+' | Hits: '+res.length,{sz:15,color:'6b7280'})+'\n'+mp('')+'\n'+mt([hdrRow,...rows],cw)+'\n<w:sectPr><w:pgSz w:w="23811" w:h="16838" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>\n</w:body></w:document>';
       return pack(body);
     },
-    dual(A,B,overlap){
-      const RT=0.593,ZA=Math.exp(-A.hit.dg/RT),ZB=Math.exp(-B.hit.dg/RT);
-      const Z=overlap>0?1+ZA+ZB:ZA+ZB;
-      const pA=((overlap>0?ZA/Z:ZA/(ZA+ZB))*100).toFixed(1);
-      const pB=((overlap>0?ZB/Z:ZB/(ZA+ZB))*100).toFixed(1);
-      const dw=Math.round(PAGE_W/4);
-      const params=[
-        {p:'Parametr',a:'miRNA A',b:'miRNA B',d:'R\u00f3\u017cnica (B\u2212A)',hdr:true},
-        {p:'Nazwa',a:A.name,b:B.name,d:'\u2014'},
-        {p:'Seed type',a:A.hit.seedType,b:B.hit.seedType,d:'\u2014'},
-        {p:'\u0394G (kcal/mol)',a:A.hit.dg,b:B.hit.dg,d:(B.hit.dg-A.hit.dg).toFixed(2)},
-        {p:'\u0394G 1M',a:A.hit.dg1M??A.hit.dg,b:B.hit.dg1M??B.hit.dg,d:((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)},
-        {p:'Pary WC',a:A.hit.wc,b:B.hit.wc,d:B.hit.wc-A.hit.wc},
-        {p:'Pary G:U',a:A.hit.gu,b:B.hit.gu,d:B.hit.gu-A.hit.gu},
-        {p:'AU%',a:A.hit.auPct+'%',b:B.hit.auPct+'%',d:(B.hit.auPct-A.hit.auPct).toFixed(1)+'%'},
-        {p:'Pozycja (start)',a:A.hit.pos+1,b:B.hit.pos+1,d:B.hit.pos-A.hit.pos},
-      ];
-      const tRows=params.map(r=>mkRow([
-        mkCell(String(r.p),{bold:r.hdr,bg:r.hdr?'1a3a2a':'1a1e26',color:r.hdr?'00d4aa':'c8d0e0',sz:16,w:dw}),
-        mkCell(String(r.a),{bold:r.hdr,bg:r.hdr?'1a3a2a':'151820',color:r.hdr?'3b82f6':'e8eaf0',sz:16,w:dw}),
-        mkCell(String(r.b),{bold:r.hdr,bg:r.hdr?'1a3a2a':'1a1e26',color:r.hdr?'f97316':'e8eaf0',sz:16,w:dw}),
-        mkCell(String(r.d),{bold:r.hdr,bg:r.hdr?'1a3a2a':'151820',color:r.hdr?'a78bfa':'e8eaf0',sz:16,w:dw}),
-      ],r.hdr));
-      const body=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
-${mkPara('miRNA Hybrid Viewer v1.0 \u2014 Raport Por\u00f3wnawczy',{bold:true,sz:30,color:'00d4aa'})}
-${mkPara(`Wygenerowano: ${new Date().toISOString().slice(0,10)} | mRNA: ${A.mrnaLen??'?'} nt`,{sz:16,color:'6b7280'})}
-${mkPara('')}
-${mkPara(`miRNA A: ${A.name} | ${A.hit.seedType} | \u0394G ${A.hit.dg} kcal/mol | pos ${A.hit.pos+1}`,{bold:true,sz:20,color:'3b82f6'})}
-${mkPara(`miRNA B: ${B.name} | ${B.hit.seedType} | \u0394G ${B.hit.dg} kcal/mol | pos ${B.hit.pos+1}`,{bold:true,sz:20,color:'f97316'})}
-${mkPara('')}
-${mkTable(tRows,[dw,dw,dw,dw])}
-${mkPara('')}
-${mkPara(`Model Boltzmanna (37\u00b0C): P(A)=${pA}%, P(B)=${pB}% | ${overlap>0?`Wi\u0105zanie wzajemnie wykluczaj\u0105ce (overlap ${overlap} nt)`:'Wi\u0105zanie niezale\u017cne'}`,{sz:16,color:'6b7280'})}
-${mkPara(`\u0394\u0394G = ${(B.hit.dg-A.hit.dg).toFixed(2)} kcal/mol | ${B.hit.dg<A.hit.dg?'B silniejsze':'A silniejsze'}`,{bold:true,sz:18})}
-${mkPara(`miRNA Hybrid Viewer v1.0 | PRAM\u0100 Institute | ${new Date().toISOString().slice(0,10)}`,{sz:14,color:'6b7280'})}
-<w:sectPr><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>
-</w:body></w:document>`;
+    dual(A,B,ov){
+      const RT=0.593,ZA=Math.exp(-A.hit.dg/RT),ZB=Math.exp(-B.hit.dg/RT),Z=ov>0?1+ZA+ZB:ZA+ZB;
+      const pA=((ov>0?ZA/Z:ZA/(ZA+ZB))*100).toFixed(1),pB=((ov>0?ZB/Z:ZB/(ZA+ZB))*100).toFixed(1);
+      const dw=Math.round(PW/4);
+      const params=[{p:'Parametr',a:'miRNA A',b:'miRNA B',d:'R\u00f3\u017cnica (B\u2212A)',hdr:true},{p:'Nazwa',a:A.name,b:B.name,d:'\u2014'},{p:'Seed type',a:A.hit.seedType,b:B.hit.seedType,d:'\u2014'},{p:'\u0394G (kcal/mol)',a:A.hit.dg,b:B.hit.dg,d:(B.hit.dg-A.hit.dg).toFixed(2)},{p:'\u0394G 1M',a:A.hit.dg1M??A.hit.dg,b:B.hit.dg1M??B.hit.dg,d:((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)},{p:'Pary WC',a:A.hit.wc,b:B.hit.wc,d:B.hit.wc-A.hit.wc},{p:'Pary G:U',a:A.hit.gu,b:B.hit.gu,d:B.hit.gu-A.hit.gu},{p:'AU%',a:A.hit.auPct+'%',b:B.hit.auPct+'%',d:(B.hit.auPct-A.hit.auPct).toFixed(1)+'%'},{p:'Pozycja',a:A.hit.pos+1,b:B.hit.pos+1,d:B.hit.pos-A.hit.pos}];
+      const tRows=params.map(r=>mr([mc(String(r.p),{bold:r.hdr,bg:r.hdr?'1a3a2a':'1a1e26',color:r.hdr?'00d4aa':'c8d0e0',sz:16,w:dw}),mc(String(r.a),{bold:r.hdr,bg:r.hdr?'1a3a2a':'151820',color:r.hdr?'3b82f6':'e8eaf0',sz:16,w:dw}),mc(String(r.b),{bold:r.hdr,bg:r.hdr?'1a3a2a':'1a1e26',color:r.hdr?'f97316':'e8eaf0',sz:16,w:dw}),mc(String(r.d),{bold:r.hdr,bg:r.hdr?'1a3a2a':'151820',color:r.hdr?'a78bfa':'e8eaf0',sz:16,w:dw})],r.hdr));
+      const body='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n'+mp('miRNA Hybrid Viewer v1.0 \u2014 Raport Por\u00f3wnawczy',{bold:true,sz:30,color:'00d4aa'})+'\n'+mp('Wygenerowano: '+new Date().toISOString().slice(0,10)+' | mRNA: '+(A.mrnaLen??'?')+' nt',{sz:16,color:'6b7280'})+'\n'+mp('')+'\n'+mp('miRNA A: '+A.name+' | '+A.hit.seedType+' | \u0394G '+A.hit.dg+' kcal/mol | pos '+(A.hit.pos+1),{bold:true,sz:20,color:'3b82f6'})+'\n'+mp('miRNA B: '+B.name+' | '+B.hit.seedType+' | \u0394G '+B.hit.dg+' kcal/mol | pos '+(B.hit.pos+1),{bold:true,sz:20,color:'f97316'})+'\n'+mp('')+'\n'+mt(tRows,[dw,dw,dw,dw])+'\n'+mp('')+'\n'+mp('Model Boltzmanna (37\u00b0C): P(A)='+pA+'%, P(B)='+pB+'% | '+(ov>0?'Wi\u0105zanie wzajemnie wykluczaj\u0105ce (overlap '+ov+' nt)':'Wi\u0105zanie niezale\u017cne'),{sz:16,color:'6b7280'})+'\n'+mp('\u0394\u0394G = '+(B.hit.dg-A.hit.dg).toFixed(2)+' kcal/mol | '+(B.hit.dg<A.hit.dg?'B silniejsze':'A silniejsze'),{bold:true,sz:18})+'\n<w:sectPr><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>\n</w:body></w:document>';
       return pack(body);
     }
   };
 })();
 
-// ============================================================
-// EXPORT DOCX — wyniki (inline, bez CDN)
-// ============================================================
 async function exportDOCX() {
   if(!RESULTS.length) return;
   try {
     const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0};
     const na=document.getElementById('saltConc').value||0.15;
     const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
-    const st=(document.getElementById('fSeed')||{}).value||'';
-    const org=(document.getElementById('fOrg')||{}).value||'';
+    const st2=(document.getElementById('fSeed')||{}).value||'';
+    const org2=(document.getElementById('fOrg')||{}).value||'';
     const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
     const filtered=RESULTS.filter(r=>{
       if(txt&&!r.name.toLowerCase().includes(txt))return false;
-      if(st&&r.hit.seedType!==st)return false;
-      if(org&&r.org!==org)return false;
+      if(st2&&r.hit.seedType!==st2)return false;
+      if(org2&&r.org!==org2)return false;
       if(consMin>0&&(r.hit.conservation?.score??0)<consMin)return false;
       return true;
     });
     const blob=_docxBuilder.results(filtered,{na,hsa:_dbc.hsa,mmu:_dbc.mmu,rno:_dbc.rno,ath:_dbc.ath});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=`mirna_report_v1.0_${filtered.length}wynikow.docx`;a.click();URL.revokeObjectURL(a.href);
+    a.download='mirna_report_v1.0_'+filtered.length+'wynikow.docx';a.click();URL.revokeObjectURL(a.href);
   } catch(e){alert('B\u0142\u0105d eksportu DOCX: '+e.message);console.error(e);}
 }
 
@@ -7990,11 +7895,11 @@ function toggleTheme() {
     const btn = document.getElementById('themeToggle');
     if (body.classList.contains('light')) {
         body.classList.remove('light');
-        btn.textContent = '🌙 Ciemny';
+        btn.textContent = (typeof I18N!=='undefined'&&I18N[_lang||'pl'])?I18N[_lang||'pl'].theme_dark:'🌙 Ciemny';
         localStorage.setItem('mirna-theme', 'dark');
     } else {
         body.classList.add('light');
-        btn.textContent = '☀️ Jasny';
+        btn.textContent = (typeof I18N!=='undefined'&&I18N[_lang||'pl'])?I18N[_lang||'pl'].theme_light:'☀️ Jasny';
         localStorage.setItem('mirna-theme', 'light');
     }
     // Redraw canvas and 3D with new theme colors
@@ -8029,7 +7934,7 @@ function toggleTheme() {
     if (localStorage.getItem('mirna-theme') === 'light') {
         document.body.classList.add('light');
         const btn = document.getElementById('themeToggle');
-        if (btn) btn.textContent = '☀️ Jasny';
+        if (btn) btn.textContent = (typeof I18N!=='undefined'&&I18N[_lang||'pl'])?I18N[_lang||'pl'].theme_light:'☀️ Jasny';
     }
 })();
 
@@ -8038,87 +7943,128 @@ function toggleTheme() {
 // ============================================================
 const HELP_TEXTS = {
     organism: {
-        title: 'Organizm / baza miRNA',
-        body: 'Wybierz organizm źródłowy bazy miRBase:\n• Człowiek (hsa) — 2656 miRNA\n• Mysz (mmu) — 1978 miRNA\n• Szczur (rno) — 764 miRNA\n• Arabidopsis (ath) — 428 miRNA\n• Ssaki — łączy hsa+mmu+rno\n• Wszystkie — pełna baza\n\nWpływa na zbiór miRNA użytych w skanowaniu oraz na kolumny konserwacji.'
+        pl: { title: 'Organizm / baza miRNA', body: 'Wybierz organizm źródłowy bazy miRBase:\n• Człowiek (hsa) — 2656 miRNA\n• Mysz (mmu) — 1978 miRNA\n• Szczur (rno) — 764 miRNA\n• Arabidopsis (ath) — 428 miRNA\n• Ssaki — łączy hsa+mmu+rno\n• Wszystkie — pełna baza\n\nWpływa na zbiór miRNA użytych w skanowaniu oraz na kolumny konserwacji.' },
+        en: { title: 'Organism / miRNA database', body: 'Select the miRBase source organism:\n• Human (hsa) — 2656 miRNA\n• Mouse (mmu) — 1978 miRNA\n• Rat (rno) — 764 miRNA\n• Arabidopsis (ath) — 428 miRNA\n• Mammals — combines hsa+mmu+rno\n• All — full database\n\nAffects the miRNA set used in scanning and the conservation columns.' }
     },
     minseed: {
-        title: 'Minimalna długość regionu seed',
-        body: 'Region seed to pozycje 2–8 miRNA (od końca 5′). Typy dopasowań:\n• 8mer — seed 7nt + dopasowanie na poz.1 (najsilniejsze)\n• 7mer-m8 — seed 7nt, brak poz.1\n• 7mer-A1 — seed 6nt + A na poz.1 mRNA\n• 6mer — minimalne\n• centered / 3′comp — niekanoniczne\n\nUżyj 7mer lub 8mer dla celów funkcjonalnych, 6mer dla eksploracji.'
+        pl: { title: 'Minimalna długość regionu seed', body: 'Region seed to pozycje 2–8 miRNA (od końca 5′). Typy dopasowań:\n• 8mer — seed 7nt + dopasowanie na poz.1 (najsilniejsze)\n• 7mer-m8 — seed 7nt, brak poz.1\n• 7mer-A1 — seed 6nt + A na poz.1 mRNA\n• 6mer — minimalne\n• centered / 3′comp — niekanoniczne\n\nUżyj 7mer lub 8mer dla celów funkcjonalnych, 6mer dla eksploracji.' },
+        en: { title: 'Minimum seed region length', body: 'The seed region covers miRNA positions 2–8 (from 5′ end). Match types:\n• 8mer — 7nt seed + pos.1 match (strongest)\n• 7mer-m8 — 7nt seed, no pos.1\n• 7mer-A1 — 6nt seed + A at mRNA pos.1\n• 6mer — minimal\n• centered / 3′comp — non-canonical\n\nUse 7mer or 8mer for functional targets, 6mer for exploration.' }
     },
     rankby: {
-        title: 'Kryterium rankingu wyników',
-        body: 'Sortowanie tabeli wyników:\n• ΔG — energia swobodna hybrydyzacji (kcal/mol), im niższa tym silniejsze wiązanie\n• ΔG+coop — ΔG z premią za efekt kooperatywny (sąsiednie miejsca)\n• Seed type — hierarchia: 8mer > 7mer-m8 > 7mer-A1 > 6mer\n• Score WC — liczba par Watson-Crick\n• AU% — zawartość A/U w miejscu wiązania\n• Konserwacja — podobieństwo między organizmami\n• Dostępność — ranking wg dostępności strukturalnej mRNA (HIGH > MED > LOW), przy równej dostępności sortuje po ΔG'
+        pl: { title: 'Kryterium rankingu wyników', body: 'Sortowanie tabeli wyników:\n• ΔG — energia swobodna hybrydyzacji (kcal/mol), im niższa tym silniejsze wiązanie\n• ΔG+coop — ΔG z premią za efekt kooperatywny (sąsiednie miejsca)\n• Seed type — hierarchia: 8mer > 7mer-m8 > 7mer-A1 > 6mer\n• Score WC — liczba par Watson-Crick\n• AU% — zawartość A/U w miejscu wiązania\n• Konserwacja — podobieństwo między organizmami\n• Dostępność — ranking wg dostępności strukturalnej mRNA (HIGH > MED > LOW), przy równej dostępności sortuje po ΔG' },
+        en: { title: 'Result ranking criterion', body: 'Sort the results table by:\n• ΔG — free energy of hybridization (kcal/mol); lower = stronger binding\n• ΔG+coop — ΔG with cooperative bonus for adjacent sites\n• Seed type — hierarchy: 8mer > 7mer-m8 > 7mer-A1 > 6mer\n• Score WC — number of Watson-Crick pairs\n• AU% — A/U content at the binding site\n• Conservation — cross-species similarity\n• Accessibility — structural accessibility of mRNA (HIGH > MED > LOW), ties broken by ΔG' }
     },
     salt: {
-        title: 'Stężenie jonów Na⁺',
-        body: 'Korekta soli wg Owczarzy 2004 (Eq. 26).\nWartości referencyjne:\n• 1.0 M — standard laboratoryjny Turner/Freier\n• 0.15 M — warunki fizjologiczne (cytoplazma)\n• 0.10 M — środowisko jądra komórkowego\n• 0.05 M — rybosom\n\nNiższe stężenie soli osłabia wiązanie RNA (mniej ekranowania ładunku). Precyzja korekty: ±0.14 kcal/mol.'
+        pl: { title: 'Stężenie jonów Na⁺', body: 'Korekta soli wg Owczarzy 2004 (Eq. 26).\nWartości referencyjne:\n• 1.0 M — standard laboratoryjny Turner/Freier\n• 0.15 M — warunki fizjologiczne (cytoplazma)\n• 0.10 M — środowisko jądra komórkowego\n• 0.05 M — rybosom\n\nNiższe stężenie soli osłabia wiązanie RNA (mniej ekranowania ładunku). Precyzja korekty: ±0.14 kcal/mol.' },
+        en: { title: 'Na⁺ ion concentration', body: 'Salt correction per Owczarzy 2004 (Eq. 26).\nReference values:\n• 1.0 M — Turner/Freier laboratory standard\n• 0.15 M — physiological (cytoplasm)\n• 0.10 M — nuclear environment\n• 0.05 M — ribosome\n\nLower salt weakens RNA binding (less charge shielding). Correction precision: ±0.14 kcal/mol.' }
     },
     topn: {
-        title: 'Liczba wyświetlanych wyników',
-        body: 'Maksymalna liczba najlepszych trafień pokazanych w tabeli.\n\nZwiększ do 100–500 dla pełnej eksploracji, zmniejsz do 10–20 dla szybkiego przeglądu top kandydatów.\n\nSkanowanie oblicza WSZYSTKIE trafienia; tylko top N jest wyświetlanych i eksportowanych.'
+        pl: { title: 'Liczba wyświetlanych wyników', body: 'Maksymalna liczba najlepszych trafień pokazanych w tabeli.\n\nZwiększ do 100–500 dla pełnej eksploracji, zmniejsz do 10–20 dla szybkiego przeglądu top kandydatów.\n\nSkanowanie oblicza WSZYSTKIE trafienia; tylko top N jest wyświetlanych i eksportowanych.' },
+        en: { title: 'Number of displayed results', body: 'Maximum number of top hits shown in the table.\n\nIncrease to 100–500 for full exploration, decrease to 10–20 for a quick top-candidate review.\n\nThe scan computes ALL hits; only the top N are displayed and exported.' }
     },
     noncan: {
-        title: 'Filtr wiązań niekanonicznych',
-        body: 'Kontroluje wyświetlanie wiązań poza standardowym seedem:\n• Wszystkie — kanoniczne + centered + 3′comp\n• Tylko kanoniczne — seed 6–8mer (pozycje 2–8)\n• Tylko niekanoniczne — centered (poz. 4–14) i 3′comp (poz. 13–16) bez seed\n\nWiązania centered i 3′comp mogą być funkcjonalne mimo słabego regionu seed.'
+        pl: { title: 'Filtr wiązań niekanonicznych', body: 'Kontroluje wyświetlanie wiązań poza standardowym seedem:\n• Wszystkie — kanoniczne + centered + 3′comp\n• Tylko kanoniczne — seed 6–8mer (pozycje 2–8)\n• Tylko niekanoniczne — centered (poz. 4–14) i 3′comp (poz. 13–16) bez seed\n\nWiązania centered i 3′comp mogą być funkcjonalne mimo słabego regionu seed.' },
+        en: { title: 'Non-canonical binding filter', body: 'Controls display of bindings outside the standard seed:\n• All — canonical + centered + 3′comp\n• Canonical only — seed 6–8mer (positions 2–8)\n• Non-canonical only — centered (pos. 4–14) and 3′comp (pos. 13–16) without seed\n\nCentered and 3′comp sites can be functional despite a weak seed region.' }
     },
     dg: {
-        title: 'Energia swobodna ΔG (kcal/mol)',
-        body: 'Termodynamiczna energia wiązania miRNA–mRNA.\nIm bardziej ujemna wartość, tym silniejsze i stabilniejsze wiązanie.\n\nPrógi interpretacji:\n• ΔG < −10 kcal/mol — silne wiązanie (kolor akcentowy)\n• −10 do −6 — umiarkowane\n• > −6 — słabe\n\nObliczane wg parametrów Turner 2004 z korektą soli Owczarzy.'
+        pl: { title: 'Energia swobodna ΔG (kcal/mol)', body: 'Termodynamiczna energia wiązania miRNA–mRNA.\nIm bardziej ujemna wartość, tym silniejsze i stabilniejsze wiązanie.\n\nPrógi interpretacji:\n• ΔG < −10 kcal/mol — silne wiązanie (kolor akcentowy)\n• −10 do −6 — umiarkowane\n• > −6 — słabe\n\nObliczane wg parametrów Turner 2004 z korektą soli Owczarzy.' },
+        en: { title: 'Free energy ΔG (kcal/mol)', body: 'Thermodynamic binding energy of the miRNA–mRNA duplex.\nMore negative = stronger and more stable binding.\n\nInterpretation thresholds:\n• ΔG < −10 kcal/mol — strong binding (accent color)\n• −10 to −6 — moderate\n• > −6 — weak\n\nCalculated using Turner 2004 parameters with Owczarzy salt correction.' }
     },
     dgcoop: {
-        title: 'ΔG z efektem kooperatywnym',
-        body: 'ΔG powiększone o premię kooperatywną (do −2 kcal/mol), gdy w odległości 13–35 nt istnieje drugie miejsce wiązania tego samego miRNA.\n\nEfekt kooperatywny polega na jednoczesnym rekrutowaniu kompleksu RISC przez dwa miejsca, co geometrycznie wzmacnia represję translacji. Oznaczony symbolem ⊕.'
+        pl: { title: 'ΔG z efektem kooperatywnym', body: 'ΔG powiększone o premię kooperatywną (do −2 kcal/mol), gdy w odległości 13–35 nt istnieje drugie miejsce wiązania tego samego miRNA.\n\nEfekt kooperatywny polega na jednoczesnym rekrutowaniu kompleksu RISC przez dwa miejsca, co geometrycznie wzmacnia represję translacji. Oznaczony symbolem ⊕.' },
+        en: { title: 'ΔG with cooperative effect', body: 'ΔG augmented by a cooperative bonus (up to −2 kcal/mol) when a second binding site for the same miRNA exists 13–35 nt away.\n\nThe cooperative effect involves simultaneous RISC recruitment at two sites, geometrically amplifying translational repression. Marked with ⊕.' }
     },
     au: {
-        title: 'Zawartość AU% w miejscu wiązania',
-        body: 'Procent nukleotydów A i U w regionie mRNA sąsiadującym z miejscem wiązania (kontekst AU).\n\nWyższy AU% sprzyja:\n• otwartości struktury mRNA (brak silnych par G-C)\n• łatwiejszemu dostępowi RISC\n• silniejszej represji translacji\n\nWartości > 60% uważane za korzystne wg Grimson et al. 2007.'
+        pl: { title: 'Zawartość AU% w miejscu wiązania', body: 'Procent nukleotydów A i U w regionie mRNA sąsiadującym z miejscem wiązania (kontekst AU).\n\nWyższy AU% sprzyja:\n• otwartości struktury mRNA (brak silnych par G-C)\n• łatwiejszemu dostępowi RISC\n• silniejszej represji translacji\n\nWartości > 60% uważane za korzystne wg Grimson et al. 2007.' },
+        en: { title: 'AU% content at binding site', body: 'Percentage of A and U nucleotides in the mRNA region surrounding the binding site (AU context).\n\nHigher AU% favors:\n• open mRNA structure (fewer strong G-C pairs)\n• easier RISC access\n• stronger translational repression\n\nValues > 60% considered favorable per Grimson et al. 2007.' }
     },
     wc: {
-        title: 'Liczba par Watson-Crick',
-        body: 'Liczba kanoniczych par zasad A-U i G-C w całym dupleksie miRNA–mRNA.\n\nNie obejmuje par G:U (wobbly), które są wyświetlane osobno (GU).\nWysoka wartość WC przy niskim ΔG sugeruje dobrze sparowany dupleks bez mismatchów.'
+        pl: { title: 'Liczba par Watson-Crick', body: 'Liczba kanoniczych par zasad A-U i G-C w całym dupleksie miRNA–mRNA.\n\nNie obejmuje par G:U (wobbly), które są wyświetlane osobno (GU).\nWysoka wartość WC przy niskim ΔG sugeruje dobrze sparowany dupleks bez mismatchów.' },
+        en: { title: 'Watson-Crick pair count', body: 'Number of canonical A-U and G-C base pairs in the entire miRNA–mRNA duplex.\n\nDoes not include G:U (wobble) pairs, which are displayed separately (GU).\nHigh WC with low ΔG suggests a well-paired duplex with few mismatches.' }
     },
     seed: {
-        title: 'Typ regionu seed',
-        body: 'Hierarchia typów dopasowań seed (wg Bartel 2009):\n• 8mer — pozycje 2–8 + match na A1 + poz.1 (najwyższy priorytet)\n• 7mer-m8 — pozycje 2–8 + match na m8\n• 7mer-A1 — pozycje 2–7 + A na poz.1 mRNA\n• 6mer — pozycje 2–7\n• centered — dopasowanie środkowe bez seed\n• 3′comp — komplementarność 3′ miRNA\n\nTyp seed silnie koreluje z siłą represji translacji.'
+        pl: { title: 'Typ regionu seed', body: 'Hierarchia typów dopasowań seed (wg Bartel 2009):\n• 8mer — pozycje 2–8 + match na A1 + poz.1 (najwyższy priorytet)\n• 7mer-m8 — pozycje 2–8 + match na m8\n• 7mer-A1 — pozycje 2–7 + A na poz.1 mRNA\n• 6mer — pozycje 2–7\n• centered — dopasowanie środkowe bez seed\n• 3′comp — komplementarność 3′ miRNA\n\nTyp seed silnie koreluje z siłą represji translacji.' },
+        en: { title: 'Seed region type', body: 'Seed match type hierarchy (per Bartel 2009):\n• 8mer — positions 2–8 + A1 match + pos.1 (highest priority)\n• 7mer-m8 — positions 2–8 + m8 match\n• 7mer-A1 — positions 2–7 + A at mRNA pos.1\n• 6mer — positions 2–7\n• centered — central match without seed\n• 3′comp — 3′ miRNA complementarity\n\nSeed type strongly correlates with translational repression strength.' }
     },
     cons: {
-        title: 'Konserwacja ewolucyjna',
-        body: 'Flagi konserwacji miejsca wiązania między organizmami:\n🧬 hsa — obecne u człowieka\n🐭 mmu — obecne u myszy\n🐀 rno — obecne u szczura\n🌿 ath — obecne u Arabidopsis\n\nWysokie podobieństwo między gatunkami sugeruje presję selekcyjną i funkcjonalne znaczenie miejsca wiązania.'
+        pl: { title: 'Konserwacja ewolucyjna', body: 'Flagi konserwacji miejsca wiązania między organizmami:\n🧬 hsa — obecne u człowieka\n🐭 mmu — obecne u myszy\n🐀 rno — obecne u szczura\n🌿 ath — obecne u Arabidopsis\n\nWysokie podobieństwo między gatunkami sugeruje presję selekcyjną i funkcjonalne znaczenie miejsca wiązania.' },
+        en: { title: 'Evolutionary conservation', body: 'Conservation flags for the binding site across species:\n🧬 hsa — present in human\n🐭 mmu — present in mouse\n🐀 rno — present in rat\n🌿 ath — present in Arabidopsis\n\nHigh cross-species similarity suggests selective pressure and functional relevance of the binding site.' }
     },
     snp: {
-        title: 'Tryb SNP — mutacje punktowe',
-        body: 'Interaktywna analiza wpływu pojedynczych mutacji na wiązanie.\n\nJak używać:\n1. Kliknij przycisk (stanie się czerwony)\n2. Kliknij dowolny nukleotyd dolnej nici (mRNA) na rysunku\n3. Wpisz nową zasadę: A, C, G lub U\n4. Zobaczysz zmianę ΔG i odświeżony podgląd\n\nMutacja destabilizująca: ΔG wzrasta (⚠️)\nMutacja wzmacniająca: ΔG maleje (✅)\n\n↩ Cofnij SNP — pojawia się po każdej mutacji. Klikając wielokrotnie możesz cofać kolejne mutacje aż do stanu pierwotnego. Liczba w nawiasie = głębokość historii.'
+        pl: { title: 'Tryb SNP — mutacje punktowe', body: 'Interaktywna analiza wpływu pojedynczych mutacji na wiązanie.\n\nJak używać:\n1. Kliknij przycisk (stanie się czerwony)\n2. Kliknij dowolny nukleotyd dolnej nici (mRNA) na rysunku\n3. Wpisz nową zasadę: A, C, G lub U\n4. Zobaczysz zmianę ΔG i odświeżony podgląd\n\nMutacja destabilizująca: ΔG wzrasta (⚠️)\nMutacja wzmacniająca: ΔG maleje (✅)\n\n↩ Cofnij SNP — pojawia się po każdej mutacji. Klikając wielokrotnie możesz cofać kolejne mutacje aż do stanu pierwotnego.' },
+        en: { title: 'SNP Mode — point mutations', body: 'Interactive analysis of how single mutations affect binding.\n\nHow to use:\n1. Click the button (turns red)\n2. Click any nucleotide on the lower strand (mRNA) in the diagram\n3. Enter the new base: A, C, G or U\n4. You will see the ΔG change and a refreshed preview\n\nDestabilizing mutation: ΔG increases (⚠️)\nStrengthening mutation: ΔG decreases (✅)\n\n↩ Undo SNP — appears after each mutation. Click multiple times to step back through mutation history.' }
     },
     pdb: {
-        title: 'Eksport struktury do formatu PDB',
-        body: 'Generuje plik .pdb z geometrią helikalną dupleksu RNA do wizualizacji 3D.\n\nParametry helisy A-RNA:\n• Skok: 2.81 Å/para\n• Twist: 32.7°/para\n• Promień: 9.3 Å\n• Łańcuch A = miRNA, B = mRNA\n\nKompatybilny z:\n• PyMOL (open source)\n• ChimeraX (RBVI)\n• 3Dmol.js (online)\n• VMD (NAMD)\n\nPlik zawiera wiązania szkieletowe i wodorowe WC/GU.'
+        pl: { title: 'Eksport struktury do formatu PDB', body: 'Generuje plik .pdb z geometrią helikalną dupleksu RNA do wizualizacji 3D.\n\nParametry helisy A-RNA:\n• Skok: 2.81 Å/para\n• Twist: 32.7°/para\n• Promień: 9.3 Å\n• Łańcuch A = miRNA, B = mRNA\n\nKompatybilny z:\n• PyMOL (open source)\n• ChimeraX (RBVI)\n• 3Dmol.js (online)\n• VMD (NAMD)\n\nPlik zawiera wiązania szkieletowe i wodorowe WC/GU.' },
+        en: { title: 'Export structure to PDB format', body: 'Generates a .pdb file with A-form RNA helix geometry for 3D visualization.\n\nA-RNA helix parameters:\n• Rise: 2.81 Å/pair\n• Twist: 32.7°/pair\n• Radius: 9.3 Å\n• Chain A = miRNA, B = mRNA\n\nCompatible with:\n• PyMOL (open source)\n• ChimeraX (RBVI)\n• 3Dmol.js (online)\n• VMD (NAMD)\n\nFile contains backbone and WC/GU hydrogen bonds.' }
     },
     sensitivity: {
-        title: 'Skanowanie wrażliwości na mutacje',
-        body: 'Heatmapa oblicza zmianę ΔG dla KAŻDEJ możliwej mutacji na KAŻDEJ pozycji mRNA w dupleksie.\n\nDla dupleksu 22 nt = 66 obliczeń.\n\nKolorowanie pasków pod nicią mRNA:\n🔴 Czerwony — mutacja destabilizuje wiązanie (ΔG wzrasta)\n⚫ Szary — zmiana < 0.2 kcal/mol (pozycja neutralna)\n🟢 Zielony — mutacja wzmacnia wiązanie\n\nPozycje czerwone = krytyczne dla funkcji miRNA.\nLiczba nad paskiem = max. destabilizacja w kcal/mol.'
+        pl: { title: 'Skanowanie wrażliwości na mutacje', body: 'Heatmapa oblicza zmianę ΔG dla KAŻDEJ możliwej mutacji na KAŻDEJ pozycji mRNA w dupleksie.\n\nDla dupleksu 22 nt = 66 obliczeń.\n\nKolorowanie pasków pod nicią mRNA:\n🔴 Czerwony — mutacja destabilizuje wiązanie (ΔG wzrasta)\n⚫ Szary — zmiana < 0.2 kcal/mol (pozycja neutralna)\n🟢 Zielony — mutacja wzmacnia wiązanie\n\nPozycje czerwone = krytyczne dla funkcji miRNA.\nLiczba nad paskiem = max. destabilizacja w kcal/mol.' },
+        en: { title: 'Mutation sensitivity scan', body: 'The heatmap computes the ΔG change for EVERY possible mutation at EVERY mRNA position in the duplex.\n\nFor a 22 nt duplex = 66 calculations.\n\nColor coding of bars below the mRNA strand:\n🔴 Red — mutation destabilizes binding (ΔG increases)\n⚫ Gray — change < 0.2 kcal/mol (neutral position)\n🟢 Green — mutation strengthens binding\n\nRed positions = critical for miRNA function.\nNumber above bar = max. destabilization in kcal/mol.' }
     },
     ncbi: {
-        title: 'Auto-pobieranie z NCBI',
-        body: 'Pobiera sekwencję bezpośrednio z NCBI.\n\nAkceptowane formaty:\n• RefSeq mRNA: NM_000546, NR_024540, XM_012345\n• GenBank nuccore: OK120841.1, MK123456, AY123456.2\n• Numer GI: czysty ciąg cyfr\n• Nazwa genu: TP53, BRCA1, MYC (tylko ludzkie)\n\nRodzaje regionów:\n• 3\'UTR — wyodrębniany z adnotacji CDS (tylko RefSeq NM_)\n• pełny mRNA — cała sekwencja transkryptu\n• CDS — region kodujący (tylko RefSeq NM_)\n\nDla rekordów GenBank (np. OK120841.1) zawsze pobierana jest pełna sekwencja z adnotacją w nagłówku.\n\nAPI: NCBI E-utilities (bezpłatne).'
+        pl: { title: 'Auto-pobieranie z NCBI', body: 'Pobiera sekwencję bezpośrednio z NCBI.\n\nAkceptowane formaty:\n• RefSeq mRNA: NM_000546, NR_024540, XM_012345\n• GenBank nuccore: OK120841.1, MK123456, AY123456.2\n• Numer GI: czysty ciąg cyfr\n• Nazwa genu: TP53, BRCA1, MYC (tylko ludzkie)\n\nRodzaje regionów:\n• 3\'UTR — wyodrębniany z adnotacji CDS (tylko RefSeq NM_)\n• pełny mRNA — cała sekwencja transkryptu\n• CDS — region kodujący (tylko RefSeq NM_)\n\nAPI: NCBI E-utilities (bezpłatne).' },
+        en: { title: 'Auto-fetch from NCBI', body: 'Fetches the sequence directly from NCBI.\n\nAccepted formats:\n• RefSeq mRNA: NM_000546, NR_024540, XM_012345\n• GenBank nuccore: OK120841.1, MK123456, AY123456.2\n• GI number: numeric string\n• Gene name: TP53, BRCA1, MYC (human only)\n\nRegion types:\n• 3\'UTR — extracted from CDS annotation (RefSeq NM_ only)\n• full mRNA — entire transcript sequence\n• CDS — coding region (RefSeq NM_ only)\n\nAPI: NCBI E-utilities (free).' }
     },
     dualview: {
-        title: 'Dual View — porównywarka miRNA',
-        body: 'Jednoczesne porównanie dwóch miRNA wiążących ten sam mRNA.\n\nPokazuje:\n• Oba dupleksy 2D side-by-side\n• Statystyki: ΔG, ΔG(1M), seed type, WC, G:U, AU%, pozycja\n• ΔΔG — różnica energii wiązania\n• Analiza odległości między miejscami:\n  13–35 nt → potencjalny efekt kooperatywny\n  Nakładanie → model konkurencji\n\nMożna wybierać dowolną parę z listy wyników.\nDual View pojawia się po uruchomieniu skanowania.'
+        pl: { title: 'Dual View — porównywarka miRNA', body: 'Jednoczesne porównanie dwóch miRNA wiążących ten sam mRNA.\n\nPokazuje:\n• Oba dupleksy 2D side-by-side\n• Statystyki: ΔG, ΔG(1M), seed type, WC, G:U, AU%, pozycja\n• ΔΔG — różnica energii wiązania\n• Analiza odległości między miejscami:\n  13–35 nt → potencjalny efekt kooperatywny\n  Nakładanie → model konkurencji\n\nMożna wybierać dowolną parę z listy wyników.\nDual View pojawia się po uruchomieniu skanowania.' },
+        en: { title: 'Dual View — miRNA comparator', body: 'Simultaneous comparison of two miRNAs binding the same mRNA.\n\nShows:\n• Both 2D duplexes side-by-side\n• Statistics: ΔG, ΔG(1M), seed type, WC, G:U, AU%, position\n• ΔΔG — binding energy difference\n• Distance analysis between sites:\n  13–35 nt → potential cooperative effect\n  Overlap → competition model\n\nAny pair from the results list can be selected.\nDual View appears after running a scan.' }
     },
     shadowing: {
-        title: 'Shadowing Track — mapa zajętości mRNA',
-        body: 'Wizualizacja zajętości sekwencji mRNA przez dwa porównywane miRNA.\n\nKolorowanie:\n🔵 Niebieski — miejsce wiązania miRNA A\n🟠 Pomarańczowy — miejsce wiązania miRNA B\n🟣 Fioletowy — region nakładania (overlap)\n⬜ Szary — wolny region mRNA\n\nCiemniejszy pasek w lewej części każdego miejsca = region seed (poz. 2–8).\nLiczba między miejscami = odległość w nukleotydach.\nΔG każdego miRNA wyświetlany nad odpowiednim miejscem.\n\nSkala: oś X = pozycja w mRNA (nt od 5\' końca).'
+        pl: { title: 'Shadowing Track — mapa zajętości mRNA', body: 'Wizualizacja zajętości sekwencji mRNA przez dwa porównywane miRNA.\n\nKolorowanie:\n🔵 Niebieski — miejsce wiązania miRNA A\n🟠 Pomarańczowy — miejsce wiązania miRNA B\n🟣 Fioletowy — region nakładania (overlap)\n⬜ Szary — wolny region mRNA\n\nCiemniejszy pasek w lewej części każdego miejsca = region seed (poz. 2–8).\nSkala: oś X = pozycja w mRNA (nt od 5\' końca).' },
+        en: { title: 'Shadowing Track — mRNA occupancy map', body: 'Visualization of mRNA sequence occupancy by the two compared miRNAs.\n\nColor coding:\n🔵 Blue — miRNA A binding site\n🟠 Orange — miRNA B binding site\n🟣 Purple — overlap region\n⬜ Gray — free mRNA region\n\nDarker bar on the left side = seed region (pos. 2–8).\nScale: X axis = mRNA position (nt from 5\' end).' }
     }
 };
 
+Object.assign(HELP_TEXTS, {
+    titration: {
+        pl: { title: 'Krzywa miareczkowania', body: 'Wykres prawdopodobieństwa zajęcia miejsca wiązania P w funkcji stężenia miRNA.\n\nOś X: log₁₀([miRNA]/Kd) — stosunek stężenia miRNA do stałej dysocjacji\nOś Y: P(zajętości) w %\n\nKrzywa sigmoidalna — punkt infleksji (EC₅₀) przy [miRNA]=Kd.\n\nJeśli obliczono efekt gąbki: przerywana linia = krzywa bez sponge, ciągła = z uwzględnieniem rozcieńczenia.\n\nModel: P = [M] / ([M] + Kd), Kd = exp(ΔG / RT)' },
+        en: { title: 'Titration curve', body: 'Plot of binding site occupancy probability P vs miRNA concentration.\n\nX axis: log₁₀([miRNA]/Kd) — ratio of miRNA concentration to dissociation constant\nY axis: P(occupancy) in %\n\nSigmoidal curve — inflection point (EC₅₀) at [miRNA]=Kd.\n\nIf sponge effect was calculated: dashed line = curve without sponge, solid = with ceRNA dilution.\n\nModel: P = [M] / ([M] + Kd), Kd = exp(ΔG / RT)' }
+    },
+    sponge: {
+        pl: { title: 'Sponge Effect — efekt gąbki ceRNA', body: 'Modeluje sekwestrację miRNA przez konkurujące RNA (ceRNA).\n\nPrzykłady ceRNA: lncRNA (LINC00673, HOTAIR), pseudogeny, okrągłe RNA (circRNA).\n\nModel:\nRozcieńczenie = 1 + Σ Ka_i\ngdzie Ka_i = exp(-ΔG_i / RT)\n\nWolne miRNA = 100% / rozcieńczenie\n\nZałożenia: [ceRNA] ≫ Kd, równe stężenia, brak struktury trzeciorzędowej.' },
+        en: { title: 'Sponge Effect — ceRNA sponge', body: 'Models miRNA sequestration by competing endogenous RNA (ceRNA).\n\nceRNA examples: lncRNA (LINC00673, HOTAIR), pseudogenes, circular RNA (circRNA).\n\nModel:\nDilution = 1 + Σ Ka_i\nwhere Ka_i = exp(-ΔG_i / RT)\n\nFree miRNA = 100% / dilution\n\nAssumptions: [ceRNA] ≫ Kd, equal concentrations, no tertiary structure.' }
+    },
+    spongethreshold: {
+        pl: { title: 'Próg ΔG dla sponge', body: 'Minimalna energia wiązania (ΔG, kcal/mol), poniżej której miejsce jest uwzględniane w obliczeniu efektu gąbki.\n\nWskazówki:\n• −3.0 kcal/mol — konserwatywne\n• −2.0 kcal/mol — bardziej liberalne\n• −5.0 kcal/mol — rygorystyczne\n\nNiższy próg może przeceniać efekt gąbki, wyższy — go niedoceniać.' },
+        en: { title: 'ΔG threshold for sponge', body: 'Minimum binding energy (ΔG, kcal/mol) below which a site is included in the sponge calculation.\n\nGuidelines:\n• −3.0 kcal/mol — conservative\n• −2.0 kcal/mol — more liberal\n• −5.0 kcal/mol — stringent\n\nA lower threshold may overestimate the sponge effect; a higher one may underestimate it.' }
+    },
+    spongequant: {
+        pl: { title: 'Model ilościowy — kopie/komórkę', body: 'Precyzyjny model uwzględniający rzeczywiste stężenia w komórce.\n\nRozwiązuje równanie kwadratowe:\nx² + (Kd + ceRNA_total − miRNA_total)·x − miRNA_total·Kd = 0\n\ngdzie x = wolne miRNA [kopie]\n\nBez założenia [ceRNA] ≫ Kd.\n\nKd [kopie] = exp(ΔG/RT) × Na × V_komórki\n\nTypowe wartości:\n• miRNA: 1 000–50 000 kopii\n• długie RNA syntetyczne (szczyt): 1 000–100 000 kopii\n• lncRNA/circRNA: 10–1 000 kopii' },
+        en: { title: 'Quantitative model — copies/cell', body: 'Precise model accounting for actual cellular concentrations.\n\nSolves the quadratic equation:\nx² + (Kd + ceRNA_total − miRNA_total)·x − miRNA_total·Kd = 0\n\nwhere x = free miRNA [copies]\n\nNo assumption that [ceRNA] ≫ Kd.\n\nKd [copies] = exp(ΔG/RT) × Na × cell_volume\n\nTypical values:\n• miRNA: 1,000–50,000 copies\n• long synthetic RNA (peak): 1,000–100,000 copies\n• lncRNA/circRNA: 10–1,000 copies' }
+    },
+    dgfilter: {
+        pl: { title: 'Próg ΔG skanowania', body: 'Minimalna energia wiązania (ΔG, kcal/mol) aby miRNA było uwzględnione w wynikach.\n\nWartość domyślna: -3.0 kcal/mol\n\nKiedy zmieniać:\n• -3.0 kcal/mol — standard\n• -2.0 kcal/mol — liberalne, pokazuje słabsze miejsca\n• -1.0 kcal/mol — bardzo liberalne\n• -5.0 kcal/mol — rygorystyczne, tylko silne wiązania' },
+        en: { title: 'Scan ΔG threshold', body: 'Minimum binding energy (ΔG, kcal/mol) for a miRNA to be included in results.\n\nDefault: -3.0 kcal/mol\n\nWhen to change:\n• -3.0 kcal/mol — standard\n• -2.0 kcal/mol — liberal, shows weaker sites\n• -1.0 kcal/mol — very liberal\n• -5.0 kcal/mol — stringent, strong bindings only' }
+    },
+    boltslider: {
+        pl: { title: 'Suwak względnej liczebności miRNA', body: 'Symuluje wpływ różnego stężenia miRNA A vs B na równowagę wiązania.\n\nPrzesunięcie w prawo = więcej miRNA B w komórce.\nPrzesunięcie w lewo = więcej miRNA A.\n\nModel: waga Boltzmanna skalowana przez stosunek stężeń:\nZ_B = exp(-ΔG_B/RT) × [B]/[A]\n\nRT = 0.593 kcal/mol @ 37°C.' },
+        en: { title: 'Relative miRNA abundance slider', body: 'Simulates the effect of different intracellular miRNA A vs B concentrations on binding equilibrium.\n\nSlide right = more miRNA B in cell.\nSlide left = more miRNA A.\n\nModel: Boltzmann weight scaled by concentration ratio:\nZ_B = exp(-ΔG_B/RT) × [B]/[A]\n\nRT = 0.593 kcal/mol @ 37°C.' }
+    },
+    accessibility: {
+        pl: { title: 'Dostępność strukturalna mRNA (Zuker-lite)', body: 'Ocenia, czy region wiązania miRNA jest "otwarty" czy "zamknięty" w strukturze wtórnej mRNA.\n\nΔG_open = koszt rozplątania sparowanych zasad (~1.5 kcal/mol na parę)\nΔG_total = ΔG_binding + ΔG_open\n\nKlasyfikacja:\n🟢 HIGH — ≤25% zasad sparowanych\n🟡 MED — 26–60% sparowanych\n🔴 LOW — >60% sparowanych\n\nWysoka dostępność (HIGH) przy silnym ΔG = kandydat klasy A.' },
+        en: { title: 'mRNA structural accessibility (Zuker-lite)', body: 'Assesses whether the miRNA binding region is "open" or "closed" in the mRNA secondary structure.\n\nΔG_open = cost of unpacking paired bases (~1.5 kcal/mol per pair)\nΔG_total = ΔG_binding + ΔG_open\n\nClassification:\n🟢 HIGH — ≤25% bases paired\n🟡 MED — 26–60% paired\n🔴 LOW — >60% paired\n\nHigh accessibility (HIGH) with strong ΔG = class A candidate.' }
+    },
+    dgtotal: {
+        pl: { title: 'ΔG_total — energia wiązania z korekcją dostępności', body: 'ΔG_total = ΔG_binding + ΔG_open\n\nΔG_binding — standardowa energia hybrydyzacji (Turner 2004 + Owczarzy)\nΔG_open — koszt "otwarcia" struktury wtórnej mRNA w regionie wiązania\n\nIm bardziej ujemna wartość, tym lepszy kandydat biologiczny:\n• ΔG_total < -10 kcal/mol — silne + dostępne\n• Wysoki ΔG_open przy dobrym ΔG_binding = może być nieaktywne in vivo' },
+        en: { title: 'ΔG_total — binding energy with accessibility correction', body: 'ΔG_total = ΔG_binding + ΔG_open\n\nΔG_binding — standard hybridization energy (Turner 2004 + Owczarzy)\nΔG_open — cost of "opening" the mRNA secondary structure at the binding region\n\nMore negative = better biological candidate:\n• ΔG_total < -10 kcal/mol — strong + accessible\n• High ΔG_open with good ΔG_binding = may be inactive in vivo' }
+    }
+});
+
+// ============================================================
+// SYSTEM POMOCY — obsługa popoverów (?)
+// showHelp reads the current language from _lang
+// ============================================================
 const helpPopover = document.getElementById('helpPopover');
 const hpTitle = document.getElementById('hpTitle');
 const hpBody = document.getElementById('hpBody');
 let helpTimeout = null;
 
 function showHelp(key, el) {
-    const info = HELP_TEXTS[key];
-    if (!info) return;
+    const entry = HELP_TEXTS[key];
+    if (!entry) return;
+    const lang = typeof _lang !== 'undefined' ? _lang : 'pl';
+    const info = entry[lang] || entry.pl || entry;
     hpTitle.textContent = info.title;
     hpBody.innerHTML = info.body.replace(/\n/g, '<br>');
     helpPopover.classList.add('show');
@@ -8132,7 +8078,7 @@ function hideHelp() {
 
 function positionHelp(el) {
     const rect = el.getBoundingClientRect();
-    const pw = 300, ph = 20;
+    const pw = 300;
     let left = rect.left + window.scrollX;
     let top = rect.bottom + window.scrollY + 6;
     if (left + pw > window.innerWidth - 10) left = window.innerWidth - pw - 10;
@@ -8145,10 +8091,7 @@ function positionHelp(el) {
 // Delegate events for all .help-badge elements
 document.addEventListener('mouseover', function(e) {
     const badge = e.target.closest('.help-badge[data-help]');
-    if (badge) {
-        clearTimeout(helpTimeout);
-        showHelp(badge.dataset.help, badge);
-    }
+    if (badge) { clearTimeout(helpTimeout); showHelp(badge.dataset.help, badge); }
 });
 document.addEventListener('mouseout', function(e) {
     if (e.target.closest('.help-badge[data-help]')) hideHelp();
@@ -8169,291 +8112,213 @@ document.addEventListener('click', function(e) {
 });
 
 
+const I18N = {
+  pl:{
+    // Nagłówek
+    lang_btn:'🌐 EN', theme_dark:'🌙 Ciemny', theme_light:'☀️ Jasny',
+    // Panel wejściowy
+    panel_input:'Sekwencja wejściowa',
+    ncbi_label:'🔎 ID genu / accession:',
+    opt_utr3:"3'UTR", opt_mrna:'pełny mRNA',
+    btn_fetch:'⬇ Pobierz z NCBI',
+    lbl_mrna:"mRNA / 3'UTR (RNA lub DNA, FASTA — jedna lub wiele sekwencji)",
+    lbl_select_seq:'Wybierz sekwencję:',
+    btn_scan_all:'⚡ Skanuj wszystkie',
+    lbl_organism:'Organizm',
+    opt_human:'Człowiek (hsa)', opt_mouse:'Mysz (mmu)', opt_rat:'Szczur (rno)',
+    opt_plant:'Arabidopsis (ath)', opt_mammals:'Ssaki (hsa+mmu+rno)', opt_all:'Wszystkie',
+    lbl_minseed:'Min. seed WC', lbl_rankby:'Ranking wg',
+    opt_cons:'Konserwacja', opt_acc:'Dostępność (Acc.)',
+    lbl_topn:'Top wyników', lbl_dgfilter:'Próg ΔG ≤', lbl_noncan:'Niekanoniczne',
+    opt_all_noncan:'Wszystkie', opt_canonical:'Tylko kanoniczne', opt_noncanonical:'Tylko niekan.',
+    btn_scan:'🔍 Skanuj', btn_example:'▶ Przykład', btn_clear:'✕ Wyczyść', lbl_acc:'Acc.',
+    status_ready:'Gotowe. Wklej sekwencję i kliknij Skanuj.',
+    status_ex1:'Załadowano sekwencję przykładową (let-7 / hepatocyt).',
+    status_ex2:"Załadowano przykładową sekwencję syntetyczną 3'UTR.",
+    // Podgląd
+    panel_preview:'Podgląd hybrydyzacji',
+    prev_select_row:'— wybierz wiersz —',
+    prev_click_hint:'Kliknij wynik w tabeli',
+    lbl_seed:'Seed', lbl_cons:'Cons.',
+    btn_snp_mode:'🔬 Tryb SNP', btn_snp_undo:'↩ Cofnij SNP',
+    btn_pdb:'🧬 Eksport PDB', btn_sensitivity:'🔥 Skanuj wrażliwość',
+    btn_clear_heatmap:'🗑 Wyczyść heatmapę',
+    leg_seed:'Seed (2–8)',
+    txt_run_hint:'Uruchom skanowanie, następnie kliknij wiersz.',
+    lbl_local_struct:'🔓 Lokalna struktura mRNA (±40 nt)',
+    hint_3d:'Przeciągnij myszą aby obracać · scroll = zoom · Kolory: 🟢 WC · 🟡 G:U · 🟣 mismatch · 🟠 seed region',
+    // Dashboard
+    dash_hits:'Trafień', dash_mean_dg:'Śr. ΔG', dash_mean_au:'Śr. AU-rich',
+    dash_mean_au_sub:'% okno ±30nt', dash_8mer:'8mer / Niekan.',
+    dash_histogram:'Histogram ΔG (kcal/mol)',
+    dash_histogram_axis:'← stabilniejsze | mniej stabilne →',
+    dash_top5_dg:'Top 5 — ΔG', dash_top5_au:'Top 5 — AU%', dash_top5_cons:'Top 5 — Konserwacja',
+    // Tabela wyników
+    panel_results:'Tabela wyników',
+    lbl_filter_mirna:'Filtruj miRNA', lbl_filter_seed:'Seed type',
+    lbl_filter_org:'Organizm', lbl_filter_cons:'Min. konserwacja',
+    opt_filter_all:'Wszystkie', opt_cons_any:'Dowolna',
+    opt_cons_1:'≥1 gatunek', opt_cons_2:'≥2 gatunki', opt_cons_3:'Wszystkie 3',
+    btn_reset:'✕ Reset', btn_copy:'📋 Kopiuj',
+    txt_empty_results:'Wyniki pojawią się po uruchomieniu skanowania.',
+    th_org:'Org', th_pos:'Pos', th_seq:"Sekwencja 5'→3'",
+    // Eksport
+    btn_csv:'⬇ CSV', btn_manuscript:'📄 Manuskrypt', btn_png:'🖼 PNG duplex',
+    btn_pdf:'📋 PDF', btn_docx:'📝 DOCX',
+    btn_dualview:'⚖ Widok Dualny', btn_session:'♻ Przywróć sesję',
+    // Dual view
+    dual_title:'⚖ Porównywarka miRNA — Dual View',
+    btn_close:'✕ Zamknij',
+    lbl_boltslider:'🧪 Względna liczebność miRNA B vs A',
+    lbl_shadowing:'🗺 Mapa zajętości mRNA — Shadowing Track',
+    shadow_legend:'🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Nakładanie &nbsp;|&nbsp; ⬜ wolny region',
+    btn_dual_pdf:'📋 Eksport PDF (porównanie)',
+    btn_dual_docx:'📝 Eksport DOCX (porównanie)',
+    btn_titration:'📈 Krzywa miareczkowania',
+    btn_sponge:'🧽 Efekt gąbki',
+    // Titration
+    titration_title:'📈 Krzywa miareczkowania — P(zajętości) vs stężenie',
+    titration_axis:'Os X: log₁₀([miRNA]/[Kd]) · Os Y: prawdopodobieństwo zajętości',
+    btn_save_png:'🖼 Zapisz PNG',
+    // Sponge
+    sponge_title:'🧽 Sponge Effect — efekt gąbki ceRNA',
+    sponge_lbl_input:'Lista sekwencji ceRNA / sponge (multi-FASTA lub jedna linia na gen):',
+    sponge_lbl_threshold:'Próg ΔG ≤',
+    btn_sponge_calc:'🔬 Oblicz efekt gąbki',
+    // Quant model
+    quant_title:'🔢 Model ilościowy (kopie/komórkę)',
+    quant_enable:'Włącz',
+    quant_copies_a:'Kopie miRNA A / komórkę', quant_copies_b:'Kopie miRNA B / komórkę',
+    quant_copies_cerna:'Kopie ceRNA / komórkę', quant_volume:'Objętość komórki (μm³)',
+    quant_hint:'Przykłady: hepatocyt 5000 μm³ · limfocyt 300 μm³ · komórka mięśnia 10 000 μm³<br>miRNA: typowe 1 000–50 000 · silnie eksp. do 500 000 · długie RNA syntetyczne (szczyt) 1 000–100 000',
+    // Textarea placeholders
+    ta_mrna_placeholder:"Wklej sekwencję mRNA lub 3'UTR...\nObsługuje multi-FASTA: każda sekwencja z nagłówkiem >nazwa\n— lub użyj pola powyżej, aby pobrać automatycznie z NCBI —",
+    // Session button
+    session_prefix:'Sesja', session_ago:'temu', session_results:'wyników',
+    snp_mode:'Tryb SNP', snp_active:'Tryb SNP (aktywny)',
+    // PDF
+    pdf_page:'Strona', pdf_results:'Wyniki',
+  },
+  en:{
+    lang_btn:'🌐 PL', theme_dark:'🌙 Dark', theme_light:'☀️ Light',
+    panel_input:'Input sequence',
+    ncbi_label:'🔎 Gene ID / accession:',
+    opt_utr3:"3'UTR", opt_mrna:'Full mRNA',
+    btn_fetch:'⬇ Fetch from NCBI',
+    lbl_mrna:"mRNA / 3'UTR (RNA or DNA, FASTA — one or multiple sequences)",
+    lbl_select_seq:'Select sequence:',
+    btn_scan_all:'⚡ Scan all',
+    lbl_organism:'Organism',
+    opt_human:'Human (hsa)', opt_mouse:'Mouse (mmu)', opt_rat:'Rat (rno)',
+    opt_plant:'Arabidopsis (ath)', opt_mammals:'Mammals (hsa+mmu+rno)', opt_all:'All',
+    lbl_minseed:'Min. seed WC', lbl_rankby:'Rank by',
+    opt_cons:'Conservation', opt_acc:'Accessibility (Acc.)',
+    lbl_topn:'Top results', lbl_dgfilter:'ΔG threshold ≤', lbl_noncan:'Non-canonical',
+    opt_all_noncan:'All', opt_canonical:'Canonical only', opt_noncanonical:'Non-canon. only',
+    btn_scan:'🔍 Scan', btn_example:'▶ Example', btn_clear:'✕ Clear', lbl_acc:'Acc.',
+    status_ready:'Ready. Paste a sequence and click Scan.',
+    status_ex1:'Loaded example sequence (let-7 / hepatocyte).',
+    status_ex2:"Loaded synthetic 3'UTR example sequence.",
+    panel_preview:'Hybridization preview',
+    prev_select_row:'— select a row —',
+    prev_click_hint:'Click a result in the table',
+    lbl_seed:'Seed', lbl_cons:'Cons.',
+    btn_snp_mode:'🔬 SNP Mode', btn_snp_undo:'↩ Undo SNP',
+    btn_pdb:'🧬 Export PDB', btn_sensitivity:'🔥 Scan sensitivity',
+    btn_clear_heatmap:'🗑 Clear heatmap',
+    leg_seed:'Seed (2–8)',
+    txt_run_hint:'Run scan, then click a row.',
+    lbl_local_struct:'🔓 Local mRNA structure (±40 nt)',
+    hint_3d:'Drag to rotate · scroll = zoom · Colors: 🟢 WC · 🟡 G:U · 🟣 mismatch · 🟠 seed region',
+    dash_hits:'Hits', dash_mean_dg:'Avg ΔG', dash_mean_au:'Avg AU-rich',
+    dash_mean_au_sub:'% window ±30nt', dash_8mer:'8mer / Non-can.',
+    dash_histogram:'ΔG histogram (kcal/mol)',
+    dash_histogram_axis:'← more stable | less stable →',
+    dash_top5_dg:'Top 5 — ΔG', dash_top5_au:'Top 5 — AU%', dash_top5_cons:'Top 5 — Conservation',
+    panel_results:'Results table',
+    lbl_filter_mirna:'Filter miRNA', lbl_filter_seed:'Seed type',
+    lbl_filter_org:'Organism', lbl_filter_cons:'Min. conservation',
+    opt_filter_all:'All', opt_cons_any:'Any',
+    opt_cons_1:'≥1 species', opt_cons_2:'≥2 species', opt_cons_3:'All 3',
+    btn_reset:'✕ Reset', btn_copy:'📋 Copy',
+    txt_empty_results:'Results will appear after running a scan.',
+    th_org:'Org', th_pos:'Pos', th_seq:"Sequence 5'→3'",
+    btn_csv:'⬇ CSV', btn_manuscript:'📄 Manuscript', btn_png:'🖼 PNG duplex',
+    btn_pdf:'📋 PDF', btn_docx:'📝 DOCX',
+    btn_dualview:'⚖ Dual View', btn_session:'♻ Restore session',
+    dual_title:'⚖ miRNA Comparator — Dual View',
+    btn_close:'✕ Close',
+    lbl_boltslider:'🧪 Relative abundance miRNA B vs A',
+    lbl_shadowing:'🗺 mRNA occupancy map — Shadowing Track',
+    shadow_legend:'🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Overlap &nbsp;|&nbsp; ⬜ free region',
+    btn_dual_pdf:'📋 Export PDF (comparison)',
+    btn_dual_docx:'📝 Export DOCX (comparison)',
+    btn_titration:'📈 Titration curve',
+    btn_sponge:'🧽 Sponge effect',
+    titration_title:'📈 Titration curve — P(occupancy) vs concentration',
+    titration_axis:'X: log₁₀([miRNA]/[Kd]) · Y: occupancy probability',
+    btn_save_png:'🖼 Save PNG',
+    sponge_title:'🧽 ceRNA Sponge Effect',
+    sponge_lbl_input:'ceRNA / sponge sequences (multi-FASTA or one gene per line):',
+    sponge_lbl_threshold:'ΔG threshold ≤',
+    btn_sponge_calc:'🔬 Calculate sponge effect',
+    quant_title:'🔢 Quantitative model (copies/cell)',
+    quant_enable:'Enable',
+    quant_copies_a:'miRNA A copies / cell', quant_copies_b:'miRNA B copies / cell',
+    quant_copies_cerna:'ceRNA copies / cell', quant_volume:'Cell volume (μm³)',
+    quant_hint:'Examples: hepatocyte 5000 μm³ · lymphocyte 300 μm³ · muscle cell 10 000 μm³<br>miRNA: typical 1,000–50,000 · highly expressed up to 500,000 · long synthetic RNA (peak) 1,000–100,000',
+    // Textarea placeholders
+    ta_mrna_placeholder:"Paste mRNA or 3'UTR sequence...\nSupports multi-FASTA: each sequence with >name header\n— or use the field above to fetch automatically from NCBI —",
+    // Session button
+    session_prefix:'Session', session_ago:'ago', session_results:'results',
+    snp_mode:'SNP Mode', snp_active:'SNP Mode (active)',
+    pdf_page:'Page', pdf_results:'Results',
+  }
+};
+let _lang = localStorage.getItem('mirna-lang')||'pl';
 
-// ============================================================
-// MODUŁ SNP – MUTACJE PUNKTOWE Z HISTORIĄ COFANIA
-// ============================================================
-let snpActive = false;
-let currentCanvas = null;
-let currentAln = null;
-let currentHit = null;
-let currentRowIdx = null;
-
-// Historia mutacji: stos obiektów { mrna, hit, label }
-let snpHistory = [];
-
-function enableSNPMode(canvas, aln, hit, rowIdx) {
-    if (snpActive) { disableSNPMode(); return; }
-    snpActive = true;
-    currentCanvas = canvas;
-    currentAln = aln;
-    currentHit = hit;
-    currentRowIdx = rowIdx;
-    canvas.style.cursor = 'crosshair';
-
-    const handler = function(e) {
-        if (!snpActive) return;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const mouseX = (e.clientX - rect.left) * scaleX;
-        const mouseY = (e.clientY - rect.top) * scaleY;
-        const len = currentAln.length;
-        const PAD = 54, SP = 27, NR = 11;
-        const yTarget = 116;
-        for (let i = 0; i < len; i++) {
-            const x = PAD + i * SP;
-            const dist = Math.hypot(mouseX - x, mouseY - yTarget);
-            if (dist < NR + 5) {
-                const oldBase = currentAln[i].tb;
-                const newBase = prompt(`Zmień nukleotyd w mRNA (pozycja ${currentHit.hit.pos + len - 1 - i + 1}) z ${oldBase} na:`, oldBase);
-                if (newBase && /^[ACGU]$/i.test(newBase) && newBase.toUpperCase() !== oldBase) {
-                    applyMutation(i, newBase.toUpperCase(), currentHit, currentRowIdx);
-                }
-                break;
-            }
-        }
-    };
-    canvas.addEventListener('click', handler);
-    canvas._snpHandler = handler;
-
-    const btn = document.getElementById('snpModeBtn');
-    if (btn) { btn.textContent = '🔴 Tryb SNP (aktywny)'; btn.style.borderColor = 'var(--accent)'; }
+function applyLang(lang) {
+  _lang = lang;
+  localStorage.setItem('mirna-lang', lang);
+  const t = I18N[lang];
+  // Toggle buttons
+  const lb = document.getElementById('langToggle');
+  if(lb) lb.querySelector('[data-i18n="lang_btn"]').textContent = t.lang_btn;
+  const tb = document.getElementById('themeToggle');
+  if(tb){ const span = tb.querySelector('[data-i18n]'); if(span) span.textContent = document.body.classList.contains('light') ? t.theme_light : t.theme_dark; }
+  // All data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if(!(key in t)) return;
+    // HTML content
+    if(el.dataset.i18nHtml !== undefined) { el.innerHTML = t[key]; return; }
+    // Placeholder mode (textarea, input)
+    if(el.dataset.i18nPlaceholder !== undefined) {
+      el.placeholder = t[key].replace(/\\n/g,'\n');
+      return;
+    }
+    if(el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'search')) { el.placeholder = t[key]; return; }
+    if(el.tagName === 'TEXTAREA') { el.placeholder = t[key]; return; }
+    if(el.tagName === 'OPTION') { el.textContent = t[key]; return; }
+    el.textContent = t[key];
+  });
+  // Re-render session button if visible
+  const sbtn = document.getElementById('sessionRestoreBtn');
+  if(sbtn && sbtn.style.display !== 'none' && sbtn.textContent.trim()) {
+    // Trigger sessionSave to refresh label (it reads from IDB, so just update the text prefix)
+    const m = sbtn.textContent.match(/\((\d+(?:min|h)) (?:temu|ago), (\d+) (?:wyników|results)\)/);
+    if(m) {
+      sbtn.textContent = '♻ '+t.session_prefix+' ('+m[1]+' '+t.session_ago+', '+m[2]+' '+t.session_results+')';
+    }
+  }
+  // Update status bar if showing default message
+  const st = document.getElementById('st');
+  if(st && (st.textContent === I18N.pl.status_ready || st.textContent === I18N.en.status_ready)) {
+    st.textContent = t.status_ready;
+  }
+  document.documentElement.lang = lang;
 }
 
-function disableSNPMode() {
-    snpActive = false;
-    if (currentCanvas) {
-        currentCanvas.style.cursor = 'default';
-        if (currentCanvas._snpHandler) {
-            currentCanvas.removeEventListener('click', currentCanvas._snpHandler);
-            delete currentCanvas._snpHandler;
-        }
-    }
-    const btn = document.getElementById('snpModeBtn');
-    if (btn) { btn.textContent = '🔬 Tryb SNP'; btn.style.borderColor = ''; }
-}
-
-function updateSnpUndoBtn() {
-    const btn = document.getElementById('snpUndoBtn');
-    if (!btn) return;
-    if (snpHistory.length > 0) {
-        btn.style.display = '';
-        const last = snpHistory[snpHistory.length - 1];
-        btn.title = `Cofnij: ${last.label}`;
-        btn.textContent = `↩ Cofnij SNP (${snpHistory.length})`;
-    } else {
-        btn.style.display = 'none';
-    }
-}
-
-function undoLastMutation() {
-    if (snpHistory.length === 0) return;
-    const prev = snpHistory.pop();
-    CURRENT_MRNA = prev.mrna;
-    sensitivityData = null;
-    const activeRow = document.querySelector('tbody tr.act');
-    if (activeRow) {
-        const idx = Array.from(activeRow.parentNode.children).indexOf(activeRow);
-        const result = RESULTS[idx];
-        if (result) {
-            result.hit = prev.hit;
-            result.mrnaSeq = prev.mrnaSeq;  // restore per-result sequence
-            result.mutated = snpHistory.length > 0;
-            renderTable(RESULTS);
-            showPrev(result, idx);
-        }
-    }
-    updateSnpUndoBtn();
-    setst(snpHistory.length === 0
-        ? '↩ Wszystkie mutacje SNP cofnięte — przywrócono stan pierwotny.'
-        : `↩ Cofnięto mutację: ${prev.label}. Pozostało w historii: ${snpHistory.length}.`
-    );
-    sessionSave();
-}
-
-async function applyMutation(alnIdx, newBase, result, rowIdx) {
-    const oldHit = result.hit;
-    const mrnaPos = oldHit.pos + oldHit.aln.length - 1 - alnIdx;
-    const oldBase = oldHit.aln[alnIdx].tb;
-    const sourceMrna = result.mrnaSeq || CURRENT_MRNA;
-    // Zapisz stan przed mutacją do historii (w tym mrnaSeq wyniku)
-    snpHistory.push({
-        mrna: CURRENT_MRNA,
-        mrnaSeq: sourceMrna,
-        hit: JSON.parse(JSON.stringify(oldHit)),
-        label: `poz.${mrnaPos + 1}: ${oldBase}→${newBase}`
-    });
-    let mutatedMrna = sourceMrna.split('');
-    mutatedMrna[mrnaPos] = newBase;
-    mutatedMrna = mutatedMrna.join('');
-    const minSeed = parseInt(document.getElementById('minseed').value);
-    const saltNa = parseFloat(document.getElementById('saltConc').value) || 0.15;
-    const newHit = scanOne(result.mirna, mutatedMrna, minSeed, saltNa);
-    if (!newHit) {
-        snpHistory.pop();
-        alert("⚠️ Mutacja całkowicie zniszczyła miejsce wiązania!");
-        return;
-    }
-    const dgDiff = newHit.dg - oldHit.dg;
-    const msg = dgDiff > 0 ? `⚠️ Osłabienie o +${dgDiff.toFixed(2)} kcal/mol` :
-                dgDiff < 0 ? `✅ Wzmocnienie o ${dgDiff.toFixed(2)} kcal/mol` : "Brak zmiany ΔG.";
-    CURRENT_MRNA = mutatedMrna;
-    result.mrnaSeq = mutatedMrna;  // update per-result sequence
-    result.hit = newHit;
-    result.mutated = true;
-    sensitivityData = null;
-    renderTable(RESULTS);
-    showPrev(result, rowIdx);
-    disableSNPMode();
-    updateSnpUndoBtn();
-    setst(msg + ` | Poz. ${mrnaPos + 1}: ${oldBase}→${newBase}`);
-    sessionSave();
-}
-function exportCurrentToPDB() {
-    const activeRow = document.querySelector('tbody tr.act');
-    if (!activeRow) { alert("Najpierw kliknij na wynik w tabeli."); return; }
-    const idx = Array.from(activeRow.parentNode.children).indexOf(activeRow);
-    const result = RESULTS[idx];
-    if (!result) return;
-    const aln = result.hit.aln;
-    const len = aln.length;
-    const rise = 2.81, twist = 32.7 * Math.PI / 180, radius = 9.3;
-    let pdb = "", serial = 1;
-    pdb += `HEADER    DUPLEX RNA                                     \n`;
-    pdb += `TITLE     ${result.name} : target\n`;
-    pdb += `REMARK    Generated by miRNA Hybrid Viewer v1.0\n`;
-    for (let i = 0; i < len; i++) {
-        const angle = i * twist;
-        const xA = radius * Math.cos(angle), yA = radius * Math.sin(angle), zA = i * rise;
-        const xB = radius * Math.cos(angle + Math.PI), yB = radius * Math.sin(angle + Math.PI), zB = i * rise;
-        const baseA = aln[i].mb, baseB = aln[i].tb, resNum = i + 1;
-        pdb += `ATOM  ${String(serial).padStart(5)}  P    ${baseA} A${String(resNum).padStart(4)}    ${xA.toFixed(3).padStart(8)}${yA.toFixed(3).padStart(8)}${zA.toFixed(3).padStart(8)}  1.00  0.00           P\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  OP1  ${baseA} A${String(resNum).padStart(4)}    ${(xA-0.5).toFixed(3).padStart(8)}${yA.toFixed(3).padStart(8)}${zA.toFixed(3).padStart(8)}  1.00  0.00           O\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  OP2  ${baseA} A${String(resNum).padStart(4)}    ${(xA+0.5).toFixed(3).padStart(8)}${yA.toFixed(3).padStart(8)}${zA.toFixed(3).padStart(8)}  1.00  0.00           O\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  C5'  ${baseA} A${String(resNum).padStart(4)}    ${xA.toFixed(3).padStart(8)}${(yA+0.8).toFixed(3).padStart(8)}${zA.toFixed(3).padStart(8)}  1.00  0.00           C\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  C3'  ${baseA} A${String(resNum).padStart(4)}    ${xA.toFixed(3).padStart(8)}${(yA-0.8).toFixed(3).padStart(8)}${zA.toFixed(3).padStart(8)}  1.00  0.00           C\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  P    ${baseB} B${String(resNum).padStart(4)}    ${xB.toFixed(3).padStart(8)}${yB.toFixed(3).padStart(8)}${zB.toFixed(3).padStart(8)}  1.00  0.00           P\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  OP1  ${baseB} B${String(resNum).padStart(4)}    ${(xB-0.5).toFixed(3).padStart(8)}${yB.toFixed(3).padStart(8)}${zB.toFixed(3).padStart(8)}  1.00  0.00           O\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  OP2  ${baseB} B${String(resNum).padStart(4)}    ${(xB+0.5).toFixed(3).padStart(8)}${yB.toFixed(3).padStart(8)}${zB.toFixed(3).padStart(8)}  1.00  0.00           O\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  C5'  ${baseB} B${String(resNum).padStart(4)}    ${xB.toFixed(3).padStart(8)}${(yB+0.8).toFixed(3).padStart(8)}${zB.toFixed(3).padStart(8)}  1.00  0.00           C\n`; serial++;
-        pdb += `ATOM  ${String(serial).padStart(5)}  C3'  ${baseB} B${String(resNum).padStart(4)}    ${xB.toFixed(3).padStart(8)}${(yB-0.8).toFixed(3).padStart(8)}${zB.toFixed(3).padStart(8)}  1.00  0.00           C\n`; serial++;
-    }
-    for (let i = 0; i < len - 1; i++) {
-        const a1=i*10+1, a2=(i+1)*10+1, b1=i*10+6, b2=(i+1)*10+6;
-        pdb += `CONECT${String(a1).padStart(5)}${String(a2).padStart(5)}\n`;
-        pdb += `CONECT${String(b1).padStart(5)}${String(b2).padStart(5)}\n`;
-    }
-    for (let i = 0; i < len; i++) {
-        if (aln[i].type === 'wc' || aln[i].type === 'gu') {
-            const aIdx=i*10+1, bIdx=i*10+6;
-            pdb += `CONECT${String(aIdx).padStart(5)}${String(bIdx).padStart(5)}\n`;
-        }
-    }
-    pdb += "END\n";
-    const blob = new Blob([pdb], {type: 'text/plain'});
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${result.name}_duplex.pdb`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-}
-
-// ============================================================
-// HEATMAPA WRAŻLIWOŚCI NA MUTACJE (Mutation Sensitivity Scan)
-// ============================================================
-let sensitivityData = null;
-let heatmapActive = false;
-
-async function runSensitivityScan(result, rowIdx, mrnaSeq) {
-    const aln = result.hit.aln;
-    const len = aln.length;
-    const mrna = mrnaSeq || result.mrnaSeq || CURRENT_MRNA;
-    const mirna = result.mirna;
-    const minSeed = parseInt(document.getElementById('minseed').value);
-    const saltNa = parseFloat(document.getElementById('saltConc').value) || 0.15;
-    const scores = [];
-    const baseOrder = ['A','C','G','U'];
-    setst(`🔬 Skanowanie wrażliwości: 0 / ${len*3}`);
-    let total = len * 3, done = 0;
-    for (let i = 0; i < len; i++) {
-        const mrnaPos = result.hit.pos + len - 1 - i;
-        const originalBase = aln[i].tb;
-        const posScores = {};
-        for (let mut of baseOrder) {
-            if (mut === originalBase) continue;
-            let mutatedMrna = mrna.split('');
-            mutatedMrna[mrnaPos] = mut;
-            mutatedMrna = mutatedMrna.join('');
-            const newHit = scanOne(mirna, mutatedMrna, minSeed, saltNa);
-            const delta = newHit ? newHit.dg - result.hit.dg : 10;
-            posScores[mut] = delta;
-            done++;
-            setst(`🔬 Skanowanie wrażliwości: ${done} / ${total}`);
-            await new Promise(r => setTimeout(r, 0));
-        }
-        scores.push({pos: i, original: originalBase, scores: posScores});
-    }
-    sensitivityData = scores;
-    setst(`✅ Skanowanie zakończone.`);
-    drawSensitivityHeatmap();
-}
-
-function drawSensitivityHeatmap() {
-    if (!sensitivityData) return;
-    const canvas = document.getElementById('duplexCanvas');
-    const ctx = canvas.getContext('2d');
-    const len = sensitivityData.length;
-    const PAD = 54, SP = 27, YT = 116, NR = 11;
-    const barHeight = 6, barY = YT + NR + 4;
-    for (let i = 0; i < len; i++) {
-        const x = PAD + i * SP - 12;
-        const deltas = Object.values(sensitivityData[i].scores);
-        const maxDestab = Math.max(...deltas, 0);
-        const maxStab = Math.min(0, ...deltas);
-        let intensity = Math.min(1, maxDestab / 2.5);
-        let color;
-        if (maxStab < -0.5) {
-            intensity = Math.min(1, -maxStab / 1.5);
-            color = `rgba(0, 212, 170, ${intensity})`;
-        } else if (maxDestab <= 0.2) {
-            color = '#aaaaaa';
-        } else if (maxDestab < 1.0) {
-            color = `rgba(255, 200, 100, ${intensity})`;
-        } else {
-            color = `rgba(255, 50, 50, ${intensity})`;
-        }
-        ctx.fillStyle = color;
-        ctx.fillRect(x, barY, 24, barHeight);
-        ctx.fillStyle = '#e8eaf0';
-        ctx.font = '8px monospace';
-        ctx.fillText(maxDestab.toFixed(1), x, barY - 2);
-    }
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '8px monospace';
-    ctx.fillText('Destabilizacja (ΔG↑)', PAD, barY - 8);
-    const clearBtn = document.getElementById('clearHeatmapBtn');
-    if (clearBtn) clearBtn.style.display = '';
-}
-
-function clearHeatmap() {
-    if (!sensitivityData) return;
-    sensitivityData = null;
-    const activeRow = document.querySelector('tbody tr.act');
-    if (activeRow) {
-        const idx = Array.from(activeRow.parentNode.children).indexOf(activeRow);
-        const result = RESULTS[idx];
-        if (result) {
-            const canvas = document.getElementById('duplexCanvas');
-            drawDuplex2D(canvas, result.hit.aln, result.name, result.hit.pos, result.hit.centeredRange, result.hit.comp3Range);
-        }
-    }
-    setst("Heatmapa wyczyszczona.");
-}
-
-// ============================================================
-// NCBI AUTO-FETCH — pobieranie sekwencji po ID genu / accession
-// ============================================================
 async function fetchFromNCBI() {
     const raw = document.getElementById('ncbiId').value.trim();
     const region = document.getElementById('ncbiRegion').value;
@@ -8575,10 +8440,18 @@ async function extract3UTR(accession, fullFasta) {
     return fullFasta; // fallback: return full sequence
 }
 
-// ============================================================
-// DUAL VIEW — porównanie dwóch miRNA vs. tego samego mRNA
-// ============================================================
-let dualViewOpen = false;
+function updateSnpUndoBtn() {
+    const btn = document.getElementById('snpUndoBtn');
+    if (!btn) return;
+    if (snpHistory.length > 0) {
+        btn.style.display = '';
+        const last = snpHistory[snpHistory.length - 1];
+        btn.title = `Cofnij: ${last.label}`;
+        btn.textContent = `↩ Cofnij SNP (${snpHistory.length})`;
+    } else {
+        btn.style.display = 'none';
+    }
+}
 
 function toggleDualView() {
     dualViewOpen = !dualViewOpen;
@@ -8702,1342 +8575,14 @@ function dualCompare() {
     exportRow.style.display = '';
 }
 
-// ── COMPETITION MODEL (Boltzmann occupancy) ──────────────────────
-function dualCompetitionModel(A, B, overlapNt, el) {
-    el.style.display = '';
-    const RT = 0.593; // kcal/mol at 37°C
-
-    if (overlapNt <= 0) {
-        // Non-competing — independent binding probabilities
-        const pA = 1 / (1 + Math.exp(A.hit.dg / RT));
-        const pB = 1 / (1 + Math.exp(B.hit.dg / RT));
-        const pBoth = pA * pB;
-        const pNone = (1 - pA) * (1 - pB);
-
-        el.innerHTML = `
-            <strong style="color:var(--seed)">Model niezależnego wiązania (brak nakładania)</strong><br>
-            Prawdopodobieństwo zajętości (Boltzmann, 37°C):<br>
-            <div class="compete-bar-wrap">
-              🔵 A: <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
-              <span style="color:#60a5fa;font-weight:700">${(pA*100).toFixed(1)}%</span>
-            </div>
-            <div class="compete-bar-wrap">
-              🟠 B: <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
-              <span style="color:#fb923c;font-weight:700">${(pB*100).toFixed(1)}%</span>
-            </div>
-            P(oba zajęte) = ${(pBoth*100).toFixed(1)}% &nbsp;|&nbsp; P(wolne) = ${(pNone*100).toFixed(1)}%<br>
-            <span style="color:var(--muted);font-size:.63rem">Model: p = 1/(1+exp(ΔG/RT)), RT=0.593 kcal/mol @ 37°C. Zakłada równe stężenia miRNA i brak efektów strukturalnych mRNA.</span>
-        `;
-    } else {
-        // Competing — mutual exclusion model
-        // States: {A bound, B bound, neither} — partition function
-        const ZA = Math.exp(-A.hit.dg / RT);
-        const ZB = Math.exp(-B.hit.dg / RT);
-        const Z  = 1 + ZA + ZB; // mutually exclusive
-        const pA = ZA / Z;
-        const pB = ZB / Z;
-        const pFree = 1 / Z;
-
-        // Winner probability ratio
-        const ratio = (pA / pB).toFixed(2);
-        const winner = pA > pB ? `🔵 A dominuje (${ratio}× częściej zajmuje)` : pB > pA ? `🟠 B dominuje (${(1/ratio).toFixed(2)}× częściej zajmuje)` : '⚪ Równa konkurencja';
-
-        el.innerHTML = `
-            <strong style="color:var(--seed)">Model konkurencji wzajemnie wykluczającej (${overlapNt} nt overlap)</strong><br>
-            Równowagowe prawdopodobieństwo zajęcia miejsca:<br>
-            <div class="compete-bar-wrap">
-              🔵 A: <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
-              <span style="color:#60a5fa;font-weight:700">${(pA*100).toFixed(1)}%</span>
-            </div>
-            <div class="compete-bar-wrap">
-              🟠 B: <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
-              <span style="color:#fb923c;font-weight:700">${(pB*100).toFixed(1)}%</span>
-            </div>
-            P(wolne) = ${(pFree*100).toFixed(1)}% &nbsp;|&nbsp; ${winner}<br>
-            <span style="color:var(--muted);font-size:.63rem">Model: stany wzajemnie wykluczające się, funkcja podziału Z=1+exp(-ΔG_A/RT)+exp(-ΔG_B/RT). Zakłada równe stężenia i brak kooperatywności trzeciorzędowej.</span>
-        `;
-    }
-}
-
-// ── SHADOWING TRACK ──────────────────────────────────────────────
-function dualShadowingTrack(A, B, wrapper) {
-    wrapper.style.display = '';
-    const canvas = document.getElementById('shadowCanvas');
-    const mrnaLen = CURRENT_MRNA.length || 500;
-    const W = wrapper.clientWidth - 24 || 700;
-    canvas.width  = W;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    const isLight = document.body.classList.contains('light');
-
-    // Background
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface2').trim();
-    ctx.fillRect(0, 0, W, 64);
-
-    const scale = W / mrnaLen;
-
-    // ── mRNA backbone line
-    ctx.strokeStyle = isLight ? '#94a3b8' : '#374151';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(0, 32); ctx.lineTo(W, 32); ctx.stroke();
-
-    // Position tick marks every ~10% of sequence
-    ctx.fillStyle = isLight ? '#64748b' : '#6b7280';
-    ctx.font = '9px JetBrains Mono, monospace';
-    for (let p = 0; p <= mrnaLen; p += Math.round(mrnaLen / 10)) {
-        const x = Math.round(p * scale);
-        ctx.fillRect(x, 28, 1, 8);
-        if (p > 0) ctx.fillText(p, x - 8, 58);
-    }
-
-    // Helper: draw binding site block
-    function drawSite(start, len, color, label, yOff) {
-        const x = start * scale;
-        const w = Math.max(len * scale, 4);
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        roundRect(ctx, x, 18 + yOff, w, 12, 3);
-        ctx.fill();
-        // Seed region highlight (darker)
-        const seedW = Math.min(8 * scale, w);
-        ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        ctx.fillRect(x, 18 + yOff, seedW, 12);
-        // Label
-        if (w > 18) {
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 8px Inter, sans-serif';
-            ctx.fillText(label, x + 2, 27 + yOff);
-        }
-    }
-
-    // Draw A and B (stagger vertically if they overlap)
-    const startA = A.hit.pos, lenA = A.mirna.length;
-    const startB = B.hit.pos, lenB = B.mirna.length;
-    const overlaps = Math.max(startA, startB) < Math.min(startA + lenA, startB + lenB);
-
-    if (overlaps) {
-        // Draw overlap region in purple
-        const ovStart = Math.max(startA, startB);
-        const ovEnd   = Math.min(startA + lenA, startB + lenB);
-        drawSite(startA, lenA, 'rgba(59,130,246,0.75)', 'A', -6);
-        drawSite(startB, lenB, 'rgba(249,115,22,0.75)', 'B', 6);
-        // Overlap highlight
-        const ox = ovStart * scale, ow = (ovEnd - ovStart) * scale;
-        ctx.fillStyle = 'rgba(167,139,250,0.6)';
-        ctx.fillRect(ox, 14, Math.max(ow, 3), 20);
-        ctx.strokeStyle = '#a78bfa';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(ox, 14, Math.max(ow, 3), 20);
-    } else {
-        drawSite(startA, lenA, 'rgba(59,130,246,0.85)', 'A', 0);
-        drawSite(startB, lenB, 'rgba(249,115,22,0.85)', 'B', 0);
-        // Gap annotation
-        if (startB > startA) {
-            const gapX1 = (startA + lenA) * scale;
-            const gapX2 = startB * scale;
-            const gapNt = startB - (startA + lenA);
-            if (gapNt > 0 && gapX2 - gapX1 > 20) {
-                ctx.strokeStyle = isLight ? '#94a3b8' : '#4b5563';
-                ctx.setLineDash([3, 3]);
-                ctx.lineWidth = 1;
-                ctx.beginPath(); ctx.moveTo(gapX1, 24); ctx.lineTo(gapX2, 24); ctx.stroke();
-                ctx.setLineDash([]);
-                ctx.fillStyle = isLight ? '#64748b' : '#9ca3af';
-                ctx.font = '8px JetBrains Mono, monospace';
-                ctx.fillText(`${gapNt} nt`, (gapX1 + gapX2) / 2 - 12, 22);
-            }
-        }
-    }
-
-    // ΔG labels above sites
-    ctx.font = '8px JetBrains Mono, monospace';
-    ctx.fillStyle = '#60a5fa';
-    ctx.fillText(`ΔG=${A.hit.dg}`, startA * scale, 15);
-    ctx.fillStyle = '#fb923c';
-    ctx.fillText(`ΔG=${B.hit.dg}`, startB * scale, overlaps ? 56 : 15);
-}
-
-// ── DUAL EXPORT PDF ──────────────────────────────────────────────
-async function exportDualPDF() {
-    const idxA = parseInt(document.getElementById('dualSelA').value);
-    const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) return;
-    const A = RESULTS[idxA], B = RESULTS[idxB];
-    try {
-        const {jsPDF} = window.jspdf;
-        const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
-        const isLight = document.body.classList.contains('light');
-        const W=297, H=210, m=10;
-
-        pdf.setFillColor(...(isLight?[240,242,245]:[17,19,24]));
-        pdf.rect(0,0,W,H,'F');
-
-        // Title
-        pdf.setTextColor(0,212,170); pdf.setFontSize(13); pdf.setFont('helvetica','bold');
-        pdf.text('miRNA Hybrid Viewer v1.0 \u2014 Raport Por\u00f3wnawczy', m, 10);
-        pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));
-        pdf.setFontSize(7.5); pdf.setFont('helvetica','normal');
-        pdf.text(`Wygenerowano: ${new Date().toISOString().slice(0,19)} | mRNA: ${CURRENT_MRNA.length} nt`, m, 16);
-
-        // Canvas A
-        const cA = document.getElementById('dualCanvasA');
-        if(cA && cA.width>0){
-            const imgA=cA.toDataURL('image/png');
-            pdf.setTextColor(59,130,246); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
-            pdf.text(`\u25CF miRNA A: ${A.name} | ${A.hit.seedType} | \u0394G ${A.hit.dg} kcal/mol | pos ${A.hit.pos+1}`, m, 23);
-            pdf.addImage(imgA,'PNG',m,25,128,36);
-        }
-
-        // Canvas B
-        const cB = document.getElementById('dualCanvasB');
-        if(cB && cB.width>0){
-            const imgB=cB.toDataURL('image/png');
-            pdf.setTextColor(249,115,22); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
-            pdf.text(`\u25CF miRNA B: ${B.name} | ${B.hit.seedType} | \u0394G ${B.hit.dg} kcal/mol | pos ${B.hit.pos+1}`, 149, 23);
-            pdf.addImage(imgB,'PNG',149,25,138,36);
-        }
-
-        // Shadow track
-        const cSh = document.getElementById('shadowCanvas');
-        if(cSh && cSh.width>0){
-            const imgSh=cSh.toDataURL('image/png');
-            pdf.setTextColor(...(isLight?[51,65,85]:[170,180,200]));
-            pdf.setFontSize(7); pdf.setFont('helvetica','normal');
-            pdf.text('Mapa zaj\u0119to\u015bci mRNA (Shadowing Track)', m, 65);
-            pdf.addImage(imgSh,'PNG',m,67,276,14);
-        }
-
-        // ── Comparison A vs B block ──
-        const RT=0.593;
-        const overlapNt=Math.max(0,Math.min(A.hit.pos+A.mirna.length,B.hit.pos+B.mirna.length)-Math.max(A.hit.pos,B.hit.pos));
-        const ZA=Math.exp(-A.hit.dg/RT), ZB=Math.exp(-B.hit.dg/RT);
-        const ddg=(B.hit.dg-A.hit.dg).toFixed(2);
-        const dwc=B.hit.wc-A.hit.wc;
-        const dau=(B.hit.auPct-A.hit.auPct).toFixed(1);
-        const stronger=B.hit.dg<A.hit.dg?'B silniejsze':'A silniejsze';
-
-        let yc=85;
-        pdf.setFillColor(20,30,45); pdf.rect(m,yc-3,W-2*m,21,'F');
-        pdf.setTextColor(167,139,250); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
-        pdf.text('Por\u00f3wnanie A vs B:', m+2, yc+2);
-        pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5);
-        pdf.setTextColor(59,130,246);
-        const s1=`\u25CF ${stronger}   |\u0394\u0394G = ${ddg} kcal/mol   |\u0394WC = ${dwc>0?'+':''}${dwc}   |\u0394AU% = ${dau>0?'+':''}${dau}%`;
-        pdf.text(s1, m+2, yc+8);
-        pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));
-        pdf.text(`Pozycje: A=${A.hit.pos+1}\u2013${A.hit.pos+A.mirna.length}, B=${B.hit.pos+1}\u2013${B.hit.pos+B.mirna.length} (\u0394start = ${B.hit.pos-A.hit.pos>0?'+':''}${B.hit.pos-A.hit.pos} nt)`, m+2, yc+14);
-        if(overlapNt>0){
-            pdf.setTextColor(251,191,36);
-            pdf.text(`\u26A0 Nak\u0142adanie ${overlapNt} nt \u2014 wi\u0105zanie wzajemnie wykluczone`, m+130, yc+8);
-        } else {
-            const dist=Math.abs(B.hit.pos-(A.hit.pos+A.mirna.length));
-            pdf.setTextColor(0,212,170);
-            pdf.text(`Odleg\u0142o\u015b\u0107: ${dist} nt${dist>=13&&dist<=35?' \u2192 kooperatywno\u015b\u0107 mo\u017cliwa':''}`, m+130, yc+8);
-        }
-
-        // ── Model konkurencji ──
-        yc+=25;
-        const Z=overlapNt>0?1+ZA+ZB:ZA+ZB;
-        const pA=(overlapNt>0?ZA/Z:ZA/(ZA+ZB))*100;
-        const pB=(overlapNt>0?ZB/Z:ZB/(ZA+ZB))*100;
-        const pFree=overlapNt>0?(100-pA-pB).toFixed(1):'0.0';
-        const ratio=(ZA/ZB).toFixed(1);
-
-        pdf.setFillColor(30,18,18); pdf.rect(m,yc-3,W-2*m,26,'F');
-        pdf.setTextColor(249,115,22); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
-        pdf.text(`Model konkurencji ${overlapNt>0?`wzajemnie wykluczaj\u0105cej (${overlapNt} nt overlap)`:'niezale\u017cnego wi\u0105zania'}:`, m+2, yc+2);
-        pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5);
-        const barW=180;
-        pdf.setTextColor(59,130,246);
-        pdf.text(`A: ${pA.toFixed(1)}%`, m+2, yc+9);
-        pdf.setFillColor(59,130,246); pdf.rect(m+18,yc+6,pA/100*barW,4,'F');
-        pdf.setFillColor(30,18,18); pdf.rect(m+18+pA/100*barW,yc+6,(100-pA)/100*barW,4,'F');
-        pdf.setTextColor(249,115,22);
-        pdf.text(`B: ${pB.toFixed(1)}%`, m+2, yc+17);
-        pdf.setFillColor(249,115,22); pdf.rect(m+18,yc+14,pB/100*barW,4,'F');
-        pdf.setFillColor(30,18,18); pdf.rect(m+18+pB/100*barW,yc+14,(100-pB)/100*barW,4,'F');
-        pdf.setTextColor(107,114,128); pdf.setFontSize(6.5);
-        pdf.text(`P(wolne)=${pFree}%  |  ${B.hit.dg<A.hit.dg?'B':'A'} dominuje (${ratio}\u00d7)  |  Model: Z=1+exp(-\u0394G_A/RT)+exp(-\u0394G_B/RT)`, m+215, yc+9);
-
-        // ── Comparison table ──
-        yc+=31;
-        pdf.setTextColor(167,139,250); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
-        pdf.text('Tabela por\u00f3wnawcza', m, yc);
-        yc+=5;
-        const tRows=[
-            ['Parametr','miRNA A','miRNA B','R\u00f3\u017cnica (B\u2212A)'],
-            ['Nazwa',A.name,B.name,'\u2014'],
-            ['Seed type',A.hit.seedType,B.hit.seedType,'\u2014'],
-            ['\u0394G (kcal/mol)',A.hit.dg,B.hit.dg,ddg],
-            ['\u0394G 1M',A.hit.dg1M??A.hit.dg,B.hit.dg1M??B.hit.dg,((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)],
-            ['Pary WC',A.hit.wc,B.hit.wc,dwc],
-            ['Pary G:U',A.hit.gu,B.hit.gu,B.hit.gu-A.hit.gu],
-            ['AU%',A.hit.auPct+'%',B.hit.auPct+'%',dau+'%'],
-            ['Pozycja',A.hit.pos+1,B.hit.pos+1,B.hit.pos-A.hit.pos],
-        ];
-        tRows.forEach((row,ri)=>{
-            const isHdr=ri===0;
-            pdf.setFillColor(isHdr?20:ri%2===0?17:22,isHdr?40:19,isHdr?30:24);
-            pdf.rect(m,yc-3,W-2*m,5.5,'F');
-            if(isHdr){pdf.setFont('helvetica','bold');pdf.setTextColor(0,212,170);}
-            else{pdf.setFont('helvetica','normal');pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));}
-            pdf.setFontSize(7);
-            row.forEach((cell,ci)=>pdf.text(String(cell),m+ci*69,yc+1.5));
-            yc+=5.5;
-        });
-
-        // Footer
-        pdf.setFont('helvetica','italic'); pdf.setFontSize(6.5); pdf.setTextColor(107,114,128);
-        pdf.text(`miRNA Hybrid Viewer v1.0 | PRAM\u0100 Institute | ${new Date().toISOString().slice(0,10)}`, m, H-4);
-
-        pdf.save(`dual_comparison_${A.name}_vs_${B.name}.pdf`);
-    } catch(e){alert('B\u0142\u0105d eksportu PDF: '+e.message);console.error(e);}
-}
-
-// ── DUAL EXPORT DOCX ─────────────────────────────────────────────
-async function exportDualDOCX() {
-    const idxA = parseInt(document.getElementById('dualSelA').value);
-    const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) return;
-    const A = RESULTS[idxA], B = RESULTS[idxB];
-    try {
-        const overlapNt=Math.max(0,Math.min(A.hit.pos+A.mirna.length,B.hit.pos+B.mirna.length)-Math.max(A.hit.pos,B.hit.pos));
-        A.mrnaLen=CURRENT_MRNA.length;
-        const blob=_docxBuilder.dual(A,B,overlapNt);
-        const a=document.createElement('a');
-        a.href=URL.createObjectURL(blob);
-        a.download=`dual_comparison_${A.name}_vs_${B.name}.docx`;
-        a.click();URL.revokeObjectURL(a.href);
-    } catch(e){alert('B\u0142\u0105d eksportu DOCX: '+e.message);console.error(e);}
-}
-
-// ============================================================
-// INDEXEDDB SESSION SAVE / RESTORE
-// ============================================================
-const DB_NAME = 'miRNAViewerDB', DB_VER = 1, STORE = 'sessions';
-
-function openIDB() {
-    return new Promise((res, rej) => {
-        const req = indexedDB.open(DB_NAME, DB_VER);
-        req.onupgradeneeded = e => e.target.result.createObjectStore(STORE, {keyPath:'id'});
-        req.onsuccess = e => res(e.target.result);
-        req.onerror = () => rej(req.error);
-    });
-}
-
-async function sessionSave() {
-    if (!RESULTS.length) return;
-    try {
-        const db = await openIDB();
-        // Capture active table row index
-        const activeRow = document.querySelector('tbody tr.act');
-        const activeIdx = activeRow ? Array.from(activeRow.parentNode.children).indexOf(activeRow) : -1;
-        const payload = {
-            id: 'last',
-            ts: Date.now(),
-            mrna: CURRENT_MRNA,
-            results: RESULTS.map(r => ({
-                name: r.name, org: r.org, mirna: r.mirna,
-                mrnaSeq: r.mrnaSeq, transcript: r.transcript,
-                mutated: r.mutated, hit: r.hit
-            })),
-            settings: {
-                species:  document.getElementById('species').value,
-                minseed:  document.getElementById('minseed').value,
-                rankby:   document.getElementById('rankby').value,
-                saltConc: document.getElementById('saltConc').value,
-                topn:     document.getElementById('topn').value,
-                noncan:   document.getElementById('noncan').value,
-                dgFilter: document.getElementById('dgFilter')?.value ?? '-3.0',
-            },
-            uiState: {
-                activeIdx,
-                snpHistory: snpHistory.map(h => ({
-                    mrna: h.mrna, mrnaSeq: h.mrnaSeq,
-                    hit: h.hit, label: h.label
-                })),
-                dualSelA: document.getElementById('dualSelA')?.value ?? '',
-                dualSelB: document.getElementById('dualSelB')?.value ?? '',
-                boltSlider: document.getElementById('boltSlider')?.value ?? '0',
-                dualViewOpen,
-                theme: document.body.classList.contains('light') ? 'light' : 'dark',
-                spongeList: document.getElementById('spongeInput')?.value ?? '',
-                spongeDgThreshold: document.getElementById('spongeDgThreshold')?.value ?? '-3.0'
-            }
-        };
-        const tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put(payload);
-        await new Promise((res,rej) => { tx.oncomplete=res; tx.onerror=rej; });
-        db.close();
-        console.info('[v15] Session saved:', RESULTS.length, 'results, activeIdx:', activeIdx);
-    } catch(e) { console.warn('[v15] sessionSave failed:', e); }
-}
-
-async function sessionCheckRestore() {
-    try {
-        const db = await openIDB();
-        const tx = db.transaction(STORE, 'readonly');
-        const req = tx.objectStore(STORE).get('last');
-        const record = await new Promise((res,rej)=>{ req.onsuccess=()=>res(req.result); req.onerror=rej; });
-        db.close();
-        if (!record || !record.results?.length) return;
-        const age = Math.round((Date.now() - record.ts) / 60000);
-        const btn = document.getElementById('sessionRestoreBtn');
-        if (btn) {
-            btn.style.display = '';
-            btn.title = `Ostatnia sesja: ${age} min temu · ${record.results.length} wyników`;
-            btn.textContent = `♻ Sesja (${age < 60 ? age+'min' : Math.round(age/60)+'h'} temu, ${record.results.length} wyników)`;
-        }
-    } catch(e) { /* no saved session */ }
-}
-
-async function sessionRestore() {
-    try {
-        const db = await openIDB();
-        const tx = db.transaction(STORE, 'readonly');
-        const req = tx.objectStore(STORE).get('last');
-        const record = await new Promise((res,rej)=>{ req.onsuccess=()=>res(req.result); req.onerror=rej; });
-        db.close();
-        if (!record) { setst('⚠ Brak zapisanej sesji.'); return; }
-
-        CURRENT_MRNA = record.mrna || '';
-        RESULTS = record.results || [];
-
-        // Restore settings
-        if (record.settings) {
-            Object.entries(record.settings).forEach(([k,v]) => {
-                const el = document.getElementById(k); if (el) el.value = v;
-            });
-        }
-        if (CURRENT_MRNA) document.getElementById('mrna').value = CURRENT_MRNA;
-
-        // Restore UI state
-        const ui = record.uiState || {};
-        snpHistory = ui.snpHistory || [];
-        updateSnpUndoBtn();
-
-        // Restore theme
-        if (ui.theme === 'light' && !document.body.classList.contains('light')) {
-            document.body.classList.add('light');
-            const tb = document.getElementById('themeToggle');
-            if (tb) tb.textContent = '☀️ Jasny';
-        }
-        // Restore sponge input
-        if (ui.spongeList) {
-            const si = document.getElementById('spongeInput');
-            if (si) si.value = ui.spongeList;
-        }
-        if (ui.spongeDgThreshold) {
-            const sd = document.getElementById('spongeDgThreshold');
-            if (sd) sd.value = ui.spongeDgThreshold;
-        }
-
-        renderTable(RESULTS);
-        renderDashboard(RESULTS, RESULTS.length);
-        ['expBtn','expManBtn','expPDF','expDOCX','expJSON','dualViewBtn'].forEach(id=>{
-            const el=document.getElementById(id); if(el) el.style.display='';
-        });
-        document.getElementById('filterRow').style.display = 'flex';
-
-        // Restore active row & preview
-        if (ui.activeIdx >= 0 && RESULTS[ui.activeIdx]) {
-            setTimeout(() => {
-                showPrev(RESULTS[ui.activeIdx], ui.activeIdx);
-                // scroll table to active row
-                const rows = document.querySelectorAll('tbody tr');
-                if (rows[ui.activeIdx]) rows[ui.activeIdx].scrollIntoView({block:'nearest'});
-            }, 100);
-        }
-
-        // Restore Dual View
-        if (ui.dualViewOpen) {
-            dualViewOpen = false; // force toggle
-            toggleDualView();
-            setTimeout(() => {
-                const sA = document.getElementById('dualSelA');
-                const sB = document.getElementById('dualSelB');
-                if (sA && ui.dualSelA !== '') sA.value = ui.dualSelA;
-                if (sB && ui.dualSelB !== '') sB.value = ui.dualSelB;
-                const bs = document.getElementById('boltSlider');
-                if (bs && ui.boltSlider) bs.value = ui.boltSlider;
-                dualDraw('A'); dualDraw('B');
-                updateBoltzmannSlider();
-            }, 200);
-        }
-
-        const age = Math.round((Date.now() - record.ts) / 60000);
-        setst(`♻ Przywrócono sesję sprzed ${age < 60 ? age+' min' : Math.round(age/60)+' godz'} · ${RESULTS.length} wyników · SNP: ${snpHistory.length} mutacji.`);
-    } catch(e) {
-        setst('✗ Błąd przywracania sesji: ' + e.message);
-        console.error('[v15] sessionRestore:', e);
-    }
-}
-
-// Check for saved session on load
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(sessionCheckRestore, 600);
-});
-
-// ============================================================
-// JSON EXPORT
-// ============================================================
-function exportJSON() {
-    if (!RESULTS.length) return;
-    const payload = {
-        meta: {
-            tool: 'miRNA Hybrid Viewer v1.0',
-            institute: 'PRAMĀ Institute',
-            generated: new Date().toISOString(),
-            mrnaLength: CURRENT_MRNA.length,
-            resultCount: RESULTS.length
-        },
-        results: RESULTS.map((r,i) => ({
-            rank: i+1,
-            name: r.name,
-            org: r.org,
-            mirna: r.mirna,
-            transcript: r.transcript || null,
-            binding: {
-                dg: r.hit.dg,
-                dg1M: r.hit.dg1M ?? r.hit.dg,
-                dgCoop: r.hit.dgCoop,
-                coopBonus: r.hit.coopBonus,
-                seedType: r.hit.seedType,
-                pos: r.hit.pos + 1,
-                wc: r.hit.wc,
-                gu: r.hit.gu,
-                mm: r.hit.mm,
-                auPct: r.hit.auPct
-            },
-            conservation: r.hit.conservation || null,
-            mutated: r.mutated || false
-        }))
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `mirna_results_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-}
-
-// ============================================================
-// BOLTZMANN ABUNDANCE SLIDER (Dual View)
-// ============================================================
-function updateBoltzmannSlider() {
-    const idxA = parseInt(document.getElementById('dualSelA').value);
-    const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) return;
-    const A = RESULTS[idxA], B = RESULTS[idxB];
-
-    const sliderVal = parseInt(document.getElementById('boltSlider').value); // -20..+20
-    // Convert to concentration ratio: 2^(sliderVal/4), range ~0.03x to ~32x
-    const ratioB = Math.pow(2, sliderVal / 4);
-    const label = document.getElementById('boltRatioLabel');
-    label.textContent = ratioB < 0.99 ? `${(1/ratioB).toFixed(1)}× mniej B` :
-                        ratioB > 1.01 ? `${ratioB.toFixed(1)}× więcej B` : '1.0× (równe)';
-
-    const RT = 0.593;
-    const ZA = Math.exp(-A.hit.dg / RT);           // partition weight A
-    const ZB = Math.exp(-B.hit.dg / RT) * ratioB;  // weight B scaled by abundance
-    const overlapNt = Math.max(0, Math.min(A.hit.pos+A.mirna.length, B.hit.pos+B.mirna.length) - Math.max(A.hit.pos, B.hit.pos));
-
-    let pA, pB, pFree;
-    if (overlapNt > 0) {
-        const Z = 1 + ZA + ZB;
-        pA = ZA / Z; pB = ZB / Z; pFree = 1 / Z;
-    } else {
-        pA = ZA / (1 + ZA);
-        pB = ZB / (1 + ZB);
-        pFree = null;
-    }
-
-    const res = document.getElementById('boltSliderResult');
-    const winner = pA > pB ? `🔵 A dominuje` : pB > pA ? `🟠 B dominuje` : '⚪ Równe';
-    res.innerHTML = `
-        <span style="color:#60a5fa">P(A) = ${(pA*100).toFixed(1)}%</span> &nbsp;|&nbsp;
-        <span style="color:#fb923c">P(B) = ${(pB*100).toFixed(1)}%</span>
-        ${pFree !== null ? `&nbsp;|&nbsp; P(wolne) = ${(pFree*100).toFixed(1)}%` : ''}
-        &nbsp;→&nbsp; <strong>${winner}</strong>
-    `;
-}
-
-// Show Boltzmann slider when dual compare panel is visible
-const _origDualCompare = dualCompare;
-dualCompare = function() {
-    _origDualCompare();
-    const wrap = document.getElementById('boltSliderWrap');
-    const idxA = parseInt(document.getElementById('dualSelA').value);
-    const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (!isNaN(idxA) && !isNaN(idxB) && RESULTS[idxA] && RESULTS[idxB] && idxA !== idxB) {
-        wrap.style.display = '';
-        document.getElementById('boltSlider').value = 0;
-        updateBoltzmannSlider();
-    } else {
-        wrap.style.display = 'none';
-    }
-};
-
-// ============================================================
-// TITRATION CHART — P(zajętości) vs log[miRNA/Kd]
-// ============================================================
-function drawTitrationChart() {
-    const idxA = parseInt(document.getElementById('dualSelA').value);
-    const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) {
-        alert('Wybierz oba miRNA w Dual View.'); return;
-    }
-    const A = RESULTS[idxA], B = RESULTS[idxB];
-    const wrap = document.getElementById('titrationWrap');
-    wrap.style.display = '';
-    wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
-
-    const canvas = document.getElementById('titrationCanvas');
-    const W = canvas.offsetWidth || 900;
-    canvas.width = W; canvas.height = 220;
-    const ctx = canvas.getContext('2d');
-    const isLight = document.body.classList.contains('light');
-
-    // Background
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface2').trim();
-    ctx.fillRect(0, 0, W, 220);
-
-    const PAD = {l:52, r:20, t:18, b:38};
-    const CW = W - PAD.l - PAD.r;
-    const CH = 220 - PAD.t - PAD.b;
-    const RT = 0.593;
-    // X axis: log10(conc/Kd) from -3 to +3  →  conc = Kd * 10^x
-    // For miRNA binding: Kd ≈ exp(ΔG/RT), P = conc/(conc + Kd) = 10^x / (10^x + 1)
-    const xMin = -3, xMax = 3;
-    const toX = v => PAD.l + (v - xMin) / (xMax - xMin) * CW;
-    const toY = p => PAD.t + (1 - p) * CH;
-
-    const mutualExclude = Math.max(0,
-        Math.min(A.hit.pos+A.mirna.length, B.hit.pos+B.mirna.length)
-        - Math.max(A.hit.pos, B.hit.pos)) > 0;
-
-    // Grid
-    const gridCol = isLight ? '#e2e8f0' : '#1f2937';
-    const textCol = isLight ? '#475569' : '#9ca3af';
-    ctx.strokeStyle = gridCol; ctx.lineWidth = 1;
-    [0, 0.25, 0.5, 0.75, 1.0].forEach(p => {
-        const y = toY(p);
-        ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(W - PAD.r, y); ctx.stroke();
-        ctx.fillStyle = textCol; ctx.font = '9px JetBrains Mono, monospace';
-        ctx.fillText((p * 100).toFixed(0) + '%', 4, y + 3);
-    });
-    [-3,-2,-1,0,1,2,3].forEach(x => {
-        const px = toX(x);
-        ctx.beginPath(); ctx.moveTo(px, PAD.t); ctx.lineTo(px, PAD.t + CH); ctx.stroke();
-        ctx.fillStyle = textCol; ctx.font = '9px JetBrains Mono, monospace';
-        ctx.fillText('10' + (x >= 0 ? '+' : '') + x, px - 8, 220 - 8);
-    });
-
-    // Axes labels
-    ctx.fillStyle = textCol; ctx.font = '9px Inter, sans-serif';
-    ctx.fillText('P(zajętości)', 2, PAD.t - 4);
-    ctx.fillText('[miRNA] / Kd', W/2 - 25, 215);
-
-    // EC50 vertical line (x=0, conc=Kd)
-    ctx.strokeStyle = isLight ? '#94a3b8' : '#374151';
-    ctx.setLineDash([4,4]);
-    ctx.beginPath(); ctx.moveTo(toX(0), PAD.t); ctx.lineTo(toX(0), PAD.t+CH); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = textCol; ctx.font = '8px Inter, monospace';
-    ctx.fillText('Kd', toX(0)+2, PAD.t+10);
-
-    const steps = 200;
-    // Get sponge dilution factor if computed
-    const spongeFactor = window._spongeDilutionA ?? 1.0;
-    const spongeFactorB = window._spongeDilutionB ?? 1.0;
-    // Get relative concentration ratio from Boltzmann slider (if open)
-    const boltVal = parseInt(document.getElementById('boltSlider')?.value ?? '0');
-    const relConcB = Math.pow(2, boltVal / 4); // same scale as Boltzmann slider
-
-    function drawCurve(dg, color, dilution, relConc, dgOther, mutual) {
-        const KdRel = Math.exp(dg / RT); // Kd in units of [miRNA]/Kd axis
-        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.setLineDash([]);
-        ctx.beginPath();
-        for (let i = 0; i <= steps; i++) {
-            const logX = xMin + (xMax - xMin) * i / steps;
-            // Effective concentration after sponge dilution
-            const concEff = Math.pow(10, logX) / dilution * relConc;
-            let p;
-            if (mutual) {
-                // Proper two-ligand mutual exclusion:
-                // Partition: Z = 1 + concEff/Kd_this + concOther/Kd_other
-                // where concOther is scaled by the other ligand's relative abundance
-                const concOther = Math.pow(10, logX) / (dilution) * (relConc === 1 ? relConcB : 1.0);
-                const KdOther = Math.exp(dgOther / RT);
-                const Z = 1 + concEff / KdRel + concOther / KdOther;
-                p = (concEff / KdRel) / Z;
-            } else {
-                // Independent: P = c / (c + Kd)
-                p = concEff / (concEff + KdRel);
-            }
-            const x = toX(logX), y = toY(p);
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        // Dashed reference without sponge
-        if (dilution > 1.01) {
-            ctx.setLineDash([3, 3]); ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            for (let i = 0; i <= steps; i++) {
-                const logX = xMin + (xMax - xMin) * i / steps;
-                const concEff = Math.pow(10, logX) * relConc;
-                const p = mutual
-                    ? (concEff/KdRel) / (1 + concEff/KdRel + Math.pow(10,logX)*relConcB/Math.exp(dgOther/RT))
-                    : concEff / (concEff + KdRel);
-                const x = toX(logX), y = toY(p);
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            }
-            ctx.stroke(); ctx.setLineDash([]);
-        }
-    }
-
-    drawCurve(A.hit.dg, '#60a5fa', spongeFactor, 1.0, B.hit.dg, mutualExclude);
-    drawCurve(B.hit.dg, '#fb923c', spongeFactorB, relConcB, A.hit.dg, mutualExclude);
-
-    // Legend
-    const lgY = PAD.t + 8;
-    ctx.fillStyle='#60a5fa'; ctx.fillRect(W-190, lgY, 14, 3);
-    ctx.fillStyle=textCol; ctx.font='9px Inter,sans-serif';
-    ctx.fillText(`A: ${A.name} (ΔG=${A.hit.dg})`, W-172, lgY+4);
-    ctx.fillStyle='#fb923c'; ctx.fillRect(W-190, lgY+14, 14, 3);
-    ctx.fillStyle=textCol;
-    ctx.fillText(`B: ${B.name} (ΔG=${B.hit.dg})`, W-172, lgY+18);
-    if (relConcB !== 1.0) {
-        ctx.fillStyle='#a78bfa'; ctx.font='8px JetBrains Mono,monospace';
-        ctx.fillText(`[B]/[A] = ${relConcB.toFixed(2)}× (suwak)`, W-190, lgY+32);
-    }
-    if (spongeFactor > 1.01) {
-        ctx.fillStyle='#a78bfa'; ctx.font='8px JetBrains Mono,monospace';
-        ctx.fillText(`Sponge A: ×${spongeFactor.toFixed(2)} / B: ×${spongeFactorB.toFixed(2)}`, W-190, lgY+(relConcB!==1?46:32));
-    }
-    ctx.fillStyle=textCol; ctx.font='8px Inter,sans-serif';
-    ctx.fillText(mutualExclude ? 'Model: wyklucz. wzajemne' : 'Model: niezależne', W-190, lgY+(spongeFactor>1.01?60:relConcB!==1?46:32));
-}
-
-function exportTitrationPNG() {
-    const canvas = document.getElementById('titrationCanvas');
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = 'titration_curve.png';
-    a.click();
-}
-
-// ============================================================
-// SPONGE EFFECT — ceRNA competition / miRNA dilution
-// ============================================================
-function toggleSponge() {
-    const w = document.getElementById('spongeWrap');
-    w.style.display = w.style.display === 'none' ? '' : 'none';
-    if (w.style.display !== 'none') w.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-function runSpongeAnalysis() {
-    const idxA = parseInt(document.getElementById('dualSelA').value);
-    const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (isNaN(idxA) || !RESULTS[idxA]) { alert('Wybierz miRNA A w Dual View.'); return; }
-    const rA = RESULTS[idxA];
-    const rB = RESULTS[idxB] && idxA !== idxB ? RESULTS[idxB] : null;
-
-    const raw = document.getElementById('spongeInput').value.trim();
-    if (!raw) { alert('Wpisz sekwencje ceRNA w polu powyżej.'); return; }
-
-    const RT = 0.593;
-    const saltNa = parseFloat(document.getElementById('saltConc').value) || 0.15;
-    const minSeed = parseInt(document.getElementById('minseed').value);
-
-    // ── Parse ceRNA sequences (strict FASTA + fallback with warning) ──
-    const seqs = [];
-    const lines = raw.split('\n');
-    let cur = null;
-    let hasWarning = false;
-    for (const line of lines) {
-        const l = line.trim();
-        if (!l) continue;
-        if (l.startsWith('>')) {
-            if (cur && cur.seq) seqs.push(cur);
-            cur = {name: l.slice(1).trim() || 'ceRNA'+(seqs.length+1), seq:''};
-        } else if (cur) {
-            cur.seq += l.replace(/\s/g,'');
-        } else {
-            // No FASTA header — treat entire input as one sequence, warn user
-            hasWarning = true;
-            if (!cur) cur = {name: 'ceRNA-1', seq: ''};
-            cur.seq += l.replace(/\s/g,'');
-        }
-    }
-    if (cur && cur.seq) seqs.push(cur);
-    if (!seqs.length) { alert('Nie można sparsować sekwencji.\n\nUżyj formatu FASTA:\n>nazwa_genu\nSEKWENCJA...'); return; }
-
-    const resultEl = document.getElementById('spongeResult');
-    // Always reset result div before new analysis (fix 3: no stale warnings left over)
-    resultEl.innerHTML = '';
-
-    const warningHtml = hasWarning
-        ? `<div style="color:var(--gu);font-size:.67rem;margin-bottom:.4rem">⚠️ Brak nagłówków FASTA (&gt;nazwa) — cały tekst potraktowany jako jedna sekwencja ceRNA-1. Dodaj nagłówki &gt;nazwa przed każdą sekwencją dla poprawnego parsowania.</div>`
-        : '';
-    resultEl.innerHTML = warningHtml + '<span style="color:var(--muted)">⏳ Obliczanie...</span>';
-
-    setTimeout(() => {
-        try {
-        // (nie tylko najlepsze — suma Ka po wszystkich miejscach o ΔG ≤ -3 kcal/mol)
-        const dgThreshold = parseFloat(document.getElementById('spongeDgThreshold')?.value ?? '-3.0') || -3.0;
-
-        const analyzeForMirna = (mirna, mirnaName) => {
-            let totalKa = 0;
-            const details = [];
-            for (const s of seqs) {
-                const mrna = toRNA(s.seq);
-                if (mrna.length < 15) continue;
-                const sites = scanAllSites(mirna, mrna, minSeed, saltNa, dgThreshold);
-                if (sites.length > 0) {
-                    let seqKa = 0;
-                    sites.forEach(site => { seqKa += Math.exp(-site.dg / RT); });
-                    totalKa += seqKa;
-                    const bestSite = sites.reduce((a,b) => a.dg < b.dg ? a : b);
-                    details.push({
-                        name: s.name,
-                        dg: bestSite.dg,
-                        ka: seqKa,
-                        seedType: bestSite.seedType,
-                        nSites: sites.length,
-                        sites  // stored for on-demand preview
-                    });
-                }
-            }
-            const dilution = 1 + totalKa;
-            const pctFree = (1 / dilution * 100).toFixed(1);
-            return {totalKa, dilution, pctFree, details, mirnaName};
-        };
-
-        const resA = analyzeForMirna(rA.mirna, rA.name);
-        window._spongeDilutionA = resA.dilution;
-        window._spongeDilutionB = 1.0;
-
-        let html = warningHtml;
-        html += `<strong style="color:var(--accent3)">Wyniki analizy Sponge Effect</strong><br>`;
-        html += `<span style="color:var(--muted)">Model: dilution = 1 + Σ Ka_i (suma WSZYSTKICH miejsc o ΔG ≤ ${dgThreshold} kcal/mol), zakłada [ceRNA] ≫ Kd</span><br><br>`;
-
-        const renderRes = (res, color) => {
-            html += `<strong style="color:${color}">● ${res.mirnaName}</strong>: `;
-            if (res.details.length === 0) {
-                html += `Brak miejsc wiązania (ΔG ≤ ${dgThreshold}) w podanych ceRNA → brak efektu gąbki.<br>`;
-            } else {
-                const totalSites = res.details.reduce((s,d) => s+d.nSites, 0);
-                html += `${totalSites} miejsc w ${res.details.length}/${seqs.length} ceRNA · `;
-                html += `Rozcieńczenie: <strong>${res.dilution.toFixed(2)}×</strong> → `;
-                html += `Wolne miRNA: <strong style="color:${parseFloat(res.pctFree)<50?'var(--seed)':'var(--accent)'}">${res.pctFree}%</strong><br>`;
-                html += `<table style="margin:.3rem 0;border-collapse:collapse;font-size:.64rem;width:100%">`;
-                html += `<tr><td style="padding:0 .5rem 0 0;color:var(--muted)">ceRNA</td><td style="padding:0 .4rem;color:var(--muted)">Miejsc</td><td style="padding:0 .4rem;color:var(--muted)">Najlepsze ΔG</td><td style="padding:0 .4rem;color:var(--muted)">Seed</td><td style="padding:0 .35rem;color:var(--muted)">Ka</td><td></td></tr>`;
-                res.details.sort((a,b) => a.dg - b.dg).forEach((d, di) => {
-                    // Store site data on window for lazy on-click generation
-                    const uid = 'spz_' + color.replace(/[^a-z0-9]/gi,'') + '_' + di;
-                    window[uid] = {sites: d.sites, mirnaName: res.mirnaName};
-                    html += `<tr>`;
-                    html += `<td style="padding:.15rem .5rem .15rem 0">${esc(d.name)}</td>`;
-                    html += `<td style="padding:.15rem .4rem;text-align:center">${d.nSites}</td>`;
-                    html += `<td style="padding:.15rem .4rem;color:var(--gu);font-weight:700">${d.dg}</td>`;
-                    html += `<td style="padding:.15rem .4rem">${esc(d.seedType)}</td>`;
-                    html += `<td style="padding:.15rem .35rem">${d.ka.toFixed(1)}×</td>`;
-                    html += `<td style="padding:.15rem 0">`;
-                    html += `<button class="btn btn-g" style="font-size:.58rem;padding:.12rem .38rem;white-space:nowrap" `;
-                    html += `onclick="spongeLazyPreview('` + uid + `',this)">👁 Miejsca</button>`;
-                    html += `</td></tr>`;
-                    html += `<tr><td colspan="6" style="padding:0"><div id="${uid}_panel" style="display:none;padding:.3rem 0 .4rem 0"></div></td></tr>`;
-                });
-                html += `</table>`;
-            }
-        };
-
-
-        renderRes(resA, '#60a5fa');
-
-        if (rB) {
-            const resB = analyzeForMirna(rB.mirna, rB.name);
-            window._spongeDilutionB = resB.dilution;
-            renderRes(resB, '#fb923c');
-            if (resA.details.length > 0 || resB.details.length > 0) {
-                html += `<br><strong style="color:var(--accent3)">Selektywność gąbki:</strong> `;
-                const ratio = resA.dilution / resB.dilution;
-                if (Math.abs(ratio - 1) < 0.05) html += `Gąbka równomiernie rozcieńcza oba miRNA.`;
-                else if (ratio > 1) html += `Gąbka bardziej sekwestruje <span style="color:#60a5fa">A</span> (${ratio.toFixed(2)}× silniej niż B).`;
-                else html += `Gąbka bardziej sekwestruje <span style="color:#fb923c">B</span> (${(1/ratio).toFixed(2)}× silniej niż A).`;
-            }
-        }
-
-        html += `<br><button class="btn btn-g" onclick="drawTitrationChart()" style="margin-top:.4rem;font-size:.65rem">🔄 Zaktualizuj krzywą miareczkowania</button>`;
-        resultEl.innerHTML = html;
-        // Quantitative model (if enabled)
-        const _resB = rB ? analyzeForMirna(rB.mirna, rB.name) : null;
-        renderSpongeQuant(resA, _resB, resultEl);
-        sessionSave();
-        } catch(err) {
-            resultEl.innerHTML = `<div style="color:var(--seed);font-size:.7rem;padding:.4rem">❌ Błąd: ${err.message}<br><pre style="font-size:.6rem;white-space:pre-wrap">${err.stack||''}</pre></div>`;
-            console.error('runSpongeAnalysis error:', err);
-        }
-    }, 10);
-}
-
-// ============================================================
-// SPONGE LAZY PREVIEW — generates 2D/ASCII for ceRNA sites on demand
-// ============================================================
-function spongeLazyPreview(uid, btn) {
-    const panel = document.getElementById(uid + '_panel');
-    if (!panel) return;
-
-    // Toggle if already built
-    if (panel.children.length > 0) {
-        const open = panel.style.display !== 'none';
-        panel.style.display = open ? 'none' : 'block';
-        btn.textContent = open ? '👁 Miejsca' : '▲ Ukryj';
-        return;
-    }
-
-    // Build content on first click
-    const data = window[uid];
-    if (!data || !data.sites) return;
-    panel.style.display = 'block';
-    btn.textContent = '▲ Ukryj';
-
-    data.sites.forEach((site, si) => {
-        // Compute centered/3'comp lazily now (deferred from scanAllSites)
-        const centered = site.mirna && site.mrna ? scanCentered(site.mirna, site.mrna, site.pos) : null;
-        const comp3    = site.mirna && site.mrna ? check3primeComp(site.mirna, site.mrna, site.pos) : null;
-        if (centered) { site.seedType = 'centered'; site.centeredRange = {start:centered.start, end:centered.start+centered.maxRun}; }
-        else if (comp3) { site.seedType = '3prime-comp'; site.comp3Range = {start:12, end:16}; }
-        const centeredRange = site.centeredRange || null;
-        const comp3Range    = site.comp3Range    || null;
-
-        const sc = (SEED_COLORS||{})[site.seedType] || '#6b7280';
-        const aln = site.aln, alen = aln.length;
-
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'border:1px solid var(--border);border-radius:6px;margin-bottom:.35rem;overflow:hidden';
-
-        // Header
-        const hdr = document.createElement('div');
-        hdr.style.cssText = 'display:flex;align-items:center;gap:.4rem;padding:.25rem .45rem;background:var(--surface2);font-size:.63rem;flex-wrap:wrap';
-        hdr.innerHTML = `<span style="padding:.1rem .25rem;border-radius:3px;font-weight:700;background:${sc}22;color:${sc};border:1px solid ${sc}44">${esc(site.seedType)}</span>`
-            + `<span style="color:var(--muted)">pos ${site.pos+1}–${site.pos+alen}</span>`
-            + `<span style="color:var(--gu);font-weight:700">${site.dg} kcal/mol</span>`
-            + `<span style="color:var(--muted)">WC:${site.wc} G:U:${site.gu}</span>`;
-
-        // Tab buttons
-        const tabs = document.createElement('span');
-        tabs.style.cssText = 'margin-left:auto;display:flex;gap:.2rem';
-        const btn2d  = document.createElement('button');
-        const btnAsc = document.createElement('button');
-        btn2d.className = btnAsc.className = 'btn btn-g';
-        btn2d.style.cssText  = 'font-size:.57rem;padding:.1rem .3rem;border-color:var(--accent)';
-        btnAsc.style.cssText = 'font-size:.57rem;padding:.1rem .3rem';
-        btn2d.textContent  = '2D';
-        btnAsc.textContent = 'ASCII';
-        tabs.appendChild(btn2d);
-        tabs.appendChild(btnAsc);
-        hdr.appendChild(tabs);
-        wrap.appendChild(hdr);
-
-        // Body
-        const body = document.createElement('div');
-        body.style.cssText = 'padding:.3rem .4rem';
-
-        // 2D canvas
-        const canvasWrap = document.createElement('div');
-        canvasWrap.style.cssText = 'overflow-x:auto;background:var(--surface2);border-radius:4px;padding:.25rem';
-        const canvas = document.createElement('canvas');
-        canvas.height = 190;
-        canvas.style.display = 'block';
-        canvasWrap.appendChild(canvas);
-        body.appendChild(canvasWrap);
-        // Draw immediately
-        requestAnimationFrame(() => {
-            aln._auPct = undefined;
-            drawDuplex2D(canvas, aln, data.mirnaName, site.pos, centeredRange, comp3Range);
-        });
-
-        // ASCII
-        const asciiWrap = document.createElement('div');
-        asciiWrap.style.cssText = 'display:none;overflow-x:auto';
-        const pre = document.createElement('pre');
-        pre.style.cssText = 'font-family:"JetBrains Mono",monospace;font-size:.65rem;margin:0;white-space:pre;color:var(--text)';
-        const mLine = aln.map(a=>a.mb).join('');
-        const bLine = aln.map(a=>a.type==='wc'?'|':a.type==='gu'?':':' ').join('');
-        const tLine = aln.map(a=>a.tb).join('');
-        pre.textContent = `5' miRNA  ${mLine}  3'\n          ${bLine}\n3' target ${tLine}  5'\npos: ${site.pos+1}\u20133${site.pos+alen} | ${site.seedType} | \u0394G: ${site.dg}`;
-        asciiWrap.appendChild(pre);
-        body.appendChild(asciiWrap);
-
-        // Tab logic
-        btn2d.addEventListener('click', () => {
-            canvasWrap.style.display = ''; asciiWrap.style.display = 'none';
-            btn2d.style.borderColor = 'var(--accent)'; btnAsc.style.borderColor = '';
-        });
-        btnAsc.addEventListener('click', () => {
-            canvasWrap.style.display = 'none'; asciiWrap.style.display = '';
-            btnAsc.style.borderColor = 'var(--accent)'; btn2d.style.borderColor = '';
-        });
-
-        wrap.appendChild(body);
-        panel.appendChild(wrap);
-    });
-}
-
-// ── Sponge quantitative model toggle ──
-(function() {
-    document.addEventListener('DOMContentLoaded', () => {
-        const cb = document.getElementById('spongeQuantEnabled');
-        if (cb) cb.addEventListener('change', () => {
-            const inputs = document.getElementById('spongeQuantInputs');
-            if (inputs) inputs.style.display = cb.checked ? '' : 'none';
-        });
-    });
+function toggleLang() { applyLang(_lang === 'pl' ? 'en' : 'pl'); }
+
+// Restore saved language on load
+(function(){
+  const saved = localStorage.getItem('mirna-lang');
+  if(saved && saved !== 'pl') { setTimeout(()=>applyLang(saved), 100); }
 })();
 
-// Compute quantitative sponge model (copy-number based)
-// Uses exact quadratic solution — no saturation assumption
-function spongeQuantModel(mirnaTotal, ceRNATotal, sumKa_M, volUm3) {
-    // Convert Ka (dimensionless from ΔG/RT) to Kd in copies/cell
-    // Kd[M] = 1/Ka[M⁻¹], Kd[copies] = Kd[M] × Na × V[L]
-    // V[L] = volUm3 × 1e-15
-    const V_L = volUm3 * 1e-15;
-    const Na = 6.022e23;
-    // sumKa_M is sum of Ka in M⁻¹ units (= exp(-ΔG/RT) in standard 1M)
-    // Effective Kd in copies for the ensemble of sites:
-    const Kd_copies = (1 / sumKa_M) * Na * V_L;
-
-    // Total ceRNA binding capacity = ceRNATotal copies × sumKa / Kd normalisation
-    // Simplified: treat ceRNA ensemble as single effective competitor
-    // Exact quadratic: x = free miRNA
-    // x + (x × ceRNATotal) / (Kd_copies + x) = mirnaTotal
-    // → x² + (Kd_copies + ceRNATotal - mirnaTotal)·x - mirnaTotal·Kd_copies = 0
-    const a = 1;
-    const b = Kd_copies + ceRNATotal - mirnaTotal;
-    const c = -mirnaTotal * Kd_copies;
-    const disc = b*b - 4*a*c;
-    const freeMirna = (-b + Math.sqrt(disc)) / 2;
-    const freePct = Math.min(100, Math.max(0, freeMirna / mirnaTotal * 100));
-    const boundMirna = mirnaTotal - freeMirna;
-
-    // Convert to nM: nM = copies / (Na × V_L × 1000)
-    const toNM = (copies) => {
-        const val = copies / (Na * V_L * 1000);
-        if (val === 0) return '0';
-        if (val < 0.0001) return val.toExponential(2);
-        if (val < 0.01)   return val.toFixed(5);
-        if (val < 1)      return val.toFixed(3);
-        return val.toFixed(2);
-    };
-
-    return {
-        freeMirna: Math.round(freeMirna),
-        boundMirna: Math.round(boundMirna),
-        freePct: freePct.toFixed(1),
-        Kd_copies: Math.round(Kd_copies),
-        freeMirna_nM: toNM(freeMirna),
-        boundMirna_nM: toNM(boundMirna),
-        mirnaTotal_nM: toNM(mirnaTotal)
-    };
-}
-
-// ── Sponge quantitative results renderer ──
-function renderSpongeQuant(resA, resB, resultEl) {
-    const cb = document.getElementById('spongeQuantEnabled');
-    if (!cb || !cb.checked) return;
-
-    const mirnaACopies = parseFloat(document.getElementById('sqMirnaA')?.value) || 5000;
-    const mirnaBCopies = parseFloat(document.getElementById('sqMirnaB')?.value) || 5000;
-    const ceRNACopies  = parseFloat(document.getElementById('sqCeRNA')?.value)  || 1000;
-    const volUm3       = parseFloat(document.getElementById('sqVolume')?.value) || 1000;
-
-    const RT = 0.593;
-    // Get total Ka (sum over all binding sites) from dilution: dilution = 1 + sumKa_dimensionless
-    // But we need Ka in M⁻¹ — sumKa_dimensionless is already exp(-ΔG/RT) which is Ka[M]
-    const sumKaA = resA.dilution - 1;  // = Σ exp(-ΔG_i/RT)
-    const sumKaB = resB ? (resB.dilution - 1) : 0;
-
-    const qA = sumKaA > 0 ? spongeQuantModel(mirnaACopies, ceRNACopies, sumKaA, volUm3) : null;
-    const qB = (sumKaB > 0 && resB) ? spongeQuantModel(mirnaBCopies, ceRNACopies, sumKaB, volUm3) : null;
-
-    const div = document.createElement('div');
-    div.style.cssText = 'margin-top:.6rem;padding:.5rem .65rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font-size:.67rem';
-    div.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">🔢 Model ilościowy — wyniki</div>`;
-
-    const fmtNM = (copies) => {
-        const val = copies / (Na * V_L * 1000);
-        if (val === 0) return '0';
-        if (val < 0.0001) return val.toExponential(2) + ' nM';
-        if (val < 0.01)   return val.toFixed(5);
-        if (val < 1)      return val.toFixed(3);
-        return val.toFixed(2);
-    };
-
-    const row = (label, q, color, mirnaTotal, nM_total) => {
-        if (!q) return `<div style="color:var(--muted)">${label}: brak miejsc wiązania</div>`;
-        const freeColor = parseFloat(q.freePct) < 30 ? 'var(--seed)' : parseFloat(q.freePct) < 70 ? 'var(--gu)' : 'var(--accent)';
-        return `<div style="margin-bottom:.4rem">
-            <strong style="color:${color}">${label}</strong>
-            <div style="margin-top:.2rem;display:grid;grid-template-columns:1fr 1fr;gap:.15rem .8rem;font-size:.64rem">
-              <span style="color:var(--muted)">Kopie miRNA total:</span>
-              <span>${mirnaTotal.toLocaleString()} (<span style="color:var(--muted)">${nM_total} nM</span>)</span>
-              <span style="color:var(--muted)">Wolne miRNA:</span>
-              <span style="color:${freeColor};font-weight:700">${q.freeMirna.toLocaleString()} kopii = ${q.freePct}%
-                <span style="color:var(--muted);font-weight:400"> (${q.freeMirna_nM} nM)</span></span>
-              <span style="color:var(--muted)">Związane przez ceRNA:</span>
-              <span>${q.boundMirna.toLocaleString()} kopii
-                <span style="color:var(--muted)">(${q.boundMirna_nM} nM)</span></span>
-              <span style="color:var(--muted)">Kd efektywne:</span>
-              <span>${q.Kd_copies.toLocaleString()} kopii</span>
-            </div>
-          </div>`;
-    };
-
-    div.innerHTML += row('miRNA A: ' + resA.mirnaName, qA, '#60a5fa', mirnaACopies, fmtNM(mirnaACopies));
-    if (resB && qB) {
-        div.innerHTML += row('miRNA B: ' + resB.mirnaName, qB, '#fb923c', mirnaBCopies, fmtNM(mirnaBCopies));
-    }
-
-    div.innerHTML += `<div style="font-size:.6rem;color:var(--muted);margin-top:.3rem;border-top:1px solid var(--border);padding-top:.3rem">
-        Parametry: ceRNA ${ceRNACopies.toLocaleString()} kopii · V=${volUm3.toLocaleString()} μm³ · Model: równanie kwadratowe (dokładne, bez założenia saturacji)
-    </div>`;
-
-    resultEl.appendChild(div);
-}
-
-// ============================================================
-// LOCAL RNA STRUCTURE VISUALIZATION (Zuker-lite dot-bracket)
-// ============================================================
-function drawLocalRNAStruct(seq, struct, bindStart, bindEnd) {
-  const panel = document.getElementById('rnaStructPanel');
-  const canvas = document.getElementById('rnaStructCanvas');
-  const label  = document.getElementById('rnaStructLabel');
-  if (!panel || !canvas || !struct) { if(panel) panel.style.display='none'; return; }
-
-  panel.style.display = '';
-  const n = seq.length;
-  const NR = 7, SP = 14, PAD = 10;
-  const W = PAD * 2 + n * SP;
-  canvas.width = W; canvas.height = 38;
-  const ctx = canvas.getContext('2d');
-  const isLight = document.body.classList.contains('light');
-
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface2').trim();
-  ctx.fillRect(0, 0, W, 38);
-
-  // Theme-aware base colors: darker in light mode for contrast on white background
-  const baseCol = isLight
-    ? {'A':'#007a62','U':'#6d28d9','G':'#1d4ed8','C':'#c2410c'}   // dark saturated for light bg
-    : {'A':'#00d4aa','U':'#a78bfa','G':'#60a5fa','C':'#fb923c'};   // vivid for dark bg
-  const Y = 20;
-
-  // Draw arcs for base pairs
-  ctx.strokeStyle = isLight ? 'rgba(100,116,139,0.4)' : 'rgba(148,163,184,0.3)';
-  ctx.lineWidth = 1;
-  const pairStack = [];
-  const pairPositions = {};
-  for (let i = 0; i < struct.length; i++) {
-    const c = struct[i];
-    if (c === '(' || c === '[') pairStack.push(i);
-    else if ((c === ')' || c === ']') && pairStack.length > 0) {
-      const j = pairStack.pop();
-      pairPositions[j] = i; pairPositions[i] = j;
-      // Draw arc above bases
-      const x1 = PAD + j * SP, x2 = PAD + i * SP;
-      const cx = (x1 + x2) / 2, ry = Math.min((x2 - x1) * 0.3, 12);
-      ctx.beginPath();
-      ctx.ellipse(cx, Y - NR - 1, (x2-x1)/2, ry, 0, Math.PI, 0);
-      ctx.stroke();
-    }
-  }
-
-  // Draw bases
-  for (let i = 0; i < n; i++) {
-    const x = PAD + i * SP;
-    const inBind = (i >= bindStart && i < bindEnd);
-    const isPaired = struct[i] !== '.';
-    const base = seq[i];
-
-    // Background
-    ctx.beginPath(); ctx.arc(x, Y, NR, 0, Math.PI*2);
-    if (inBind) {
-      ctx.fillStyle = isPaired ? 'rgba(248,113,113,0.25)' : 'rgba(0,212,170,0.18)';
-    } else {
-      ctx.fillStyle = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-    }
-    ctx.fill();
-
-    // Ring
-    ctx.strokeStyle = inBind ? (isPaired ? '#f87171' : '#00d4aa') : (baseCol[base] || '#6b7280');
-    ctx.lineWidth = inBind ? 1.5 : 1;
-    ctx.stroke();
-
-    // Letter
-    ctx.font = `bold 7px monospace`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = isLight ? (baseCol[base] || '#374151') : (baseCol[base] || '#e8eaf0');
-    ctx.fillText(base, x, Y);
-  }
-
-  // Labels
-  ctx.font = '7px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = isLight ? '#64748b' : '#6b7280';
-
-  // Label the struct line count
-  const paired = struct.split('').filter(c => c !== '.').length;
-  const bindPaired = struct.slice(bindStart, bindEnd).split('').filter(c => c !== '.').length;
-  label.textContent = `${paired} par łącznie · ${bindPaired} w regionie wiązania · [ ] = miejsce wiązania miRNA`;
-}
-
-
-Object.assign(HELP_TEXTS, {
-    titration: {
-        title: 'Krzywa miareczkowania',
-        body: 'Wykres prawdopodobieństwa zajęcia miejsca wiązania P w funkcji stężenia miRNA.\n\nOś X: log₁₀([miRNA]/Kd) — stosunek stężenia miRNA do stałej dysocjacji\nOś Y: P(zajętości) w %\n\nKrzywa sigmoidalna — punkt infleksji (EC₅₀) przy [miRNA]=Kd, czyli x=0.\n\nPrzesuniecie krzywej w prawo = wyższe Kd = słabsze wiązanie (wysoki ΔG).\nPrzesunięcie w lewo = niższe Kd = silniejsze wiązanie (niski ΔG).\n\nJeśli obliczono efekt gąbki: przerywana linia = krzywa bez sponge, ciągła = z uwzględnieniem rozcieńczenia przez ceRNA.\n\nModel: P = [M] / ([M] + Kd), Kd = exp(ΔG / RT)'
-    },
-    sponge: {
-        title: 'Sponge Effect — efekt gąbki ceRNA',
-        body: 'Modeluje sekwestrację miRNA przez konkurujące RNA (ceRNA — competing endogenous RNA).\n\nPrzykłady ceRNA: lncRNA (LINC00673, HOTAIR), pseudogeny, okrągłe RNA (circRNA).\n\nModel (uproszczony):\nRozcieńczenie = 1 + Σ Ka_i\ngdzie Ka_i = exp(-ΔG_i / RT) dla każdego miejsca wiązania w ceRNA.\n\nWolne miRNA = 100% / rozcieńczenie\n\nZałożenia:\n• [ceRNA] ≫ Kd (model saturacyjny — konserwatywna górna granica sekwestracji)\n• Równe stężenia wszystkich ceRNA\n• Brak struktury trzeciorzędowej\n\nIm wyższe rozcieńczenie, tym mniej wolnego miRNA dostępnego dla Twojego genu docelowego.'
-    },
-    spongethreshold: {
-        title: 'Próg ΔG dla sponge',
-        body: 'Minimalna energia wiązania (ΔG, kcal/mol), poniżej której miejsce wiązania jest uwzględniane w obliczeniu efektu gąbki.\n\nWartość domyślna: −3.0 kcal/mol\n\nWskazówki:\n• −3.0 kcal/mol — konserwatywne (tylko wyraźne miejsca)\n• −2.0 kcal/mol — bardziej liberalne, uwzględnia słabsze miejsca\n• −5.0 kcal/mol — rygorystyczne (tylko silne miejsca)\n\nNiższy próg (np. −2.0) może przeceniać efekt gąbki, włączając miejsca o małym znaczeniu biologicznym.\nWyższy próg (np. −5.0) może niedoceniać go, pomijając miejsca o umiarkowanym powinowactwie.'
-    },
-    spongequant: {
-        title: 'Model ilościowy — kopie/komórkę',
-        body: 'Precyzyjny model uwzględniający rzeczywiste stężenia w komórce.\n\nW odróżnieniu od modelu saturacyjnego (rozcieńczenie × w tabeli), ten model rozwiązuje dokładne równanie kwadratowe:\n\nx² + (Kd + ceRNA_total − miRNA_total)·x − miRNA_total·Kd = 0\n\ngdzie x = wolne miRNA [kopie]\n\nBez założenia [ceRNA] ≫ Kd.\n\nKd [kopie] = exp(ΔG/RT) × Na × V_komórki\n\nTypowe wartości:\n• miRNA: 1 000–50 000 kopii (silne do 500 000)\n• długie RNA syntetyczne (szczyt): 1 000–100 000 kopii\n• lncRNA/circRNA: 10–1 000 kopii\n\nObjętość: limfocyt ~300 μm³ · hepatocyt ~5 000 μm³ · mięsień ~10 000 μm³\n\nWynik w nM = kopie / (Na × V[L] × 1000)'
-    },
-    dgfilter: {
-        title: 'Próg ΔG skanowania',
-        body: 'Minimalna energia wiązania (ΔG, kcal/mol) aby miRNA było uwzględnione w wynikach.\n\nWartość domyślna: -3.0 kcal/mol\n\nKiedy zmieniać:\n• -3.0 kcal/mol — standard, filtruje słabe/niespecyficzne miejsca\n• -2.0 kcal/mol — liberalne, pokazuje słabe miejsca (np. let-7 w NRAS)\n• -1.0 kcal/mol — bardzo liberalne, dużo fałszywych wyników\n• -5.0 kcal/mol — rygorystyczne, tylko silne wiązania\n\nUżywaj -2.0 gdy szukasz słabo zbadanych miRNA z niską energią wiązania które mogą być biologicznie istotne przy wysokiej konserwacji ewolucyjnej.'
-    },
-    boltslider: {
-        title: 'Suwak względnej liczebności miRNA',
-        body: 'Symuluje wpływ różnego stężenia miRNA A vs B na równowagę wiązania.\n\nPrzesunięcie w prawo = więcej miRNA B w komórce.\nPrzesunięcie w lewo = więcej miRNA A.\n\nModel: waga Boltzmanna skalowana przez stosunek stężeń:\nZ_B = exp(-ΔG_B/RT) × [B]/[A]\n\nPrzykład: przy ΔG_A = -8, ΔG_B = -7 kcal/mol:\n→ Domyślnie A dominuje (~73% vs ~27%)\n→ Po przesunięciu suwaka na 4× więcej B:\n→ B wyrównuje (ok. 50%/50%)\n\nRT = 0.593 kcal/mol @ 37°C.'
-    },
-    accessibility: {
-        title: 'Dostępność strukturalna mRNA (Zuker-lite)',
-        body: 'Ocenia, czy region wiązania miRNA jest "otwarty" (dostępny) czy "zamknięty" (sparowany w strukturze wtórnej mRNA).\n\nAlgorytm: uproszczony Zuker MFE (programowanie dynamiczne O(n³)) na oknie ±40 nt wokół miejsca wiązania. Parametry stackingowe Turner 2004.\n\nΔG_open = koszt rozplątania sparowanych zasad w regionie wiązania (~1.5 kcal/mol na parę)\nΔG_total = ΔG_binding + ΔG_open\n\nKlasyfikacja:\n🟢 HIGH — ≤25% zasad sparowanych — miejsce łatwo dostępne\n🟡 MED — 26–60% sparowanych — dostępność umiarkowana\n🔴 LOW — >60% sparowanych — miejsce zasłonięte strukturą\n\nWysoka dostępność (HIGH) przy silnym ΔG = kandydat klasy A.\nNiski ΔG z LOW dostępnością = potencjał biologicznie ograniczony.\n\nMożna wyłączyć checkbox "Acc." przy przycisku Skanuj aby przyspieszyć skanowanie.\n\nOgraniczenia: model nie uwzględnia pseudoknots, multiloopów ani kontekstu białkowego (RBP).'
-    },
-    dgtotal: {
-        title: 'ΔG_total — energia wiązania z korekcją dostępności',
-        body: 'ΔG_total = ΔG_binding + ΔG_open\n\nΔG_binding — standardowa energia hybrydyzacji miRNA–mRNA (Turner 2004 + Owczarzy)\nΔG_open — koszt "otwarcia" struktury wtórnej mRNA w regionie wiązania (Zuker-lite)\n\nIm bardziej ujemna wartość ΔG_total, tym lepszy kandydat biologiczny:\n• ΔG_total < -10 kcal/mol — silne + dostępne\n• Wysoki ΔG_open przy dobrym ΔG_binding = miejsce może być nieaktywne in vivo\n\nPrzykład:\n  ΔG_binding = -8.5, ΔG_open = +3.5 → ΔG_total = -5.0\n  → Mimo dobrego wiązania, struktura mRNA utrudnia dostęp\n\nSortowanie po ΔG_total daje biologicznie bardziej wiarygodny ranking niż samo ΔG.'
-    }
-});
-
-// ============================================================
-// PRZEŁĄCZNIK JĘZYKA PL / EN
-// Działa przez data-i18n atrybuty w HTML — brak zewnętrznych zależności
-// ============================================================
-const I18N = {
-  pl:{
-    // Przyciski główne
-    btn_scan:'🔍 Skanuj', btn_example:'▶ Przykład', btn_clear:'✕ Wyczyść',
-    // Etykiety input
-    lbl_sequence:"Sekwencja mRNA (3'UTR / CDS / pełny transkrypt)",
-    lbl_organism:'Organizm', lbl_minseed:'Min. seed WC', lbl_rankby:'Ranking wg',
-    lbl_salt:'[Na⁺] mol/L', lbl_topn:'Top wyników', lbl_dgfilter:'Próg ΔG ≤',
-    lbl_noncan:'Niekanoniczne', lbl_acc:'Acc.',
-    // Export
-    btn_csv:'⬇ CSV', btn_manuscript:'📄 Manuskrypt', btn_png:'🖼 PNG duplex',
-    btn_pdf:'📋 PDF', btn_docx:'📝 DOCX', btn_json:'{ } JSON',
-    btn_dualview:'⚖ Dual View', btn_session:'♻ Przywróć sesję',
-    // Dual view
-    dual_title:'⚖ Porównywarka miRNA — Dual View',
-    dual_close:'✕ Zamknij',
-    dual_pdf:'📋 Eksport PDF (porównanie)',
-    dual_docx:'📝 Eksport DOCX (porównanie)',
-    dual_titration:'📈 Krzywa miareczkowania',
-    dual_sponge:'🧽 Efekt gąbki',
-    dual_shadowing:'🗺 Mapa zajętości mRNA — Shadowing Track',
-    dual_boltslider:'🧪 Względna liczebność miRNA B vs A',
-    // Sponge
-    sponge_title:'🧽 Efekt gąbki ceRNA',
-    sponge_input:'Wklej sekwencje ceRNA (FASTA lub plain RNA)',
-    sponge_threshold:'Próg ΔG ≤',
-    sponge_calc:'🔬 Oblicz efekt gąbki',
-    sponge_clear:'✕ Wyczyść',
-    // Quant model
-    quant_title:'🔢 Model ilościowy (kopie/komórkę)',
-    quant_enable:'Włącz',
-    quant_copies_a:'Kopie miRNA A / komórkę',
-    quant_copies_b:'Kopie miRNA B / komórkę',
-    quant_copies_cerna:'Kopie ceRNA / komórkę',
-    quant_volume:'Objętość komórki (μm³)',
-    quant_hint:'Przykłady: hepatocyt 5000 μm³ · limfocyt 300 μm³ · komórka mięśnia 10 000 μm³<br>miRNA: typowe 1 000–50 000 · silnie eksp. do 500 000 · długie RNA syntetyczne (szczyt) 1 000–100 000',
-    // NCBI
-    ncbi_title:'Auto-pobieranie z NCBI',
-    ncbi_id:'ID RefSeq / GenBank / Gen',
-    ncbi_region:'Region',
-    ncbi_utr3:"3'UTR", ncbi_full:'Pełny mRNA', ncbi_cds:'CDS',
-    ncbi_fetch:'⬇ Pobierz sekwencję',
-    // Status
-    status_ready:'Gotowe. Wklej sekwencję i kliknij Skanuj.',
-    // Theme
-    theme_dark:'🌙 Ciemny', theme_light:'☀️ Jasny',
-    lang_btn:'🌐 EN',
-  },
-  en:{
-    btn_scan:'🔍 Scan', btn_example:'▶ Example', btn_clear:'✕ Clear',
-    lbl_sequence:"mRNA sequence (3'UTR / CDS / full transcript)",
-    lbl_organism:'Organism', lbl_minseed:'Min. seed WC', lbl_rankby:'Rank by',
-    lbl_salt:'[Na⁺] mol/L', lbl_topn:'Top results', lbl_dgfilter:'ΔG threshold ≤',
-    lbl_noncan:'Non-canonical', lbl_acc:'Acc.',
-    btn_csv:'⬇ CSV', btn_manuscript:'📄 Manuscript', btn_png:'🖼 PNG duplex',
-    btn_pdf:'📋 PDF', btn_docx:'📝 DOCX', btn_json:'{ } JSON',
-    btn_dualview:'⚖ Dual View', btn_session:'♻ Restore session',
-    dual_title:'⚖ miRNA Comparator — Dual View',
-    dual_close:'✕ Close',
-    dual_pdf:'📋 Export PDF (comparison)',
-    dual_docx:'📝 Export DOCX (comparison)',
-    dual_titration:'📈 Titration curve',
-    dual_sponge:'🧽 Sponge effect',
-    dual_shadowing:'🗺 mRNA occupancy map — Shadowing Track',
-    dual_boltslider:'🧪 Relative abundance miRNA B vs A',
-    sponge_title:'🧽 ceRNA Sponge Effect',
-    sponge_input:'Paste ceRNA sequences (FASTA or plain RNA)',
-    sponge_threshold:'ΔG threshold ≤',
-    sponge_calc:'🔬 Calculate sponge effect',
-    sponge_clear:'✕ Clear',
-    quant_title:'🔢 Quantitative model (copies/cell)',
-    quant_enable:'Enable',
-    quant_copies_a:'miRNA A copies / cell',
-    quant_copies_b:'miRNA B copies / cell',
-    quant_copies_cerna:'ceRNA copies / cell',
-    quant_volume:'Cell volume (μm³)',
-    quant_hint:'Examples: hepatocyte 5000 μm³ · lymphocyte 300 μm³ · muscle cell 10 000 μm³<br>miRNA: typical 1,000–50,000 · highly expressed up to 500,000 · long synthetic RNA (peak) 1,000–100,000',
-    ncbi_title:'Auto-fetch from NCBI',
-    ncbi_id:'RefSeq / GenBank / Gene ID',
-    ncbi_region:'Region',
-    ncbi_utr3:"3'UTR", ncbi_full:'Full mRNA', ncbi_cds:'CDS',
-    ncbi_fetch:'⬇ Fetch sequence',
-    status_ready:'Ready. Paste a sequence and click Scan.',
-    theme_dark:'🌙 Dark', theme_light:'☀️ Light',
-    lang_btn:'🌐 PL',
-  }
-};
-let _lang = localStorage.getItem('mirna-lang')||'pl';
-function applyLang(lang){
-  _lang=lang;
-  localStorage.setItem('mirna-lang',lang);
-  const t=I18N[lang];
-  const lb=document.getElementById('langToggle');
-  if(lb) lb.textContent=t.lang_btn;
-  const tb=document.getElementById('themeToggle');
-  if(tb) tb.textContent=document.body.classList.contains('light')?t.theme_light:t.theme_dark;
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const key=el.dataset.i18n;
-    if(t[key]===undefined) return;
-    if(el.dataset.i18nHtml){el.innerHTML=t[key];}
-    else if(el.tagName==='INPUT'&&el.type!=='button'&&el.type!=='submit'){el.placeholder=t[key];}
-    else{el.textContent=t[key];}
-  });
-  document.documentElement.lang=lang;
-}
-function toggleLang(){applyLang(_lang==='pl'?'en':'pl');}
-(function(){const s=localStorage.getItem('mirna-lang');if(s&&s!=='pl')applyLang(s);})();
 
 </script>
 </body>

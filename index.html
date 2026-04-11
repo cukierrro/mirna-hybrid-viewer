@@ -186,7 +186,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.min.js"></script>
+<!-- docx.js replaced with inline DOCX generator - no external dependency -->
 <script src="https://3dmol.org/build/3Dmol-min.js"></script>
 </head>
 <body>
@@ -7748,15 +7748,12 @@ async function updateMiRTarBaseLink(mirnaName, mrnaSeq, hitPos, hitLen, org) {
 async function exportPDF() {
   if(!RESULTS.length) return;
   try {
-    const {jsPDF} = window.jspdf;
-    const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
-    const pgW = pdf.internal.pageSize.getWidth();
-    const pgH = pdf.internal.pageSize.getHeight();
-    const margin = 10;
-    const rowH = 7;
-    const headerH = 28;
-    const colWidths = [8,32,8,16,16,16,16,22,12,10,10,12,16,10];
-    const headers = ['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.'];
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pgW=pdf.internal.pageSize.getWidth(), pgH=pdf.internal.pageSize.getHeight();
+    const margin=10, rowH=7, headerH=28;
+    const colWidths=[8,32,8,16,16,16,16,22,12,10,10,12,16,10];
+    const headers=['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.'];
     const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
     const st=(document.getElementById('fSeed')||{}).value||'';
     const org=(document.getElementById('fOrg')||{}).value||'';
@@ -7826,40 +7823,218 @@ async function exportPDF() {
 }
 
 // ============================================================
-// EXPORT DOCX (docx.js)
+// ============================================================
+// MINIMAL DOCX GENERATOR — no external library needed
+// Builds a valid .docx (OOXML ZIP) using only native browser APIs
+// ============================================================
+const _docxBuilder = (() => {
+  // --- ZIP (Store, no compression) ---
+  function u8(s){ return new TextEncoder().encode(s); }
+  function le2(n){ return [n&0xff,(n>>8)&0xff]; }
+  function le4(n){ return [n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff]; }
+  function crc32(data){
+    let c=0xffffffff;
+    for(let i=0;i<data.length;i++){
+      c^=data[i];
+      for(let j=0;j<8;j++) c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
+    }
+    return (c^0xffffffff)>>>0;
+  }
+  function zipFile(name,data){
+    const n=u8(name), crc=crc32(data), sz=data.length;
+    const local=[0x50,0x4b,0x03,0x04, 20,0, 0,0, 0,0, 0,0, 0,0,
+      ...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),
+      ...n,...data];
+    const central=[0x50,0x4b,0x01,0x02, 20,0,20,0, 0,0, 0,0, 0,0, 0,0,
+      ...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...le2(0),
+      ...le2(0),...le2(0),...le4(0),...le4(0),...n];
+    return {local:new Uint8Array(local), central:new Uint8Array(central), offset:0};
+  }
+  function buildZip(files){
+    // files: [{name, data:Uint8Array}]
+    const entries=[];
+    let off=0;
+    for(const f of files){
+      const e=zipFile(f.name,f.data);
+      e.offset=off;
+      entries.push(e);
+      off+=e.local.length;
+    }
+    const centralStart=off;
+    let centralSize=0;
+    const centralParts=[];
+    for(const e of entries){
+      // patch offset into central directory
+      const c=new Uint8Array(e.central);
+      const le=le4(e.offset);
+      c[42]=le[0];c[43]=le[1];c[44]=le[2];c[45]=le[3];
+      centralParts.push(c);
+      centralSize+=c.length;
+    }
+    const eocd=[0x50,0x4b,0x05,0x06, 0,0, 0,0,
+      ...le2(entries.length),...le2(entries.length),
+      ...le4(centralSize),...le4(centralStart),...le2(0)];
+    const total=off+centralSize+eocd.length;
+    const buf=new Uint8Array(total);
+    let pos=0;
+    for(const e of entries){ buf.set(e.local,pos); pos+=e.local.length; }
+    for(const c of centralParts){ buf.set(c,pos); pos+=c.length; }
+    buf.set(new Uint8Array(eocd),pos);
+    return buf;
+  }
+  // --- XML helpers ---
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function para(text,opts={}){
+    const sz=opts.sz||20, bold=opts.bold?'<w:b/>':'', color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
+    return `<w:p><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p>`;
+  }
+  function cell(text,opts={}){
+    const sz=opts.sz||16, bold=opts.bold?'<w:b/>':'', color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
+    const shading=opts.bg?`<w:shd w:val="clear" w:color="auto" w:fill="${opts.bg}"/>`:'';
+    return `<w:tc><w:tcPr>${shading}<w:tcW w:w="0" w:type="auto"/></w:tcPr><w:p><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p></w:tc>`;
+  }
+  function row(cells,trPr=''){ return `<w:tr>${trPr}${cells.join('')}</w:tr>`; }
+  function makeTable(rows){ return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr>${rows.join('')}</w:tbl>`; }
+
+  return {
+    buildResultsDOCX(results, meta){
+      const hdrs=['#','miRNA','Org','ΔG','ΔG(1M)','ΔG coop','ΔG_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.','Sekwencja'];
+      const hdrRow=row(hdrs.map(h=>cell(h,{bold:true,bg:'1a3a2a',color:'00d4aa',sz:14})),
+        '<w:trPr><w:tblHeader/></w:trPr>');
+      const dataRows=results.map((r,i)=>{
+        const bg=i%2===0?'1a1e26':'151820';
+        const dg=r.hit.dg;
+        const dgColor=dg<-10?'00d4aa':dg<-6?'fbbf24':'9ca3af';
+        return row([
+          cell(String(i+1),{bg,color:'6b7280',sz:14}),
+          cell(r.name,{bg,sz:14}),
+          cell(r.org,{bg,color:r.org==='hsa'?'00d4aa':r.org==='mmu'?'60a5fa':'f87171',sz:14}),
+          cell(String(dg),{bg,color:dgColor,sz:14}),
+          cell(String(r.hit.dg1M??dg),{bg,color:'9ca3af',sz:14}),
+          cell(String(r.hit.dgCoop),{bg,sz:14}),
+          cell(String(r.hit.dgTotal??dg),{bg,sz:14}),
+          cell(r.hit.seedType,{bg,color:'ff6b35',sz:14}),
+          cell(String(r.hit.pos+1),{bg,color:'9ca3af',sz:14}),
+          cell(String(r.hit.wc),{bg,color:'00d4aa',sz:14}),
+          cell(String(r.hit.gu),{bg,color:'fbbf24',sz:14}),
+          cell(r.hit.auPct+'%',{bg,sz:14}),
+          cell(String(r.hit.conservation?.score??'—'),{bg,sz:14}),
+          cell(r.hit.accessibility??'—',{bg,color:r.hit.accessibility==='HIGH'?'00d4aa':r.hit.accessibility==='MED'?'fbbf24':'f87171',sz:14}),
+          cell(r.mirna,{bg,color:'6b7280',sz:12}),
+        ]);
+      });
+      const bodyXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>
+${para('miRNA Target Prediction Report',{bold:true,sz:36,color:'00d4aa'})}
+${para(`Date: ${new Date().toISOString().slice(0,10)} | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: ${meta.na}M`,{sz:16,color:'6b7280'})}
+${para(`miRBase v22.1: hsa:${meta.hsa} mmu:${meta.mmu} rno:${meta.rno} ath:${meta.ath} | Hits: ${results.length}`,{sz:16,color:'6b7280'})}
+${para('')}
+${makeTable([hdrRow,...dataRows])}
+<w:sectPr><w:pgSz w:w="20870" w:h="16838" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>
+</w:body></w:document>`;
+      return this._pack(bodyXml);
+    },
+    buildDualDOCX(A,B,overlap){
+      const RT=0.593;
+      const ZA=Math.exp(-A.hit.dg/RT), ZB=Math.exp(-B.hit.dg/RT);
+      const Z=overlap>0?1+ZA+ZB:ZA+ZB;
+      const pA=overlap>0?(ZA/Z*100).toFixed(1):(ZA/(ZA+ZB)*100).toFixed(1);
+      const pB=overlap>0?(ZB/Z*100).toFixed(1):(ZB/(ZA+ZB)*100).toFixed(1);
+      const params=[
+        ['Parametr','miRNA A','miRNA B','Różnica (B−A)'],
+        ['Nazwa',A.name,B.name,'—'],
+        ['Seed type',A.hit.seedType,B.hit.seedType,'—'],
+        ['ΔG (kcal/mol)',A.hit.dg,B.hit.dg,(B.hit.dg-A.hit.dg).toFixed(2)],
+        ['ΔG 1M (kcal/mol)',A.hit.dg1M??A.hit.dg,B.hit.dg1M??B.hit.dg,((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)],
+        ['Pary WC',A.hit.wc,B.hit.wc,B.hit.wc-A.hit.wc],
+        ['Pary G:U',A.hit.gu,B.hit.gu,B.hit.gu-A.hit.gu],
+        ['AU%',A.hit.auPct+'%',B.hit.auPct+'%',(B.hit.auPct-A.hit.auPct).toFixed(1)+'%'],
+        ['Pozycja (start)',A.hit.pos+1,B.hit.pos+1,B.hit.pos-A.hit.pos],
+      ];
+      const tblRows=params.map((r,i)=>{
+        const isHdr=i===0;
+        const bg=isHdr?'1a3a2a':i%2===0?'1a1e26':'151820';
+        return row(r.map((v,ci)=>cell(String(v),{
+          bold:isHdr,bg,
+          color:isHdr?['00d4aa','00d4aa','f97316','a78bfa'][ci]:'e8eaf0',
+          sz:isHdr?15:16
+        })));
+      });
+      const bodyXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>
+${para('miRNA Hybrid Viewer v1.0 — Raport Porównawczy',{bold:true,sz:32,color:'00d4aa'})}
+${para(`Wygenerowano: ${new Date().toISOString().slice(0,10)} | mRNA: ${A.mrnaLen??'?'} nt`,{sz:16,color:'6b7280'})}
+${para('')}
+${para(`miRNA A: ${A.name} | ${A.hit.seedType} | ΔG ${A.hit.dg} kcal/mol | pos ${A.hit.pos+1}`,{bold:true,sz:18,color:'3b82f6'})}
+${para(`miRNA B: ${B.name} | ${B.hit.seedType} | ΔG ${B.hit.dg} kcal/mol | pos ${B.hit.pos+1}`,{bold:true,sz:18,color:'f97316'})}
+${para('')}
+${makeTable(tblRows)}
+${para('')}
+${para(`Model Boltzmanna (37°C): P(A)=${pA}%, P(B)=${pB}% | ${overlap>0?'Wiązanie wzajemnie wykluczające':'Wiązanie niezależne'}`,{sz:16,color:'6b7280'})}
+${para(`miRNA Hybrid Viewer v1.0 | PRAMĀ Institute | ${new Date().toISOString().slice(0,10)}`,{sz:14,color:'6b7280'})}
+<w:sectPr><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>
+</w:body></w:document>`;
+      return this._pack(bodyXml);
+    },
+    _pack(bodyXml){
+      const rel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+      const wordRel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+      const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="20"/></w:rPr></w:rPrDefault></w:docDefaults>
+</w:styles>`;
+      const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+      const enc=s=>u8(s);
+      const zip=buildZip([
+        {name:'[Content_Types].xml',data:enc(ct)},
+        {name:'_rels/.rels',data:enc(rel)},
+        {name:'word/_rels/document.xml.rels',data:enc(wordRel)},
+        {name:'word/styles.xml',data:enc(styles)},
+        {name:'word/document.xml',data:enc(bodyXml)},
+      ]);
+      return new Blob([zip],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    }
+  };
+})();
+
+// ============================================================
+// EXPORT DOCX — wyniki (bez zewnętrznych bibliotek)
 // ============================================================
 async function exportDOCX() {
   if(!RESULTS.length) return;
-  if(typeof docx === 'undefined') {
-    alert('Biblioteka docx.js nie załadowała się. Sprawdź połączenie z internetem i odśwież stronę.');
-    return;
-  }
   try {
-    const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType}=docx;
-    const hdrStyle={bold:true,size:20,color:'000000'};
-    const cellW={size:11,type:WidthType.PERCENTAGE};
-    const hdrs=['#','miRNA','Org','ΔG','ΔG(1M)','ΔG coop','Seed type','Pos','WC','AU%','Cons'];
-    const makeCell=(txt,bold=false)=>new TableCell({width:cellW,children:[new Paragraph({children:[new TextRun({text:String(txt),bold,size:16})]})]});
-    const hdrRow=new TableRow({children:hdrs.map(h=>makeCell(h,true)),tableHeader:true});
-    const dataRows=RESULTS.map((r,i)=>new TableRow({children:[
-      makeCell(i+1),makeCell(r.name),makeCell(r.org),makeCell(r.hit.dg),
-      makeCell(r.hit.dg1M??r.hit.dg),makeCell(r.hit.dgCoop),makeCell(r.hit.seedType),
-      makeCell(r.hit.pos+1),makeCell(r.hit.wc),makeCell(r.hit.auPct+'%'),
-      makeCell(r.hit.conservation?.score??'')
-    ]}));
+    const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0};
     const na=document.getElementById('saltConc').value||0.15;
-    const _dbc = window.MIRNA_DB_COUNTS || {hsa:0,mmu:0,rno:0,ath:0};
-    const doc=new Document({sections:[{children:[
-      new Paragraph({children:[new TextRun({text:'miRNA Target Prediction Report',bold:true,size:32,color:'00d4aa'})]}),
-      new Paragraph({children:[new TextRun({text:`Date: ${new Date().toISOString().slice(0,10)} | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: ${na}M`,size:16,color:'6b7280'})]}),
-      new Paragraph({children:[new TextRun({text:`miRBase v22.1: hsa:${_dbc.hsa} mmu:${_dbc.mmu} rno:${_dbc.rno} ath:${_dbc.ath} | Hits shown: ${RESULTS.length}`,size:16,color:'6b7280'})]}),
-      new Paragraph({text:''}),
-      new Table({rows:[hdrRow,...dataRows],width:{size:100,type:WidthType.PERCENTAGE}})
-    ]}]});
-    const blob=await Packer.toBlob(doc);
+    // Apply active filters
+    const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
+    const st=(document.getElementById('fSeed')||{}).value||'';
+    const org=(document.getElementById('fOrg')||{}).value||'';
+    const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
+    const filtered=RESULTS.filter(r=>{
+      if(txt&&!r.name.toLowerCase().includes(txt))return false;
+      if(st&&r.hit.seedType!==st)return false;
+      if(org&&r.org!==org)return false;
+      if(consMin>0&&(r.hit.conservation?.score??0)<consMin)return false;
+      return true;
+    });
+    const blob=_docxBuilder.buildResultsDOCX(filtered,{na,hsa:_dbc.hsa,mmu:_dbc.mmu,rno:_dbc.rno,ath:_dbc.ath});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='mirna_report_v1.0.docx';a.click();URL.revokeObjectURL(a.href);
-  } catch(e){ alert('DOCX export wymaga biblioteki docx.js (załaduj online).'); console.error(e); }
+    a.download=`mirna_report_v1.0_${filtered.length}wynikow.docx`;a.click();URL.revokeObjectURL(a.href);
+  } catch(e){ alert('Błąd eksportu DOCX: '+e.message); console.error(e); }
 }
 
 // ============================================================
@@ -8833,55 +9008,9 @@ async function exportDualDOCX() {
     if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) return;
     const A = RESULTS[idxA], B = RESULTS[idxB];
     try {
-        const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-                WidthType, AlignmentType, HeadingLevel, BorderStyle } = docx;
-
-        const mkCell = (text, bold=false, color='000000') => new TableCell({children:[
-            new Paragraph({children:[new TextRun({text:String(text),bold,color,size:18})]})
-        ]});
-        const hdr = new TableRow({children:[
-            mkCell('Parametr',true,'009b7d'), mkCell('miRNA A',true,'3b82f6'),
-            mkCell('miRNA B',true,'f97316'), mkCell('Różnica (B−A)',true,'7c3aed')
-        ]});
-        const rows2 = [
-            ['Seed type', A.hit.seedType, B.hit.seedType, '—'],
-            ['ΔG (kcal/mol)', A.hit.dg, B.hit.dg, (B.hit.dg-A.hit.dg).toFixed(2)],
-            ['ΔG(1M) (kcal/mol)', A.hit.dg1M??A.hit.dg, B.hit.dg1M??B.hit.dg, ((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)],
-            ['Pary WC', A.hit.wc, B.hit.wc, B.hit.wc-A.hit.wc],
-            ['Pary G:U', A.hit.gu, B.hit.gu, B.hit.gu-A.hit.gu],
-            ['AU%', A.hit.auPct+'%', B.hit.auPct+'%', (B.hit.auPct-A.hit.auPct).toFixed(1)+'%'],
-            ['Pozycja start', A.hit.pos+1, B.hit.pos+1, B.hit.pos-A.hit.pos],
-        ].map(r => new TableRow({children: r.map(c => mkCell(c))}));
-
         const overlapNt = Math.max(0, Math.min(A.hit.pos+A.mirna.length, B.hit.pos+B.mirna.length)-Math.max(A.hit.pos,B.hit.pos));
-        const RT=0.593;
-        const ZA=Math.exp(-A.hit.dg/RT), ZB=Math.exp(-B.hit.dg/RT);
-        const Z = overlapNt>0 ? 1+ZA+ZB : null;
-        const pA = Z?(ZA/Z*100).toFixed(1):(1/(1+Math.exp(A.hit.dg/RT))*100).toFixed(1);
-        const pB = Z?(ZB/Z*100).toFixed(1):(1/(1+Math.exp(B.hit.dg/RT))*100).toFixed(1);
-
-        const doc = new Document({sections:[{children:[
-            new Paragraph({heading:HeadingLevel.HEADING_1, children:[new TextRun({text:'Raport porównawczy miRNA — Dual View', color:'009b7d', bold:true, size:28})]}),
-            new Paragraph({children:[new TextRun({text:`Wygenerowano: ${new Date().toISOString().slice(0,19)} | miRNA Hybrid Viewer v1.0 (PRAMĀ)`, size:16, color:'6b7280'})]}),
-            new Paragraph({text:''}),
-            new Paragraph({children:[new TextRun({text:`🔵 miRNA A: ${A.name}`, bold:true, size:22, color:'3b82f6'})]}),
-            new Paragraph({children:[new TextRun({text:`Sekwencja: 5'-${A.mirna}-3' | ΔG: ${A.hit.dg} kcal/mol | Seed: ${A.hit.seedType} | Pos: ${A.hit.pos+1}–${A.hit.pos+A.mirna.length}`, size:18})]}),
-            new Paragraph({text:''}),
-            new Paragraph({children:[new TextRun({text:`🟠 miRNA B: ${B.name}`, bold:true, size:22, color:'f97316'})]}),
-            new Paragraph({children:[new TextRun({text:`Sekwencja: 5'-${B.mirna}-3' | ΔG: ${B.hit.dg} kcal/mol | Seed: ${B.hit.seedType} | Pos: ${B.hit.pos+1}–${B.hit.pos+B.mirna.length}`, size:18})]}),
-            new Paragraph({text:''}),
-            new Paragraph({children:[new TextRun({text:'Tabela porównawcza', bold:true, size:22, color:'7c3aed'})]}),
-            new Table({rows:[hdr,...rows2], width:{size:100,type:WidthType.PERCENTAGE}}),
-            new Paragraph({text:''}),
-            new Paragraph({children:[new TextRun({text:'Model termodynamiczny (Boltzmann, 37°C)', bold:true, size:20, color:'ef4444'})]}),
-            new Paragraph({children:[new TextRun({text:`Typ wiązania: ${overlapNt>0?`Wzajemnie wykluczające (overlap ${overlapNt} nt)`:'Niezależne'}`, size:18})]}),
-            new Paragraph({children:[new TextRun({text:`P(A zajęte) = ${pA}% | P(B zajęte) = ${pB}%`, size:18})]}),
-            new Paragraph({children:[new TextRun({text:`ΔΔG = ${(B.hit.dg-A.hit.dg).toFixed(2)} kcal/mol | ${B.hit.dg<A.hit.dg?'B silniejsze':'A silniejsze'}`, size:18, bold:true})]}),
-            new Paragraph({text:''}),
-            new Paragraph({children:[new TextRun({text:'Metodologia: Energie swobodne obliczone wg Turner 2004 z korektą solną Owczarzy 2004. Prawdopodobieństwa zajętości: model Boltzmanna zakładający równe stężenia i brak struktury trzeciorzędowej mRNA.', size:16, color:'6b7280', italics:true})]}),
-        ]}]});
-
-        const blob = await Packer.toBlob(doc);
+        A.mrnaLen = CURRENT_MRNA.length;
+        const blob = _docxBuilder.buildDualDOCX(A, B, overlapNt);
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `dual_comparison_${A.name}_vs_${B.name}.docx`;

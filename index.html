@@ -9601,6 +9601,8 @@ function renderSpongeQuant(resA, resB, resultEl) {
     div.style.cssText = 'margin-top:.6rem;padding:.5rem .65rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font-size:.67rem';
     div.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">🔢 Model ilościowy — wyniki</div>`;
 
+    const V_L = volUm3 * 1e-15;
+    const Na = 6.022e23;
     const fmtNM = (copies) => {
         const val = copies / (Na * V_L * 1000);
         if (val === 0) return '0';

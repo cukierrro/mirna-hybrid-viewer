@@ -9327,7 +9327,7 @@ function runSpongeAnalysis() {
         // (nie tylko najlepsze — suma Ka po wszystkich miejscach o ΔG ≤ -3 kcal/mol)
         const dgThreshold = parseFloat(document.getElementById('spongeDgThreshold')?.value ?? '-3.0') || -3.0;
 
-        const analyzeForMirna = (mirna, mirnaName, mirnaCount) => {
+        const analyzeForMirna = (mirna, mirnaName, mirnaCount, ceRNACopies) => {
             let totalOccupancy = 0;
             let totalSites = 0;
             let totalKa = 0;  // keep for reference/details
@@ -9362,8 +9362,8 @@ function runSpongeAnalysis() {
             }
             
             // NEW REALISTIC MODEL with stoichiometric constraint
-            // Effective binding capacity = occupancy sum (expected # sites that can be bound)
-            const bindingCapacity = totalOccupancy;
+            // Effective binding capacity = ceRNA_copies × occupancy sum (expected # sites that can be bound per ceRNA molecule)
+            const bindingCapacity = ceRNACopies * totalOccupancy;
             
             // Apply soft saturation: bound = capacity × (1 - exp(-miRNA_total / capacity))
             // This ensures: when miRNA >> capacity → bound ≈ capacity
@@ -9381,12 +9381,12 @@ function runSpongeAnalysis() {
             let pctFree = (freeFraction * 100).toFixed(2);
             if (freeFraction > 0.999) pctFree = '>99.9';
             
-            // Dilution as fold-change in free miRNA
-            const dilution = freeMirna > 0 ? mirnaCount / freeMirna : 1.0;
+            // Relative reduction in free miRNA
+            const reductionPct = ((mirnaCount - freeMirna) / mirnaCount * 100).toFixed(1);
             
             return {
                 totalKa, 
-                dilution, 
+                reductionPct, 
                 pctFree, 
                 details, 
                 mirnaName,
@@ -9398,8 +9398,8 @@ function runSpongeAnalysis() {
             };
         };
 
-        const resA = analyzeForMirna(rA.mirna, rA.name, mirnaACopies);
-        window._spongeDilutionA = resA.dilution;
+        const resA = analyzeForMirna(rA.mirna, rA.name, mirnaACopies, ceRNACopies);
+        window._spongeDilutionA = parseFloat(resA.reductionPct); // now reduction percentage as number
         window._spongeDilutionB = 1.0;
 
         let html = warningHtml;
@@ -9413,15 +9413,22 @@ function runSpongeAnalysis() {
             } else {
                 const totalSites = res.details.reduce((s,d) => s+d.nSites, 0);
                 html += t.sponge_summary_sites.replace('{count}', totalSites).replace('{found}', res.details.length).replace('{total}', seqs.length);
-                html += `${t.sponge_dilution_prefix} <strong>${res.dilution.toFixed(2)}×</strong> → `;
+                html += `${t.sponge_dilution_prefix} <strong>${res.reductionPct}%</strong> → `;
                 html += `${t.sponge_free_mirna_prefix} <strong style="color:${parseFloat(res.pctFree)<50?'var(--seed)':'var(--accent)'}">${res.pctFree}%</strong>`;
+                html += ` · ${t.sponge_bound_mirna_prefix} <strong>${Math.round(res.boundMirna).toLocaleString()}</strong>`;
                 
                 // Biological interpretation
                 const freePctNum = parseFloat(res.pctFree);
                 let bioMsg = '';
-                if (freePctNum > 90) bioMsg = `<span style="color:var(--accent);font-size:.65rem"> (${t.sponge_effect_low})</span>`;
-                else if (freePctNum > 50) bioMsg = `<span style="color:var(--gu);font-size:.65rem"> (${t.sponge_effect_moderate})</span>`;
-                else bioMsg = `<span style="color:var(--seed);font-size:.65rem"> (${t.sponge_effect_high})</span>`;
+                if (totalSites === 0) {
+                    bioMsg = `<span style="color:var(--muted);font-size:.65rem"> (${t.sponge_no_effect})</span>`;
+                } else if (freePctNum > 90) {
+                    bioMsg = `<span style="color:var(--accent);font-size:.65rem"> (${t.sponge_effect_low})</span>`;
+                } else if (freePctNum > 50) {
+                    bioMsg = `<span style="color:var(--gu);font-size:.65rem"> (${t.sponge_effect_moderate})</span>`;
+                } else {
+                    bioMsg = `<span style="color:var(--seed);font-size:.65rem"> (${t.sponge_effect_high})</span>`;
+                }
                 html += bioMsg + '<br>';
                 
                 html += `<table style="margin:.3rem 0;border-collapse:collapse;font-size:.64rem;width:100%">`;
@@ -9449,13 +9456,14 @@ function runSpongeAnalysis() {
 
         renderRes(resA, '#60a5fa');
 
+        let resB = null;
         if (rB) {
-            const resB = analyzeForMirna(rB.mirna, rB.name, mirnaBCopies);
-            window._spongeDilutionB = resB.dilution;
+            resB = analyzeForMirna(rB.mirna, rB.name, mirnaBCopies, ceRNACopies);
+            window._spongeDilutionB = parseFloat(resB.reductionPct);
             renderRes(resB, '#fb923c');
             if (resA.details.length > 0 || resB.details.length > 0) {
                 html += `<br><strong style="color:var(--accent3)">${t.sponge_selectivity_title}</strong> `;
-                const ratio = resA.dilution / resB.dilution;
+                const ratio = resA.reductionPct / resB.reductionPct;
                 if (Math.abs(ratio - 1) < 0.05) html += t.sponge_selectivity_balanced;
                 else if (ratio > 1) html += t.sponge_selectivity_more_a.replace('{ratio}', ratio.toFixed(2));
                 else html += t.sponge_selectivity_more_b.replace('{ratio}', (1/ratio).toFixed(2));
@@ -9466,19 +9474,14 @@ function runSpongeAnalysis() {
         resultEl.innerHTML = html;
         
         // Quantitative model (if enabled)
-        const _resB = rB ? analyzeForMirna(rB.mirna, rB.name, mirnaBCopies) : null;
-        renderSpongeQuant(resA, _resB, resultEl);
+        renderSpongeQuant(resA, resB, resultEl);
         
         // Generate sponge effect chart (ceRNA vs free miRNA %)
-        // Use whichever miRNA has binding sites
-        const chartMirnaRes = resA.details.length > 0 ? resA : (_resB && _resB.details.length > 0 ? _resB : null);
-        const chartMirnaCopies = resA.details.length > 0 ? mirnaACopies : (_resB && _resB.details.length > 0 ? mirnaBCopies : null);
-        
-        if (chartMirnaRes && chartMirnaCopies) {
-            const deltaG_list = chartMirnaRes.details.map(d => d.dg);
-            const chartData = generateSpongeEffectChart(chartMirnaCopies, deltaG_list);
-            renderSpongeChart(chartData, resultEl);
-        }
+        // Use both miRNAs
+        const deltaG_A = resA.details.map(d => d.dg);
+        const deltaG_B = resB ? resB.details.map(d => d.dg) : [];
+        const chartData = generateSpongeEffectChart(mirnaACopies, deltaG_A, mirnaBCopies, deltaG_B);
+        renderSpongeChart(chartData, resultEl, rA.name, rB ? rB.name : null);
         sessionSave();
         } catch(err) {
             resultEl.innerHTML = `<div style="color:var(--seed);font-size:.7rem;padding:.4rem">${t.sponge_error_prefix} ${err.message}<br><pre style="font-size:.6rem;white-space:pre-wrap">${err.stack||''}</pre></div>`;
@@ -9715,34 +9718,47 @@ function renderSpongeQuant(resA, resB, resultEl) {
     resultEl.appendChild(div);
 }
 
-// ── Generate titration-like data: ceRNA copies vs free miRNA (%) ──
-function generateSpongeEffectChart(mirnaCount, deltaG_list) {
-    const t = I18N[_lang] || I18N.pl;
+// ── Generate titration-like data: ceRNA copies vs free miRNA (%) for both miRNAs ──
+function generateSpongeEffectChart(mirnaACount, deltaG_A, mirnaBCount, deltaG_B) {
     const RT = 0.593;
     const data = [];
 
     // Scale: 0 to 100,000 ceRNA copies (typical miRNA range: 1,000–50,000; highly expressed: up to 500,000; synthetic: 1,000–100,000)
     for (let ceRNA_copies = 0; ceRNA_copies <= 100000; ceRNA_copies += 2000) {
-        let totalOccupancy = 0;
-        deltaG_list.forEach(dg => {
+        // For miRNA A
+        let totalOccupancyA = 0;
+        deltaG_A.forEach(dg => {
             const Ka = Math.exp(-dg / RT);
             const occupancy = Ka / (1 + Ka);
-            totalOccupancy += occupancy;
+            totalOccupancyA += occupancy;
         });
-
-        // FIXED: binding capacity = ceRNA_copies × occupancy per ceRNA
-        const bindingCapacity = ceRNA_copies * totalOccupancy;
-        let boundMirna = 0;
-        if (bindingCapacity > 0.001) {
-            boundMirna = bindingCapacity * (1 - Math.exp(-mirnaCount / bindingCapacity));
+        const bindingCapacityA = ceRNA_copies * totalOccupancyA;
+        let boundMirnaA = 0;
+        if (bindingCapacityA > 0.001) {
+            boundMirnaA = bindingCapacityA * (1 - Math.exp(-mirnaACount / bindingCapacityA));
         }
+        const freeMirnaA = Math.max(0, mirnaACount - boundMirnaA);
+        const pctFreeA = (freeMirnaA / mirnaACount * 100);
 
-        const freeMirna = Math.max(0, mirnaCount - boundMirna);
-        const pctFree = (freeMirna / mirnaCount * 100);
+        // For miRNA B
+        let totalOccupancyB = 0;
+        deltaG_B.forEach(dg => {
+            const Ka = Math.exp(-dg / RT);
+            const occupancy = Ka / (1 + Ka);
+            totalOccupancyB += occupancy;
+        });
+        const bindingCapacityB = ceRNA_copies * totalOccupancyB;
+        let boundMirnaB = 0;
+        if (bindingCapacityB > 0.001) {
+            boundMirnaB = bindingCapacityB * (1 - Math.exp(-mirnaBCount / bindingCapacityB));
+        }
+        const freeMirnaB = Math.max(0, mirnaBCount - boundMirnaB);
+        const pctFreeB = (freeMirnaB / mirnaBCount * 100);
 
         data.push({
             ceRNA: ceRNA_copies,
-            freePct: pctFree
+            freeA: pctFreeA,
+            freeB: pctFreeB
         });
     }
 
@@ -9750,7 +9766,7 @@ function generateSpongeEffectChart(mirnaCount, deltaG_list) {
 }
 
 // ── Render Chart.js graph for sponge effect ──
-function renderSpongeChart(data, resultEl) {
+function renderSpongeChart(data, resultEl, nameA, nameB) {
     const t = I18N[_lang] || I18N.pl;
     
     // Destroy old chart if it exists
@@ -9770,29 +9786,44 @@ function renderSpongeChart(data, resultEl) {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
+    const datasets = [
+        {
+            label: `${nameA} — Free (%)`,
+            data: data.map(d => d.freeA),
+            borderColor: '#60a5fa',
+            backgroundColor: 'rgba(96, 165, 250, 0.1)',
+            tension: 0.3,
+            fill: false,
+            pointRadius: 2
+        }
+    ];
+
+    if (nameB) {
+        datasets.push({
+            label: `${nameB} — Free (%)`,
+            data: data.map(d => d.freeB),
+            borderColor: '#fb923c',
+            backgroundColor: 'rgba(251, 146, 60, 0.1)',
+            tension: 0.3,
+            fill: false,
+            pointRadius: 2
+        });
+    }
+
+    datasets.push({
+        label: t.sponge_chart_50_threshold,
+        data: Array(data.length).fill(50),
+        borderColor: '#9ca3af',
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false
+    });
+
     window._spongeChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: data.map(d => d.ceRNA),
-            datasets: [
-                {
-                    label: t.sponge_chart_free_mirna,
-                    data: data.map(d => d.freePct),
-                    borderColor: '#60a5fa',
-                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 2
-                },
-                {
-                    label: t.sponge_chart_50_threshold,
-                    data: Array(data.length).fill(50),
-                    borderColor: '#9ca3af',
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    fill: false
-                }
-            ]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -10021,17 +10052,21 @@ const I18N = {
     dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— wybierz miRNA —', dual_pair_changed_note:'⚠ Zmieniono parę miRNA — uruchom ponownie analizę gąbki.',
     alert_select_both_mirna:'Wybierz oba miRNA w Dual View.', alert_select_mirna_a:'Wybierz miRNA A w Dual View.', alert_enter_cerna:'Wpisz sekwencje ceRNA w polu powyżej.', alert_parse_seq:'Nie można sparsować sekwencji.\n\nUżyj formatu FASTA:\n>nazwa_genu\nSEKWENCJA...',
     sponge_warning_no_headers:'⚠️ Brak nagłówków FASTA (>nazwa) — cały tekst potraktowany jako jedna sekwencja ceRNA-1. Dodaj nagłówki >nazwa przed każdą sekwencją dla poprawnego parsowania.',
-    sponge_results_title:'Wyniki analizy Sponge Effect',
-    sponge_model_note:'Model realistyczny: summa zajęcia (f_i = Ka_i/(1+Ka_i)), miękka saturacja wg liczby kopii miRNA/ceRNA. ΔG ≤ {dgThreshold} kcal/mol',
-    sponge_no_sites:'Brak miejsc wiązania (ΔG ≤ {dgThreshold}) w podanych ceRNA → brak efektu gąbki.',
-    sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Miejsc', sponge_table_header_best_dg:'Najlepsze ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
-    sponge_button_preview_sites:'👁 Miejsca', sponge_button_hide:'▲ Ukryj',
-    sponge_selectivity_title:'Selektywność gąbki:', sponge_selectivity_balanced:'Gąbka równomiernie rozcieńcza oba miRNA.', sponge_selectivity_more_a:'Gąbka bardziej sekwestruje <span style="color:#60a5fa">A</span> ({ratio}× silniej niż B).', sponge_selectivity_more_b:'Gąbka bardziej sekwestruje <span style="color:#fb923c">B</span> ({ratio}× silniej niż A).',
-    sponge_update_titration:'🔄 Zaktualizuj krzywą miareczkowania', sponge_error_prefix:'❌ Błąd:', sponge_calculating:'⏳ Obliczanie...',
-    sponge_summary_sites:'{count} miejsc w {found}/{total} ceRNA · ', sponge_dilution_prefix:'Rozcieńczenie:', sponge_free_mirna_prefix:'Wolne miRNA:',
-    sponge_effect_low:'słaby efekt gąbki', sponge_effect_moderate:'umiarkowany efekt gąbki', sponge_effect_high:'silny efekt gąbki',
+    sponge_results_title:'Sponge potential (binding capacity)',
+    sponge_model_note:'Realistic model: occupancy sum (f_i = Ka_i/(1+Ka_i)), soft saturation by miRNA/ceRNA copy numbers. ΔG ≤ {dgThreshold} kcal/mol',
+    sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect expected.',
+    sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Sites', sponge_table_header_best_dg:'Best ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
+    sponge_button_preview_sites:'👁 Sites', sponge_button_hide:'▲ Hide',
+    sponge_selectivity_title:'Sponge selectivity:', sponge_selectivity_balanced:'Sponge dilutes both miRNAs evenly.', sponge_selectivity_more_a:'Sponge sequesters <span style="color:#60a5fa">A</span> ({ratio}× more than B).', sponge_selectivity_more_b:'Sponge sequesters <span style="color:#fb923c">B</span> ({ratio}× more than A).',
+    sponge_update_titration:'🔄 Update titration curve', sponge_error_prefix:'❌ Error:', sponge_calculating:'⏳ Calculating...',
+    sponge_summary_sites:'{count} sites in {found}/{total} ceRNA · ', sponge_dilution_prefix:'Relative miRNA reduction:', sponge_free_mirna_prefix:'Free miRNA (% of total):',
+    sponge_bound_mirna_prefix:'Bound miRNA (copies):',
+    sponge_effect_low:'Low sponge effect: single binding site insufficient for significant miRNA sequestration',
+    sponge_effect_moderate:'Moderate sponge effect: partial miRNA depletion possible',
+    sponge_effect_high:'High sponge effect: significant miRNA depletion predicted',
+    sponge_no_effect:'No sponge effect expected',
     sponge_chart_title:'Efekt gąbki: liczba ceRNA vs wolne miRNA',
-    sponge_chart_free_mirna:'Wolne miRNA (%)',
+    sponge_chart_free_mirna:'Frakcja wolnych miRNA (%)',
     sponge_chart_50_threshold:'Próg 50% (punkt przegięcia)',
     sponge_chart_x_label:'Kopie ceRNA / komórkę',
     sponge_chart_y_label:'% wolnych miRNA',
@@ -10139,17 +10174,21 @@ const I18N = {
     dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— select miRNA —', dual_pair_changed_note:'⚠ miRNA pair changed — rerun sponge analysis.',
     alert_select_both_mirna:'Select both miRNAs in Dual View.', alert_select_mirna_a:'Select miRNA A in Dual View.', alert_enter_cerna:'Enter ceRNA sequences in the field above.', alert_parse_seq:'Unable to parse sequences.\n\nUse FASTA format:\n>gene_name\nSEQUENCE...',
     sponge_warning_no_headers:'⚠️ Missing FASTA headers (>name) — the entire input was treated as one ceRNA sequence ceRNA-1. Add >name headers before each sequence for correct parsing.',
-    sponge_results_title:'Sponge Effect results',
+    sponge_results_title:'Sponge potential (binding capacity)',
     sponge_model_note:'Realistic model: occupancy sum (f_i = Ka_i/(1+Ka_i)), soft saturation by miRNA/ceRNA copy numbers. ΔG ≤ {dgThreshold} kcal/mol',
-    sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect.',
+    sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect expected.',
     sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Sites', sponge_table_header_best_dg:'Best ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
     sponge_button_preview_sites:'👁 Sites', sponge_button_hide:'▲ Hide',
     sponge_selectivity_title:'Sponge selectivity:', sponge_selectivity_balanced:'Sponge dilutes both miRNAs evenly.', sponge_selectivity_more_a:'Sponge sequesters <span style="color:#60a5fa">A</span> ({ratio}× more than B).', sponge_selectivity_more_b:'Sponge sequesters <span style="color:#fb923c">B</span> ({ratio}× more than A).',
     sponge_update_titration:'🔄 Update titration curve', sponge_error_prefix:'❌ Error:', sponge_calculating:'⏳ Calculating...',
-    sponge_summary_sites:'{count} sites in {found}/{total} ceRNA · ', sponge_dilution_prefix:'Dilution:', sponge_free_mirna_prefix:'Free miRNA:',
-    sponge_effect_low:'weak sponge effect', sponge_effect_moderate:'moderate sponge effect', sponge_effect_high:'strong sponge effect',
+    sponge_summary_sites:'{count} sites in {found}/{total} ceRNA · ', sponge_dilution_prefix:'Relative miRNA reduction:', sponge_free_mirna_prefix:'Free miRNA (% of total):',
+    sponge_bound_mirna_prefix:'Bound miRNA (copies):',
+    sponge_effect_low:'Low sponge effect: single binding site insufficient for significant miRNA sequestration',
+    sponge_effect_moderate:'Moderate sponge effect: partial miRNA depletion possible',
+    sponge_effect_high:'High sponge effect: significant miRNA depletion predicted',
+    sponge_no_effect:'No sponge effect expected',
     sponge_chart_title:'Sponge effect: ceRNA copies vs free miRNA',
-    sponge_chart_free_mirna:'Free miRNA (%)',
+    sponge_chart_free_mirna:'Free miRNA fraction (%)',
     sponge_chart_50_threshold:'50% threshold (inflection point)',
     sponge_chart_x_label:'ceRNA copies / cell',
     sponge_chart_y_label:'% free miRNA',

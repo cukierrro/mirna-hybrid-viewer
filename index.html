@@ -50,6 +50,10 @@ select,input[type=number],input[type=text]{width:100%;background:var(--surface2)
 .btn-p:hover{background:#00f0c0;transform:translateY(-1px);}
 .btn-g{background:transparent;color:var(--muted);border:1px solid var(--border);}
 .btn-g:hover{color:var(--text);border-color:var(--muted);}
+.btn-ex{background:transparent;color:#38bdf8;border:1px solid #38bdf855;}
+.btn-ex:hover{color:#7dd3fc;border-color:#38bdf8;transform:translateY(-1px);}
+.btn-clr{background:transparent;color:#f87171;border:1px solid #f8717155;}
+.btn-clr:hover{color:#fca5a5;border-color:#f87171;transform:translateY(-1px);}
 /* BATCH FASTA */
 .batch-bar{display:flex;gap:.45rem;align-items:center;margin-top:.5rem;flex-wrap:wrap;}
 .batch-bar select{max-width:220px;}
@@ -186,7 +190,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- docx.js replaced with inline DOCX generator - no external dependency -->
+<!-- docx.js replaced with inline generator - no external CDN -->
 <script src="https://3dmol.org/build/3Dmol-min.js"></script>
 </head>
 <body>
@@ -205,6 +209,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <span class="badge">Turner 2004 + Owczarzy</span>
     <span class="badge">8mer/7mer/6mer/centered/3'comp</span>
     <button id="themeToggle" onclick="toggleTheme()" title="Przełącz jasny/ciemny motyw">🌙 Ciemny</button>
+    <button id="langToggle" onclick="toggleLang()" title="Switch language / Zmień język" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.75rem;font-weight:600;padding:.38rem .65rem;cursor:pointer;transition:all .2s;">🌐 EN</button>
   </div>
 </header>
 <!-- HELP POPOVER (global) -->
@@ -289,10 +294,9 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
       </div>
     </div>
     <div class="brow">
-      <button class="btn btn-p" onclick="runScan()">🔍 Skanuj</button>
-      <button class="btn btn-g" onclick="loadBNT()">▶ BNT162b2</button>
-      <button class="btn btn-g" onclick="loadEx()">▶ Przykład</button>
-      <button class="btn btn-g" onclick="clr()">✕ Wyczyść</button>
+      <button class="btn btn-p" onclick="runScan()"><span data-i18n="btn_scan">🔍 Skanuj</span></button>
+      <button class="btn btn-ex" id="exBtn" onclick="loadEx()"><span data-i18n="btn_example">▶ Przykład</span></button>
+      <button class="btn btn-clr" onclick="clr()"><span data-i18n="btn_clear">✕ Wyczyść</span></button>
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:var(--muted);cursor:pointer;margin-left:.2rem" title="Wyłącz obliczenia dostępności (Zuker-lite) aby przyspieszyć skanowanie">
         <input type="checkbox" id="accEnabled" checked style="width:12px;height:12px"> Acc. <span class="help-badge" data-help="accessibility">?</span>
       </label>
@@ -495,9 +499,9 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 <!-- DUAL VIEW SECTION -->
 <div id="dualViewSection">
   <div class="dual-header">
-    <div class="ctitle">⚖ Porównywarka miRNA — Dual View</div>
+    <div class="ctitle"><span data-i18n="dual_title">⚖ Porównywarka miRNA — Dual View</span></div>
     <span class="help-badge" data-help="dualview">?</span>
-    <button class="btn btn-g" style="margin-left:auto;font-size:.68rem" onclick="toggleDualView()">✕ Zamknij</button>
+    <button class="btn btn-g" style="margin-left:auto;font-size:.68rem" onclick="toggleDualView()"><span data-i18n="dual_close">✕ Zamknij</span></button>
   </div>
   <div class="dual-grid">
     <!-- LEFT -->
@@ -550,10 +554,10 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 
   <!-- EXPORT ROW -->
   <div class="dual-export-row" id="dualExportRow" style="display:none">
-    <button class="btn btn-g" onclick="exportDualPDF()" style="font-size:.68rem">📋 Eksport PDF (porównanie)</button>
-    <button class="btn btn-g" onclick="exportDualDOCX()" style="font-size:.68rem">📝 Eksport DOCX (porównanie)</button>
-    <button class="btn btn-g" onclick="drawTitrationChart()" style="font-size:.68rem">📈 Krzywa miareczkowania</button><span class="help-badge" data-help="titration" style="margin-left:.1rem">?</span>
-    <button class="btn btn-g" onclick="toggleSponge()" style="font-size:.68rem">🧽 Efekt gąbki</button><span class="help-badge" data-help="sponge" style="margin-left:.1rem">?</span>
+    <button class="btn btn-g" onclick="exportDualPDF()" style="font-size:.68rem"><span data-i18n="dual_pdf">📋 Eksport PDF (porównanie)</span></button>
+    <button class="btn btn-g" onclick="exportDualDOCX()" style="font-size:.68rem"><span data-i18n="dual_docx">📝 Eksport DOCX (porównanie)</span></button>
+    <button class="btn btn-g" onclick="drawTitrationChart()" style="font-size:.68rem"><span data-i18n="dual_titration">📈 Krzywa miareczkowania</span></button><span class="help-badge" data-help="titration" style="margin-left:.1rem">?</span>
+    <button class="btn btn-g" onclick="toggleSponge()" style="font-size:.68rem"><span data-i18n="dual_sponge">🧽 Efekt gąbki</span></button><span class="help-badge" data-help="sponge" style="margin-left:.1rem">?</span>
   </div>
 
   <!-- TITRATION CHART -->
@@ -627,7 +631,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         </div>
         <div style="font-size:.61rem;color:var(--muted);line-height:1.5">
           Przykłady: hepatocyt 5000 μm³ · limfocyt 300 μm³ · komórka mięśnia 10 000 μm³<br>
-          miRNA: typowe 1 000–50 000 · silnie eksp. do 500 000 · mRNA szczepionki (szczyt) 1 000–100 000
+          miRNA: typowe 1 000–50 000 · silnie eksp. do 500 000 · długie RNA syntetyczne (szczyt) 1 000–100 000
         </div>
       </div>
     </div>
@@ -7159,8 +7163,10 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 let RESULTS=[], CURRENT_MRNA='';
 
-function loadBNT(){document.getElementById('mrna').value=BNT_UTR3;snpHistory=[];updateSnpUndoBtn();setst("Załadowano 3'UTR BNT162b2.");}
-function loadEx(){document.getElementById('mrna').value=EXAMPLE;snpHistory=[];updateSnpUndoBtn();setst("Załadowano sekwencję przykładową.");}
+let _exIdx=0;
+const _EXAMPLES=[EXAMPLE,BNT_UTR3];
+const _EXAMPLE_LABELS=["Załadowano sekwencję przykładową (let-7 / hepatocyt).","Załadowano przykładową sekwencję syntetyczną 3'UTR."];
+function loadEx(){document.getElementById('mrna').value=_EXAMPLES[_exIdx];snpHistory=[];updateSnpUndoBtn();setst(_EXAMPLE_LABELS[_exIdx]);_exIdx=(_exIdx+1)%_EXAMPLES.length;}
 function clr(){
   document.getElementById('mrna').value='';RESULTS=[];CURRENT_MRNA='';FASTA_SEQS=[];
   snpHistory = [];
@@ -7743,15 +7749,15 @@ async function updateMiRTarBaseLink(mirnaName, mrnaSeq, hitPos, hitLen, org) {
 }
 
 // ============================================================
-// EXPORT PDF (html2canvas + jsPDF)
+// EXPORT PDF — data-driven, multi-page, all rows
 // ============================================================
 async function exportPDF() {
   if(!RESULTS.length) return;
   try {
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    const pgW=pdf.internal.pageSize.getWidth(), pgH=pdf.internal.pageSize.getHeight();
-    const margin=10, rowH=7, headerH=28;
+    const pgW=pdf.internal.pageSize.getWidth(),pgH=pdf.internal.pageSize.getHeight();
+    const margin=10,rowH=7,headerH=28;
     const colWidths=[8,32,8,16,16,16,16,22,12,10,10,12,16,10];
     const headers=['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.'];
     const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
@@ -7775,17 +7781,14 @@ async function exportPDF() {
       pdf.setTextColor(180,180,180);pdf.setFontSize(7);pdf.setFont('helvetica','normal');
       pdf.text(`Generated: ${new Date().toISOString().slice(0,19)} | Wyniki: ${filtered.length} z ${RESULTS.length} | hsa:${_dbc.hsa} mmu:${_dbc.mmu} rno:${_dbc.rno} ath:${_dbc.ath}`,margin,13);
       pdf.text(`Strona ${pn}/${tp}`,pgW-margin-18,13);
-      pdf.setFillColor(0,80,60);
-      pdf.rect(margin,16,colWidths.reduce((a,b)=>a+b,0),6,'F');
-      let x=margin;
-      pdf.setTextColor(0,212,170);pdf.setFontSize(6);pdf.setFont('helvetica','bold');
+      pdf.setFillColor(0,80,60);pdf.rect(margin,16,colWidths.reduce((a,b)=>a+b,0),6,'F');
+      let x=margin;pdf.setTextColor(0,212,170);pdf.setFontSize(6);pdf.setFont('helvetica','bold');
       headers.forEach((h,i)=>{pdf.text(h,x+1,20.5,{maxWidth:colWidths[i]-2});x+=colWidths[i];});
     }
     for(let page=0;page<totalPages;page++){
       if(page>0)pdf.addPage();
       drawHeader(page+1,totalPages);
-      const start=page*rowsPerPage;
-      const end=Math.min(start+rowsPerPage,filtered.length);
+      const start=page*rowsPerPage,end=Math.min(start+rowsPerPage,filtered.length);
       let y=headerH;
       for(let i=start;i<end;i++){
         const r=filtered[i];
@@ -7793,28 +7796,21 @@ async function exportPDF() {
         pdf.rect(margin,y,colWidths.reduce((a,b)=>a+b,0),rowH,'F');
         const dg=r.hit.dg;
         const cells=[
-          {t:String(i+1),c:[107,114,128]},
-          {t:r.name,c:[232,234,240]},
+          {t:String(i+1),c:[107,114,128]},{t:r.name,c:[232,234,240]},
           {t:r.org,c:r.org==='hsa'?[0,212,170]:r.org==='mmu'?[96,165,250]:[248,113,113]},
           {t:String(dg),c:dg<-10?[0,212,170]:dg<-6?[251,191,36]:[156,163,175]},
           {t:String(r.hit.dg1M??dg),c:[107,114,128]},
           {t:String(r.hit.dgCoop),c:r.hit.coopBonus<0?[167,139,250]:[107,114,128]},
           {t:String(r.hit.dgTotal??dg),c:(r.hit.dgTotal??dg)<-10?[0,212,170]:(r.hit.dgTotal??dg)<-6?[251,191,36]:[107,114,128]},
-          {t:r.hit.seedType,c:[255,107,53]},
-          {t:String(r.hit.pos+1),c:[107,114,128]},
-          {t:String(r.hit.wc),c:[0,212,170]},
-          {t:String(r.hit.gu),c:[251,191,36]},
+          {t:r.hit.seedType,c:[255,107,53]},{t:String(r.hit.pos+1),c:[107,114,128]},
+          {t:String(r.hit.wc),c:[0,212,170]},{t:String(r.hit.gu),c:[251,191,36]},
           {t:r.hit.auPct+'%',c:[232,234,240]},
           {t:String(r.hit.conservation?.score??'\u2014'),c:[232,234,240]},
           {t:r.hit.accessibility??'\u2014',c:r.hit.accessibility==='HIGH'?[0,212,170]:r.hit.accessibility==='MED'?[251,191,36]:[248,113,113]},
         ];
         pdf.setFontSize(5.5);pdf.setFont('helvetica','normal');
         let x=margin;
-        cells.forEach((cell,ci)=>{
-          pdf.setTextColor(...cell.c);
-          pdf.text(String(cell.t),x+1,y+4.5,{maxWidth:colWidths[ci]-2});
-          x+=colWidths[ci];
-        });
+        cells.forEach((cell,ci)=>{pdf.setTextColor(...cell.c);pdf.text(String(cell.t),x+1,y+4.5,{maxWidth:colWidths[ci]-2});x+=colWidths[ci];});
         y+=rowH;
       }
     }
@@ -7822,204 +7818,153 @@ async function exportPDF() {
   } catch(e){alert('PDF export error: '+e.message);console.error(e);}
 }
 
+
 // ============================================================
 // ============================================================
-// MINIMAL DOCX GENERATOR — no external library needed
-// Builds a valid .docx (OOXML ZIP) using only native browser APIs
+// MINIMAL DOCX GENERATOR — no external CDN needed
+// OOXML ZIP built from native browser APIs only
+// A4 landscape usable width = 32400 twips (23811 wide, 720 margins each side)
 // ============================================================
 const _docxBuilder = (() => {
-  // --- ZIP (Store, no compression) ---
-  function u8(s){ return new TextEncoder().encode(s); }
-  function le2(n){ return [n&0xff,(n>>8)&0xff]; }
-  function le4(n){ return [n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff]; }
-  function crc32(data){
-    let c=0xffffffff;
-    for(let i=0;i<data.length;i++){
-      c^=data[i];
-      for(let j=0;j<8;j++) c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
-    }
-    return (c^0xffffffff)>>>0;
-  }
+  function u8(s){return new TextEncoder().encode(s);}
+  function le2(n){return[n&0xff,(n>>8)&0xff];}
+  function le4(n){return[n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff];}
+  function crc32(d){let c=0xffffffff;for(let i=0;i<d.length;i++){c^=d[i];for(let j=0;j<8;j++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);}return(c^0xffffffff)>>>0;}
   function zipFile(name,data){
-    const n=u8(name), crc=crc32(data), sz=data.length;
-    const local=[0x50,0x4b,0x03,0x04, 20,0, 0,0, 0,0, 0,0, 0,0,
-      ...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),
-      ...n,...data];
-    const central=[0x50,0x4b,0x01,0x02, 20,0,20,0, 0,0, 0,0, 0,0, 0,0,
-      ...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...le2(0),
-      ...le2(0),...le2(0),...le4(0),...le4(0),...n];
-    return {local:new Uint8Array(local), central:new Uint8Array(central), offset:0};
+    const n=u8(name),crc=crc32(data),sz=data.length;
+    const local=[0x50,0x4b,0x03,0x04,20,0,0,0,0,0,0,0,0,0,...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...n,...data];
+    const central=[0x50,0x4b,0x01,0x02,20,0,20,0,0,0,0,0,0,0,0,0,...le4(crc),...le4(sz),...le4(sz),...le2(n.length),...le2(0),...le2(0),...le2(0),...le2(0),...le4(0),...le4(0),...n];
+    return{local:new Uint8Array(local),central:new Uint8Array(central),offset:0};
   }
   function buildZip(files){
-    // files: [{name, data:Uint8Array}]
-    const entries=[];
-    let off=0;
-    for(const f of files){
-      const e=zipFile(f.name,f.data);
-      e.offset=off;
-      entries.push(e);
-      off+=e.local.length;
-    }
-    const centralStart=off;
-    let centralSize=0;
-    const centralParts=[];
-    for(const e of entries){
-      // patch offset into central directory
-      const c=new Uint8Array(e.central);
-      const le=le4(e.offset);
-      c[42]=le[0];c[43]=le[1];c[44]=le[2];c[45]=le[3];
-      centralParts.push(c);
-      centralSize+=c.length;
-    }
-    const eocd=[0x50,0x4b,0x05,0x06, 0,0, 0,0,
-      ...le2(entries.length),...le2(entries.length),
-      ...le4(centralSize),...le4(centralStart),...le2(0)];
-    const total=off+centralSize+eocd.length;
-    const buf=new Uint8Array(total);
-    let pos=0;
-    for(const e of entries){ buf.set(e.local,pos); pos+=e.local.length; }
-    for(const c of centralParts){ buf.set(c,pos); pos+=c.length; }
-    buf.set(new Uint8Array(eocd),pos);
-    return buf;
+    const entries=[];let off=0;
+    for(const f of files){const e=zipFile(f.name,f.data);e.offset=off;entries.push(e);off+=e.local.length;}
+    let cs=0;const cp=[];
+    for(const e of entries){const c=new Uint8Array(e.central);const l=le4(e.offset);c[42]=l[0];c[43]=l[1];c[44]=l[2];c[45]=l[3];cp.push(c);cs+=c.length;}
+    const eocd=[0x50,0x4b,0x05,0x06,0,0,0,0,...le2(entries.length),...le2(entries.length),...le4(cs),...le4(off),...le2(0)];
+    const buf=new Uint8Array(off+cs+eocd.length);let pos=0;
+    for(const e of entries){buf.set(e.local,pos);pos+=e.local.length;}
+    for(const c of cp){buf.set(c,pos);pos+=c.length;}
+    buf.set(new Uint8Array(eocd),pos);return buf;
   }
-  // --- XML helpers ---
-  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function para(text,opts={}){
-    const sz=opts.sz||20, bold=opts.bold?'<w:b/>':'', color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
-    return `<w:p><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p>`;
-  }
-  function cell(text,opts={}){
-    const sz=opts.sz||16, bold=opts.bold?'<w:b/>':'', color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
+  function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  const PAGE_W=32400; // twips, A4 landscape minus 720 margins each side
+  function mkCell(text,opts={}){
+    const sz=opts.sz||16,bold=opts.bold?'<w:b/>':'',color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
     const shading=opts.bg?`<w:shd w:val="clear" w:color="auto" w:fill="${opts.bg}"/>`:'';
-    return `<w:tc><w:tcPr>${shading}<w:tcW w:w="0" w:type="auto"/></w:tcPr><w:p><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p></w:tc>`;
+    const w=opts.w?`<w:tcW w:w="${opts.w}" w:type="dxa"/>`:'<w:tcW w:w="0" w:type="auto"/>';
+    return `<w:tc><w:tcPr>${shading}${w}<w:tcMar><w:top w:w="40" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar></w:tcPr><w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p></w:tc>`;
   }
-  function row(cells,trPr=''){ return `<w:tr>${trPr}${cells.join('')}</w:tr>`; }
-  function makeTable(rows){ return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr>${rows.join('')}</w:tbl>`; }
-
+  function mkRow(cells,isHdr){return`<w:tr>${isHdr?'<w:trPr><w:tblHeader/></w:trPr>':''}${cells.join('')}</w:tr>`;}
+  function mkPara(text,opts={}){
+    const sz=opts.sz||20,bold=opts.bold?'<w:b/>':'',color=opts.color?`<w:color w:val="${opts.color}"/>`:'';
+    return`<w:p><w:pPr><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr>${bold}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${color}</w:rPr><w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p>`;
+  }
+  function mkTable(rows,colW){
+    const grid=colW.map(w=>`<w:gridCol w:w="${w}"/>`).join('');
+    const borders=`<w:tblBorders><w:top w:val="single" w:sz="4" w:color="444444"/><w:left w:val="single" w:sz="4" w:color="444444"/><w:bottom w:val="single" w:sz="4" w:color="444444"/><w:right w:val="single" w:sz="4" w:color="444444"/><w:insideH w:val="single" w:sz="4" w:color="333333"/><w:insideV w:val="single" w:sz="4" w:color="333333"/></w:tblBorders>`;
+    return`<w:tbl><w:tblPr><w:tblW w:w="${PAGE_W}" w:type="dxa"/>${borders}</w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows.join('')}</w:tbl>`;
+  }
+  function pack(bodyXml){
+    const e=s=>u8(s);
+    const rel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+    const wrel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+    const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="20"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
+    const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
+    const zip=buildZip([{name:'[Content_Types].xml',data:e(ct)},{name:'_rels/.rels',data:e(rel)},{name:'word/_rels/document.xml.rels',data:e(wrel)},{name:'word/styles.xml',data:e(styles)},{name:'word/document.xml',data:e(bodyXml)}]);
+    return new Blob([zip],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  }
   return {
-    buildResultsDOCX(results, meta){
-      const hdrs=['#','miRNA','Org','ΔG','ΔG(1M)','ΔG coop','ΔG_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.','Sekwencja'];
-      const hdrRow=row(hdrs.map(h=>cell(h,{bold:true,bg:'1a3a2a',color:'00d4aa',sz:14})),
-        '<w:trPr><w:tblHeader/></w:trPr>');
+    results(results,meta){
+      // 15 columns, proportional widths summing to PAGE_W
+      const raw=[480,2600,500,1080,1080,1080,1080,1500,780,680,680,880,960,880,1220];
+      const sum=raw.reduce((a,b)=>a+b,0);
+      const cw=raw.map(w=>Math.round(w/sum*PAGE_W));
+      cw[1]+=PAGE_W-cw.reduce((a,b)=>a+b,0); // fix rounding
+      const hdrs=['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.','Sekwencja'];
+      const hdrRow=mkRow(hdrs.map((h,i)=>mkCell(h,{bold:true,bg:'1a3a2a',color:'00d4aa',sz:13,w:cw[i]})),true);
       const dataRows=results.map((r,i)=>{
-        const bg=i%2===0?'1a1e26':'151820';
-        const dg=r.hit.dg;
-        const dgColor=dg<-10?'00d4aa':dg<-6?'fbbf24':'9ca3af';
-        return row([
-          cell(String(i+1),{bg,color:'6b7280',sz:14}),
-          cell(r.name,{bg,sz:14}),
-          cell(r.org,{bg,color:r.org==='hsa'?'00d4aa':r.org==='mmu'?'60a5fa':'f87171',sz:14}),
-          cell(String(dg),{bg,color:dgColor,sz:14}),
-          cell(String(r.hit.dg1M??dg),{bg,color:'9ca3af',sz:14}),
-          cell(String(r.hit.dgCoop),{bg,sz:14}),
-          cell(String(r.hit.dgTotal??dg),{bg,sz:14}),
-          cell(r.hit.seedType,{bg,color:'ff6b35',sz:14}),
-          cell(String(r.hit.pos+1),{bg,color:'9ca3af',sz:14}),
-          cell(String(r.hit.wc),{bg,color:'00d4aa',sz:14}),
-          cell(String(r.hit.gu),{bg,color:'fbbf24',sz:14}),
-          cell(r.hit.auPct+'%',{bg,sz:14}),
-          cell(String(r.hit.conservation?.score??'—'),{bg,sz:14}),
-          cell(r.hit.accessibility??'—',{bg,color:r.hit.accessibility==='HIGH'?'00d4aa':r.hit.accessibility==='MED'?'fbbf24':'f87171',sz:14}),
-          cell(r.mirna,{bg,color:'6b7280',sz:12}),
+        const bg=i%2===0?'1a1e26':'151820',dg=r.hit.dg;
+        return mkRow([
+          mkCell(String(i+1),{bg,color:'6b7280',sz:12,w:cw[0]}),
+          mkCell(r.name,{bg,sz:13,w:cw[1]}),
+          mkCell(r.org,{bg,color:r.org==='hsa'?'00d4aa':r.org==='mmu'?'60a5fa':'f87171',sz:12,w:cw[2]}),
+          mkCell(String(dg),{bg,color:dg<-10?'00d4aa':dg<-6?'fbbf24':'9ca3af',sz:13,w:cw[3]}),
+          mkCell(String(r.hit.dg1M??dg),{bg,color:'9ca3af',sz:12,w:cw[4]}),
+          mkCell(String(r.hit.dgCoop),{bg,color:r.hit.coopBonus<0?'a78bfa':'9ca3af',sz:12,w:cw[5]}),
+          mkCell(String(r.hit.dgTotal??dg),{bg,color:(r.hit.dgTotal??dg)<-10?'00d4aa':(r.hit.dgTotal??dg)<-6?'fbbf24':'9ca3af',sz:12,w:cw[6]}),
+          mkCell(r.hit.seedType,{bg,color:'ff6b35',sz:12,w:cw[7]}),
+          mkCell(String(r.hit.pos+1),{bg,color:'9ca3af',sz:12,w:cw[8]}),
+          mkCell(String(r.hit.wc),{bg,color:'00d4aa',sz:13,w:cw[9]}),
+          mkCell(String(r.hit.gu),{bg,color:'fbbf24',sz:12,w:cw[10]}),
+          mkCell(r.hit.auPct+'%',{bg,sz:12,w:cw[11]}),
+          mkCell(String(r.hit.conservation?.score??'\u2014'),{bg,sz:12,w:cw[12]}),
+          mkCell(r.hit.accessibility??'\u2014',{bg,color:r.hit.accessibility==='HIGH'?'00d4aa':r.hit.accessibility==='MED'?'fbbf24':'f87171',sz:12,w:cw[13]}),
+          mkCell(r.mirna,{bg,color:'6b7280',sz:11,w:cw[14]}),
         ]);
       });
-      const bodyXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-<w:body>
-${para('miRNA Target Prediction Report',{bold:true,sz:36,color:'00d4aa'})}
-${para(`Date: ${new Date().toISOString().slice(0,10)} | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: ${meta.na}M`,{sz:16,color:'6b7280'})}
-${para(`miRBase v22.1: hsa:${meta.hsa} mmu:${meta.mmu} rno:${meta.rno} ath:${meta.ath} | Hits: ${results.length}`,{sz:16,color:'6b7280'})}
-${para('')}
-${makeTable([hdrRow,...dataRows])}
-<w:sectPr><w:pgSz w:w="20870" w:h="16838" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>
+      const body=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
+${mkPara('miRNA Target Prediction Report',{bold:true,sz:32,color:'00d4aa'})}
+${mkPara(`Date: ${new Date().toISOString().slice(0,10)} | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: ${meta.na}M`,{sz:15,color:'6b7280'})}
+${mkPara(`miRBase v22.1: hsa:${meta.hsa} mmu:${meta.mmu} rno:${meta.rno} ath:${meta.ath} | Hits: ${results.length}`,{sz:15,color:'6b7280'})}
+${mkPara('')}
+${mkTable([hdrRow,...dataRows],cw)}
+<w:sectPr><w:pgSz w:w="23811" w:h="16838" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>
 </w:body></w:document>`;
-      return this._pack(bodyXml);
+      return pack(body);
     },
-    buildDualDOCX(A,B,overlap){
-      const RT=0.593;
-      const ZA=Math.exp(-A.hit.dg/RT), ZB=Math.exp(-B.hit.dg/RT);
+    dual(A,B,overlap){
+      const RT=0.593,ZA=Math.exp(-A.hit.dg/RT),ZB=Math.exp(-B.hit.dg/RT);
       const Z=overlap>0?1+ZA+ZB:ZA+ZB;
-      const pA=overlap>0?(ZA/Z*100).toFixed(1):(ZA/(ZA+ZB)*100).toFixed(1);
-      const pB=overlap>0?(ZB/Z*100).toFixed(1):(ZB/(ZA+ZB)*100).toFixed(1);
+      const pA=((overlap>0?ZA/Z:ZA/(ZA+ZB))*100).toFixed(1);
+      const pB=((overlap>0?ZB/Z:ZB/(ZA+ZB))*100).toFixed(1);
+      const dw=Math.round(PAGE_W/4);
       const params=[
-        ['Parametr','miRNA A','miRNA B','Różnica (B−A)'],
-        ['Nazwa',A.name,B.name,'—'],
-        ['Seed type',A.hit.seedType,B.hit.seedType,'—'],
-        ['ΔG (kcal/mol)',A.hit.dg,B.hit.dg,(B.hit.dg-A.hit.dg).toFixed(2)],
-        ['ΔG 1M (kcal/mol)',A.hit.dg1M??A.hit.dg,B.hit.dg1M??B.hit.dg,((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)],
-        ['Pary WC',A.hit.wc,B.hit.wc,B.hit.wc-A.hit.wc],
-        ['Pary G:U',A.hit.gu,B.hit.gu,B.hit.gu-A.hit.gu],
-        ['AU%',A.hit.auPct+'%',B.hit.auPct+'%',(B.hit.auPct-A.hit.auPct).toFixed(1)+'%'],
-        ['Pozycja (start)',A.hit.pos+1,B.hit.pos+1,B.hit.pos-A.hit.pos],
+        {p:'Parametr',a:'miRNA A',b:'miRNA B',d:'R\u00f3\u017cnica (B\u2212A)',hdr:true},
+        {p:'Nazwa',a:A.name,b:B.name,d:'\u2014'},
+        {p:'Seed type',a:A.hit.seedType,b:B.hit.seedType,d:'\u2014'},
+        {p:'\u0394G (kcal/mol)',a:A.hit.dg,b:B.hit.dg,d:(B.hit.dg-A.hit.dg).toFixed(2)},
+        {p:'\u0394G 1M',a:A.hit.dg1M??A.hit.dg,b:B.hit.dg1M??B.hit.dg,d:((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)},
+        {p:'Pary WC',a:A.hit.wc,b:B.hit.wc,d:B.hit.wc-A.hit.wc},
+        {p:'Pary G:U',a:A.hit.gu,b:B.hit.gu,d:B.hit.gu-A.hit.gu},
+        {p:'AU%',a:A.hit.auPct+'%',b:B.hit.auPct+'%',d:(B.hit.auPct-A.hit.auPct).toFixed(1)+'%'},
+        {p:'Pozycja (start)',a:A.hit.pos+1,b:B.hit.pos+1,d:B.hit.pos-A.hit.pos},
       ];
-      const tblRows=params.map((r,i)=>{
-        const isHdr=i===0;
-        const bg=isHdr?'1a3a2a':i%2===0?'1a1e26':'151820';
-        return row(r.map((v,ci)=>cell(String(v),{
-          bold:isHdr,bg,
-          color:isHdr?['00d4aa','00d4aa','f97316','a78bfa'][ci]:'e8eaf0',
-          sz:isHdr?15:16
-        })));
-      });
-      const bodyXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-<w:body>
-${para('miRNA Hybrid Viewer v1.0 — Raport Porównawczy',{bold:true,sz:32,color:'00d4aa'})}
-${para(`Wygenerowano: ${new Date().toISOString().slice(0,10)} | mRNA: ${A.mrnaLen??'?'} nt`,{sz:16,color:'6b7280'})}
-${para('')}
-${para(`miRNA A: ${A.name} | ${A.hit.seedType} | ΔG ${A.hit.dg} kcal/mol | pos ${A.hit.pos+1}`,{bold:true,sz:18,color:'3b82f6'})}
-${para(`miRNA B: ${B.name} | ${B.hit.seedType} | ΔG ${B.hit.dg} kcal/mol | pos ${B.hit.pos+1}`,{bold:true,sz:18,color:'f97316'})}
-${para('')}
-${makeTable(tblRows)}
-${para('')}
-${para(`Model Boltzmanna (37°C): P(A)=${pA}%, P(B)=${pB}% | ${overlap>0?'Wiązanie wzajemnie wykluczające':'Wiązanie niezależne'}`,{sz:16,color:'6b7280'})}
-${para(`miRNA Hybrid Viewer v1.0 | PRAMĀ Institute | ${new Date().toISOString().slice(0,10)}`,{sz:14,color:'6b7280'})}
+      const tRows=params.map(r=>mkRow([
+        mkCell(String(r.p),{bold:r.hdr,bg:r.hdr?'1a3a2a':'1a1e26',color:r.hdr?'00d4aa':'c8d0e0',sz:16,w:dw}),
+        mkCell(String(r.a),{bold:r.hdr,bg:r.hdr?'1a3a2a':'151820',color:r.hdr?'3b82f6':'e8eaf0',sz:16,w:dw}),
+        mkCell(String(r.b),{bold:r.hdr,bg:r.hdr?'1a3a2a':'1a1e26',color:r.hdr?'f97316':'e8eaf0',sz:16,w:dw}),
+        mkCell(String(r.d),{bold:r.hdr,bg:r.hdr?'1a3a2a':'151820',color:r.hdr?'a78bfa':'e8eaf0',sz:16,w:dw}),
+      ],r.hdr));
+      const body=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
+${mkPara('miRNA Hybrid Viewer v1.0 \u2014 Raport Por\u00f3wnawczy',{bold:true,sz:30,color:'00d4aa'})}
+${mkPara(`Wygenerowano: ${new Date().toISOString().slice(0,10)} | mRNA: ${A.mrnaLen??'?'} nt`,{sz:16,color:'6b7280'})}
+${mkPara('')}
+${mkPara(`miRNA A: ${A.name} | ${A.hit.seedType} | \u0394G ${A.hit.dg} kcal/mol | pos ${A.hit.pos+1}`,{bold:true,sz:20,color:'3b82f6'})}
+${mkPara(`miRNA B: ${B.name} | ${B.hit.seedType} | \u0394G ${B.hit.dg} kcal/mol | pos ${B.hit.pos+1}`,{bold:true,sz:20,color:'f97316'})}
+${mkPara('')}
+${mkTable(tRows,[dw,dw,dw,dw])}
+${mkPara('')}
+${mkPara(`Model Boltzmanna (37\u00b0C): P(A)=${pA}%, P(B)=${pB}% | ${overlap>0?`Wi\u0105zanie wzajemnie wykluczaj\u0105ce (overlap ${overlap} nt)`:'Wi\u0105zanie niezale\u017cne'}`,{sz:16,color:'6b7280'})}
+${mkPara(`\u0394\u0394G = ${(B.hit.dg-A.hit.dg).toFixed(2)} kcal/mol | ${B.hit.dg<A.hit.dg?'B silniejsze':'A silniejsze'}`,{bold:true,sz:18})}
+${mkPara(`miRNA Hybrid Viewer v1.0 | PRAM\u0100 Institute | ${new Date().toISOString().slice(0,10)}`,{sz:14,color:'6b7280'})}
 <w:sectPr><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>
 </w:body></w:document>`;
-      return this._pack(bodyXml);
-    },
-    _pack(bodyXml){
-      const rel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-</Relationships>`;
-      const wordRel=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>`;
-      const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="20"/></w:rPr></w:rPrDefault></w:docDefaults>
-</w:styles>`;
-      const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-<Default Extension="xml" ContentType="application/xml"/>
-<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
-</Types>`;
-      const enc=s=>u8(s);
-      const zip=buildZip([
-        {name:'[Content_Types].xml',data:enc(ct)},
-        {name:'_rels/.rels',data:enc(rel)},
-        {name:'word/_rels/document.xml.rels',data:enc(wordRel)},
-        {name:'word/styles.xml',data:enc(styles)},
-        {name:'word/document.xml',data:enc(bodyXml)},
-      ]);
-      return new Blob([zip],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+      return pack(body);
     }
   };
 })();
 
 // ============================================================
-// EXPORT DOCX — wyniki (bez zewnętrznych bibliotek)
+// EXPORT DOCX — wyniki (inline, bez CDN)
 // ============================================================
 async function exportDOCX() {
   if(!RESULTS.length) return;
   try {
     const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0};
     const na=document.getElementById('saltConc').value||0.15;
-    // Apply active filters
     const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
     const st=(document.getElementById('fSeed')||{}).value||'';
     const org=(document.getElementById('fOrg')||{}).value||'';
@@ -8031,10 +7976,10 @@ async function exportDOCX() {
       if(consMin>0&&(r.hit.conservation?.score??0)<consMin)return false;
       return true;
     });
-    const blob=_docxBuilder.buildResultsDOCX(filtered,{na,hsa:_dbc.hsa,mmu:_dbc.mmu,rno:_dbc.rno,ath:_dbc.ath});
+    const blob=_docxBuilder.results(filtered,{na,hsa:_dbc.hsa,mmu:_dbc.mmu,rno:_dbc.rno,ath:_dbc.ath});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
     a.download=`mirna_report_v1.0_${filtered.length}wynikow.docx`;a.click();URL.revokeObjectURL(a.href);
-  } catch(e){ alert('Błąd eksportu DOCX: '+e.message); console.error(e); }
+  } catch(e){alert('B\u0142\u0105d eksportu DOCX: '+e.message);console.error(e);}
 }
 
 // ============================================================
@@ -8922,83 +8867,131 @@ async function exportDualPDF() {
         const {jsPDF} = window.jspdf;
         const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
         const isLight = document.body.classList.contains('light');
-        const bgHex = isLight ? '#f0f2f5' : '#111318';
+        const W=297, H=210, m=10;
 
-        pdf.setFillColor(...(isLight ? [240,242,245] : [17,19,24]));
-        pdf.rect(0, 0, 297, 210, 'F');
-        pdf.setTextColor(0, 212, 170);
-        pdf.setFontSize(13);
-        pdf.setFont('helvetica','bold');
-        pdf.text('miRNA Hybrid Viewer v1.0 — Raport Porównawczy', 10, 12);
-        pdf.setTextColor(...(isLight ? [51,65,85] : [200,208,224]));
-        pdf.setFontSize(8); pdf.setFont('helvetica','normal');
-        pdf.text(`Wygenerowano: ${new Date().toISOString().slice(0,19)} | mRNA: ${CURRENT_MRNA.length} nt`, 10, 18);
+        pdf.setFillColor(...(isLight?[240,242,245]:[17,19,24]));
+        pdf.rect(0,0,W,H,'F');
+
+        // Title
+        pdf.setTextColor(0,212,170); pdf.setFontSize(13); pdf.setFont('helvetica','bold');
+        pdf.text('miRNA Hybrid Viewer v1.0 \u2014 Raport Por\u00f3wnawczy', m, 10);
+        pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));
+        pdf.setFontSize(7.5); pdf.setFont('helvetica','normal');
+        pdf.text(`Wygenerowano: ${new Date().toISOString().slice(0,19)} | mRNA: ${CURRENT_MRNA.length} nt`, m, 16);
 
         // Canvas A
         const cA = document.getElementById('dualCanvasA');
-        const imgA = cA.toDataURL('image/png');
-        pdf.setTextColor(59,130,246);
-        pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-        pdf.text(`🔵 miRNA A: ${A.name} | ${A.hit.seedType} | ΔG ${A.hit.dg} kcal/mol | pos ${A.hit.pos+1}`, 10, 26);
-        pdf.addImage(imgA, 'PNG', 10, 28, 130, 38);
+        if(cA && cA.width>0){
+            const imgA=cA.toDataURL('image/png');
+            pdf.setTextColor(59,130,246); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+            pdf.text(`\u25CF miRNA A: ${A.name} | ${A.hit.seedType} | \u0394G ${A.hit.dg} kcal/mol | pos ${A.hit.pos+1}`, m, 23);
+            pdf.addImage(imgA,'PNG',m,25,128,36);
+        }
 
         // Canvas B
         const cB = document.getElementById('dualCanvasB');
-        const imgB = cB.toDataURL('image/png');
-        pdf.setTextColor(249,115,22);
-        pdf.text(`🟠 miRNA B: ${B.name} | ${B.hit.seedType} | ΔG ${B.hit.dg} kcal/mol | pos ${B.hit.pos+1}`, 150, 26);
-        pdf.addImage(imgB, 'PNG', 150, 28, 130, 38);
+        if(cB && cB.width>0){
+            const imgB=cB.toDataURL('image/png');
+            pdf.setTextColor(249,115,22); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+            pdf.text(`\u25CF miRNA B: ${B.name} | ${B.hit.seedType} | \u0394G ${B.hit.dg} kcal/mol | pos ${B.hit.pos+1}`, 149, 23);
+            pdf.addImage(imgB,'PNG',149,25,138,36);
+        }
 
         // Shadow track
         const cSh = document.getElementById('shadowCanvas');
-        if (cSh) {
-            const imgSh = cSh.toDataURL('image/png');
-            pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));
-            pdf.setFontSize(8);
-            pdf.text('Mapa zajętości mRNA (Shadowing Track)', 10, 72);
-            pdf.addImage(imgSh, 'PNG', 10, 75, 270, 16);
+        if(cSh && cSh.width>0){
+            const imgSh=cSh.toDataURL('image/png');
+            pdf.setTextColor(...(isLight?[51,65,85]:[170,180,200]));
+            pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+            pdf.text('Mapa zaj\u0119to\u015bci mRNA (Shadowing Track)', m, 65);
+            pdf.addImage(imgSh,'PNG',m,67,276,14);
         }
 
-        // Comparison table
-        pdf.setTextColor(167,139,250);
-        pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-        pdf.text('Tabela porównawcza', 10, 98);
-        pdf.setFont('helvetica','normal');
-        pdf.setFontSize(8);
-        const isLight2 = isLight;
-        const rows = [
-            ['Parametr', 'miRNA A', 'miRNA B', 'Różnica (B−A)'],
-            ['Nazwa', A.name, B.name, '—'],
-            ['Seed type', A.hit.seedType, B.hit.seedType, '—'],
-            ['ΔG (kcal/mol)', A.hit.dg, B.hit.dg, (B.hit.dg-A.hit.dg).toFixed(2)],
-            ['ΔG 1M (kcal/mol)', A.hit.dg1M??A.hit.dg, B.hit.dg1M??B.hit.dg, ((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)],
-            ['Pary WC', A.hit.wc, B.hit.wc, B.hit.wc-A.hit.wc],
-            ['Pary G:U', A.hit.gu, B.hit.gu, B.hit.gu-A.hit.gu],
-            ['AU%', A.hit.auPct+'%', B.hit.auPct+'%', (B.hit.auPct-A.hit.auPct).toFixed(1)+'%'],
-            ['Pozycja (start)', A.hit.pos+1, B.hit.pos+1, B.hit.pos-A.hit.pos],
+        // ── Comparison A vs B block ──
+        const RT=0.593;
+        const overlapNt=Math.max(0,Math.min(A.hit.pos+A.mirna.length,B.hit.pos+B.mirna.length)-Math.max(A.hit.pos,B.hit.pos));
+        const ZA=Math.exp(-A.hit.dg/RT), ZB=Math.exp(-B.hit.dg/RT);
+        const ddg=(B.hit.dg-A.hit.dg).toFixed(2);
+        const dwc=B.hit.wc-A.hit.wc;
+        const dau=(B.hit.auPct-A.hit.auPct).toFixed(1);
+        const stronger=B.hit.dg<A.hit.dg?'B silniejsze':'A silniejsze';
+
+        let yc=85;
+        pdf.setFillColor(20,30,45); pdf.rect(m,yc-3,W-2*m,21,'F');
+        pdf.setTextColor(167,139,250); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+        pdf.text('Por\u00f3wnanie A vs B:', m+2, yc+2);
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5);
+        pdf.setTextColor(59,130,246);
+        const s1=`\u25CF ${stronger}   |\u0394\u0394G = ${ddg} kcal/mol   |\u0394WC = ${dwc>0?'+':''}${dwc}   |\u0394AU% = ${dau>0?'+':''}${dau}%`;
+        pdf.text(s1, m+2, yc+8);
+        pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));
+        pdf.text(`Pozycje: A=${A.hit.pos+1}\u2013${A.hit.pos+A.mirna.length}, B=${B.hit.pos+1}\u2013${B.hit.pos+B.mirna.length} (\u0394start = ${B.hit.pos-A.hit.pos>0?'+':''}${B.hit.pos-A.hit.pos} nt)`, m+2, yc+14);
+        if(overlapNt>0){
+            pdf.setTextColor(251,191,36);
+            pdf.text(`\u26A0 Nak\u0142adanie ${overlapNt} nt \u2014 wi\u0105zanie wzajemnie wykluczone`, m+130, yc+8);
+        } else {
+            const dist=Math.abs(B.hit.pos-(A.hit.pos+A.mirna.length));
+            pdf.setTextColor(0,212,170);
+            pdf.text(`Odleg\u0142o\u015b\u0107: ${dist} nt${dist>=13&&dist<=35?' \u2192 kooperatywno\u015b\u0107 mo\u017cliwa':''}`, m+130, yc+8);
+        }
+
+        // ── Model konkurencji ──
+        yc+=25;
+        const Z=overlapNt>0?1+ZA+ZB:ZA+ZB;
+        const pA=(overlapNt>0?ZA/Z:ZA/(ZA+ZB))*100;
+        const pB=(overlapNt>0?ZB/Z:ZB/(ZA+ZB))*100;
+        const pFree=overlapNt>0?(100-pA-pB).toFixed(1):'0.0';
+        const ratio=(ZA/ZB).toFixed(1);
+
+        pdf.setFillColor(30,18,18); pdf.rect(m,yc-3,W-2*m,26,'F');
+        pdf.setTextColor(249,115,22); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+        pdf.text(`Model konkurencji ${overlapNt>0?`wzajemnie wykluczaj\u0105cej (${overlapNt} nt overlap)`:'niezale\u017cnego wi\u0105zania'}:`, m+2, yc+2);
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5);
+        const barW=180;
+        pdf.setTextColor(59,130,246);
+        pdf.text(`A: ${pA.toFixed(1)}%`, m+2, yc+9);
+        pdf.setFillColor(59,130,246); pdf.rect(m+18,yc+6,pA/100*barW,4,'F');
+        pdf.setFillColor(30,18,18); pdf.rect(m+18+pA/100*barW,yc+6,(100-pA)/100*barW,4,'F');
+        pdf.setTextColor(249,115,22);
+        pdf.text(`B: ${pB.toFixed(1)}%`, m+2, yc+17);
+        pdf.setFillColor(249,115,22); pdf.rect(m+18,yc+14,pB/100*barW,4,'F');
+        pdf.setFillColor(30,18,18); pdf.rect(m+18+pB/100*barW,yc+14,(100-pB)/100*barW,4,'F');
+        pdf.setTextColor(107,114,128); pdf.setFontSize(6.5);
+        pdf.text(`P(wolne)=${pFree}%  |  ${B.hit.dg<A.hit.dg?'B':'A'} dominuje (${ratio}\u00d7)  |  Model: Z=1+exp(-\u0394G_A/RT)+exp(-\u0394G_B/RT)`, m+215, yc+9);
+
+        // ── Comparison table ──
+        yc+=31;
+        pdf.setTextColor(167,139,250); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+        pdf.text('Tabela por\u00f3wnawcza', m, yc);
+        yc+=5;
+        const tRows=[
+            ['Parametr','miRNA A','miRNA B','R\u00f3\u017cnica (B\u2212A)'],
+            ['Nazwa',A.name,B.name,'\u2014'],
+            ['Seed type',A.hit.seedType,B.hit.seedType,'\u2014'],
+            ['\u0394G (kcal/mol)',A.hit.dg,B.hit.dg,ddg],
+            ['\u0394G 1M',A.hit.dg1M??A.hit.dg,B.hit.dg1M??B.hit.dg,((B.hit.dg1M??B.hit.dg)-(A.hit.dg1M??A.hit.dg)).toFixed(2)],
+            ['Pary WC',A.hit.wc,B.hit.wc,dwc],
+            ['Pary G:U',A.hit.gu,B.hit.gu,B.hit.gu-A.hit.gu],
+            ['AU%',A.hit.auPct+'%',B.hit.auPct+'%',dau+'%'],
+            ['Pozycja',A.hit.pos+1,B.hit.pos+1,B.hit.pos-A.hit.pos],
         ];
-        let yRow = 103;
-        rows.forEach((row, ri) => {
-            if (ri === 0) { pdf.setFont('helvetica','bold'); pdf.setTextColor(0,212,170); }
-            else { pdf.setFont('helvetica','normal'); pdf.setTextColor(...(isLight2?[51,65,85]:[200,208,224])); }
-            row.forEach((cell, ci) => pdf.text(String(cell), 10 + ci*65, yRow));
-            yRow += 6;
+        tRows.forEach((row,ri)=>{
+            const isHdr=ri===0;
+            pdf.setFillColor(isHdr?20:ri%2===0?17:22,isHdr?40:19,isHdr?30:24);
+            pdf.rect(m,yc-3,W-2*m,5.5,'F');
+            if(isHdr){pdf.setFont('helvetica','bold');pdf.setTextColor(0,212,170);}
+            else{pdf.setFont('helvetica','normal');pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));}
+            pdf.setFontSize(7);
+            row.forEach((cell,ci)=>pdf.text(String(cell),m+ci*69,yc+1.5));
+            yc+=5.5;
         });
 
-        // Boltzmann note
-        const RT=0.593;
-        const ZA=Math.exp(-A.hit.dg/RT), ZB=Math.exp(-B.hit.dg/RT);
-        const overlapNt = Math.max(0, Math.min(A.hit.pos+A.mirna.length, B.hit.pos+B.mirna.length) - Math.max(A.hit.pos, B.hit.pos));
-        const Z = overlapNt > 0 ? 1+ZA+ZB : null;
-        const pA = Z ? (ZA/Z*100).toFixed(1) : (1/(1+Math.exp(A.hit.dg/RT))*100).toFixed(1);
-        const pB = Z ? (ZB/Z*100).toFixed(1) : (1/(1+Math.exp(B.hit.dg/RT))*100).toFixed(1);
-        pdf.setFont('helvetica','italic'); pdf.setFontSize(7.5);
-        pdf.setTextColor(...(isLight2?[100,116,139]:[107,114,128]));
-        pdf.text(`Model Boltzmanna (37°C): P(A)=${pA}%, P(B)=${pB}% | ${overlapNt>0?'Wiązanie wzajemnie wykluczające':'Wiązanie niezależne'}`, 10, yRow+4);
-        pdf.text(`miRNA Hybrid Viewer v1.0 | PRAMĀ Institute | ${new Date().toISOString().slice(0,10)}`, 10, 205);
+        // Footer
+        pdf.setFont('helvetica','italic'); pdf.setFontSize(6.5); pdf.setTextColor(107,114,128);
+        pdf.text(`miRNA Hybrid Viewer v1.0 | PRAM\u0100 Institute | ${new Date().toISOString().slice(0,10)}`, m, H-4);
 
         pdf.save(`dual_comparison_${A.name}_vs_${B.name}.pdf`);
-    } catch(e) { alert('Błąd eksportu PDF: '+e.message); console.error(e); }
+    } catch(e){alert('B\u0142\u0105d eksportu PDF: '+e.message);console.error(e);}
 }
 
 // ── DUAL EXPORT DOCX ─────────────────────────────────────────────
@@ -9008,14 +9001,14 @@ async function exportDualDOCX() {
     if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) return;
     const A = RESULTS[idxA], B = RESULTS[idxB];
     try {
-        const overlapNt = Math.max(0, Math.min(A.hit.pos+A.mirna.length, B.hit.pos+B.mirna.length)-Math.max(A.hit.pos,B.hit.pos));
-        A.mrnaLen = CURRENT_MRNA.length;
-        const blob = _docxBuilder.buildDualDOCX(A, B, overlapNt);
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `dual_comparison_${A.name}_vs_${B.name}.docx`;
-        a.click(); URL.revokeObjectURL(a.href);
-    } catch(e) { alert('Błąd eksportu DOCX: '+e.message); console.error(e); }
+        const overlapNt=Math.max(0,Math.min(A.hit.pos+A.mirna.length,B.hit.pos+B.mirna.length)-Math.max(A.hit.pos,B.hit.pos));
+        A.mrnaLen=CURRENT_MRNA.length;
+        const blob=_docxBuilder.dual(A,B,overlapNt);
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download=`dual_comparison_${A.name}_vs_${B.name}.docx`;
+        a.click();URL.revokeObjectURL(a.href);
+    } catch(e){alert('B\u0142\u0105d eksportu DOCX: '+e.message);console.error(e);}
 }
 
 // ============================================================
@@ -9914,7 +9907,7 @@ Object.assign(HELP_TEXTS, {
     },
     spongequant: {
         title: 'Model ilościowy — kopie/komórkę',
-        body: 'Precyzyjny model uwzględniający rzeczywiste stężenia w komórce.\n\nW odróżnieniu od modelu saturacyjnego (rozcieńczenie × w tabeli), ten model rozwiązuje dokładne równanie kwadratowe:\n\nx² + (Kd + ceRNA_total − miRNA_total)·x − miRNA_total·Kd = 0\n\ngdzie x = wolne miRNA [kopie]\n\nBez założenia [ceRNA] ≫ Kd.\n\nKd [kopie] = exp(ΔG/RT) × Na × V_komórki\n\nTypowe wartości:\n• miRNA: 1 000–50 000 kopii (silne do 500 000)\n• mRNA szczepionki BNT (szczyt): 1 000–100 000 kopii\n• lncRNA/circRNA: 10–1 000 kopii\n\nObjętość: limfocyt ~300 μm³ · hepatocyt ~5 000 μm³ · mięsień ~10 000 μm³\n\nWynik w nM = kopie / (Na × V[L] × 1000)'
+        body: 'Precyzyjny model uwzględniający rzeczywiste stężenia w komórce.\n\nW odróżnieniu od modelu saturacyjnego (rozcieńczenie × w tabeli), ten model rozwiązuje dokładne równanie kwadratowe:\n\nx² + (Kd + ceRNA_total − miRNA_total)·x − miRNA_total·Kd = 0\n\ngdzie x = wolne miRNA [kopie]\n\nBez założenia [ceRNA] ≫ Kd.\n\nKd [kopie] = exp(ΔG/RT) × Na × V_komórki\n\nTypowe wartości:\n• miRNA: 1 000–50 000 kopii (silne do 500 000)\n• długie RNA syntetyczne (szczyt): 1 000–100 000 kopii\n• lncRNA/circRNA: 10–1 000 kopii\n\nObjętość: limfocyt ~300 μm³ · hepatocyt ~5 000 μm³ · mięsień ~10 000 μm³\n\nWynik w nM = kopie / (Na × V[L] × 1000)'
     },
     dgfilter: {
         title: 'Próg ΔG skanowania',
@@ -9934,6 +9927,117 @@ Object.assign(HELP_TEXTS, {
     }
 });
 
+// ============================================================
+// PRZEŁĄCZNIK JĘZYKA PL / EN
+// Działa przez data-i18n atrybuty w HTML — brak zewnętrznych zależności
+// ============================================================
+const I18N = {
+  pl:{
+    // Przyciski główne
+    btn_scan:'🔍 Skanuj', btn_example:'▶ Przykład', btn_clear:'✕ Wyczyść',
+    // Etykiety input
+    lbl_sequence:"Sekwencja mRNA (3'UTR / CDS / pełny transkrypt)",
+    lbl_organism:'Organizm', lbl_minseed:'Min. seed WC', lbl_rankby:'Ranking wg',
+    lbl_salt:'[Na⁺] mol/L', lbl_topn:'Top wyników', lbl_dgfilter:'Próg ΔG ≤',
+    lbl_noncan:'Niekanoniczne', lbl_acc:'Acc.',
+    // Export
+    btn_csv:'⬇ CSV', btn_manuscript:'📄 Manuskrypt', btn_png:'🖼 PNG duplex',
+    btn_pdf:'📋 PDF', btn_docx:'📝 DOCX', btn_json:'{ } JSON',
+    btn_dualview:'⚖ Dual View', btn_session:'♻ Przywróć sesję',
+    // Dual view
+    dual_title:'⚖ Porównywarka miRNA — Dual View',
+    dual_close:'✕ Zamknij',
+    dual_pdf:'📋 Eksport PDF (porównanie)',
+    dual_docx:'📝 Eksport DOCX (porównanie)',
+    dual_titration:'📈 Krzywa miareczkowania',
+    dual_sponge:'🧽 Efekt gąbki',
+    dual_shadowing:'🗺 Mapa zajętości mRNA — Shadowing Track',
+    dual_boltslider:'🧪 Względna liczebność miRNA B vs A',
+    // Sponge
+    sponge_title:'🧽 Efekt gąbki ceRNA',
+    sponge_input:'Wklej sekwencje ceRNA (FASTA lub plain RNA)',
+    sponge_threshold:'Próg ΔG ≤',
+    sponge_calc:'🔬 Oblicz efekt gąbki',
+    sponge_clear:'✕ Wyczyść',
+    // Quant model
+    quant_title:'🔢 Model ilościowy (kopie/komórkę)',
+    quant_enable:'Włącz',
+    quant_copies_a:'Kopie miRNA A / komórkę',
+    quant_copies_b:'Kopie miRNA B / komórkę',
+    quant_copies_cerna:'Kopie ceRNA / komórkę',
+    quant_volume:'Objętość komórki (μm³)',
+    quant_hint:'Przykłady: hepatocyt 5000 μm³ · limfocyt 300 μm³ · komórka mięśnia 10 000 μm³<br>miRNA: typowe 1 000–50 000 · silnie eksp. do 500 000 · długie RNA syntetyczne (szczyt) 1 000–100 000',
+    // NCBI
+    ncbi_title:'Auto-pobieranie z NCBI',
+    ncbi_id:'ID RefSeq / GenBank / Gen',
+    ncbi_region:'Region',
+    ncbi_utr3:"3'UTR", ncbi_full:'Pełny mRNA', ncbi_cds:'CDS',
+    ncbi_fetch:'⬇ Pobierz sekwencję',
+    // Status
+    status_ready:'Gotowe. Wklej sekwencję i kliknij Skanuj.',
+    // Theme
+    theme_dark:'🌙 Ciemny', theme_light:'☀️ Jasny',
+    lang_btn:'🌐 EN',
+  },
+  en:{
+    btn_scan:'🔍 Scan', btn_example:'▶ Example', btn_clear:'✕ Clear',
+    lbl_sequence:"mRNA sequence (3'UTR / CDS / full transcript)",
+    lbl_organism:'Organism', lbl_minseed:'Min. seed WC', lbl_rankby:'Rank by',
+    lbl_salt:'[Na⁺] mol/L', lbl_topn:'Top results', lbl_dgfilter:'ΔG threshold ≤',
+    lbl_noncan:'Non-canonical', lbl_acc:'Acc.',
+    btn_csv:'⬇ CSV', btn_manuscript:'📄 Manuscript', btn_png:'🖼 PNG duplex',
+    btn_pdf:'📋 PDF', btn_docx:'📝 DOCX', btn_json:'{ } JSON',
+    btn_dualview:'⚖ Dual View', btn_session:'♻ Restore session',
+    dual_title:'⚖ miRNA Comparator — Dual View',
+    dual_close:'✕ Close',
+    dual_pdf:'📋 Export PDF (comparison)',
+    dual_docx:'📝 Export DOCX (comparison)',
+    dual_titration:'📈 Titration curve',
+    dual_sponge:'🧽 Sponge effect',
+    dual_shadowing:'🗺 mRNA occupancy map — Shadowing Track',
+    dual_boltslider:'🧪 Relative abundance miRNA B vs A',
+    sponge_title:'🧽 ceRNA Sponge Effect',
+    sponge_input:'Paste ceRNA sequences (FASTA or plain RNA)',
+    sponge_threshold:'ΔG threshold ≤',
+    sponge_calc:'🔬 Calculate sponge effect',
+    sponge_clear:'✕ Clear',
+    quant_title:'🔢 Quantitative model (copies/cell)',
+    quant_enable:'Enable',
+    quant_copies_a:'miRNA A copies / cell',
+    quant_copies_b:'miRNA B copies / cell',
+    quant_copies_cerna:'ceRNA copies / cell',
+    quant_volume:'Cell volume (μm³)',
+    quant_hint:'Examples: hepatocyte 5000 μm³ · lymphocyte 300 μm³ · muscle cell 10 000 μm³<br>miRNA: typical 1,000–50,000 · highly expressed up to 500,000 · long synthetic RNA (peak) 1,000–100,000',
+    ncbi_title:'Auto-fetch from NCBI',
+    ncbi_id:'RefSeq / GenBank / Gene ID',
+    ncbi_region:'Region',
+    ncbi_utr3:"3'UTR", ncbi_full:'Full mRNA', ncbi_cds:'CDS',
+    ncbi_fetch:'⬇ Fetch sequence',
+    status_ready:'Ready. Paste a sequence and click Scan.',
+    theme_dark:'🌙 Dark', theme_light:'☀️ Light',
+    lang_btn:'🌐 PL',
+  }
+};
+let _lang = localStorage.getItem('mirna-lang')||'pl';
+function applyLang(lang){
+  _lang=lang;
+  localStorage.setItem('mirna-lang',lang);
+  const t=I18N[lang];
+  const lb=document.getElementById('langToggle');
+  if(lb) lb.textContent=t.lang_btn;
+  const tb=document.getElementById('themeToggle');
+  if(tb) tb.textContent=document.body.classList.contains('light')?t.theme_light:t.theme_dark;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.dataset.i18n;
+    if(t[key]===undefined) return;
+    if(el.dataset.i18nHtml){el.innerHTML=t[key];}
+    else if(el.tagName==='INPUT'&&el.type!=='button'&&el.type!=='submit'){el.placeholder=t[key];}
+    else{el.textContent=t[key];}
+  });
+  document.documentElement.lang=lang;
+}
+function toggleLang(){applyLang(_lang==='pl'?'en':'pl');}
+(function(){const s=localStorage.getItem('mirna-lang');if(s&&s!=='pl')applyLang(s);})();
 
 </script>
 </body>

@@ -8038,11 +8038,23 @@ function hideHelp() {
 
 function positionHelp(el) {
     const rect = el.getBoundingClientRect();
-    const pw = 300, ph = 20;
-    let left = rect.left + window.scrollX;
-    let top = rect.bottom + window.scrollY + 6;
-    if (left + pw > window.innerWidth - 10) left = window.innerWidth - pw - 10;
-    if (left < 6) left = 6;
+    const pw = 300, ph = 200; // approximate popup height for collision detection
+    let left = rect.left;
+    let top = rect.bottom + 6;
+    
+    // Adjust if popup goes off right edge
+    if (left + pw > window.innerWidth - 10) {
+        left = window.innerWidth - pw - 10;
+    }
+    // Adjust if popup goes off left edge
+    if (left < 6) {
+        left = 6;
+    }
+    // Adjust if popup goes off bottom edge (show above instead)
+    if (top + ph > window.innerHeight - 10) {
+        top = rect.top - ph - 6;
+    }
+    
     helpPopover.style.left = left + 'px';
     helpPopover.style.top = top + 'px';
     helpPopover.style.maxWidth = pw + 'px';
@@ -8086,7 +8098,7 @@ let currentHit = null;
 let currentRowIdx = null;
 
 // Historia mutacji: stos obiektów { mrna, hit, label }
-let snpHistory = [];
+var snpHistory = [];
 
 function enableSNPMode(canvas, aln, hit, rowIdx) {
     if (snpActive) { disableSNPMode(); return; }
@@ -9476,12 +9488,32 @@ function runSpongeAnalysis() {
         // Quantitative model (if enabled)
         renderSpongeQuant(resA, resB, resultEl);
         
-        // Generate sponge effect chart (ceRNA vs free miRNA %)
-        // Use both miRNAs
+        // Generuj dane do wykresu z konkurencją
         const deltaG_A = resA.details.map(d => d.dg);
         const deltaG_B = resB ? resB.details.map(d => d.dg) : [];
-        const chartData = generateSpongeEffectChart(mirnaACopies, deltaG_A, mirnaBCopies, deltaG_B);
-        renderSpongeChart(chartData, resultEl, rA.name, rB ? rB.name : null);
+
+        console.debug('Before competition data:');
+        console.debug('  idxB:', idxB, 'rB exists:', !!rB, 'rB name:', rB?.name);
+        console.debug('  resA.details.length:', resA.details.length, 'resB.details.length:', resB ? resB.details.length : 'null');
+        console.debug('  mirnaACopies:', mirnaACopies, 'mirnaBCopies:', mirnaBCopies);
+        console.debug('  deltaG_A (length):', deltaG_A.length, 'sample:', deltaG_A.slice(0, 3));
+        console.debug('  deltaG_B (length):', deltaG_B.length, 'sample:', deltaG_B.slice(0, 3));
+
+        const competitionData = generateCompetitionData({
+            miRNA_A: mirnaACopies,
+            miRNA_B: mirnaBCopies,
+            deltaG_A: deltaG_A,
+            deltaG_B: deltaG_B,
+            maxCopies: 20000,
+            step: 200
+        });
+
+        console.debug('After competition data - first 3 points:', competitionData.slice(0, 3));
+        console.debug('After competition data - last point:', competitionData[competitionData.length-1]);
+        console.debug('Data summary: ceRNA range [0,' + competitionData[competitionData.length-1]?.ceRNA + '], points count:', competitionData.length);
+
+        // Zamiast starego renderSpongeChart – wywołaj nowy
+        renderSpongeChart(competitionData, resultEl, rA.name, rB ? rB.name : '');
         sessionSave();
         } catch(err) {
             resultEl.innerHTML = `<div style="color:var(--seed);font-size:.7rem;padding:.4rem">${t.sponge_error_prefix} ${err.message}<br><pre style="font-size:.6rem;white-space:pre-wrap">${err.stack||''}</pre></div>`;
@@ -9680,7 +9712,7 @@ function renderSpongeQuant(resA, resB, resultEl) {
     const fmtNM = (copies) => {
         const val = copies / (Na * V_L * 1000);
         if (val === 0) return '0';
-        if (val < 0.0001) return val.toExponential(2) + ' nM';
+        if (val < 0.0001) return val.toExponential(2);
         if (val < 0.01)   return val.toFixed(5);
         if (val < 1)      return val.toFixed(3);
         return val.toFixed(2);
@@ -9718,105 +9750,164 @@ function renderSpongeQuant(resA, resB, resultEl) {
     resultEl.appendChild(div);
 }
 
-// ── Generate titration-like data: ceRNA copies vs free miRNA (%) for both miRNAs ──
-function generateSpongeEffectChart(mirnaACount, deltaG_A, mirnaBCount, deltaG_B) {
-    const RT = 0.593;
-    const data = [];
+// ============================================================
+// NOWY MODEL KONKURENCJI DLA WYKRESU SPONGE (ceRNA)
+// ============================================================
 
-    // Scale: 0 to 100,000 ceRNA copies (typical miRNA range: 1,000–50,000; highly expressed: up to 500,000; synthetic: 1,000–100,000)
-    for (let ceRNA_copies = 0; ceRNA_copies <= 100000; ceRNA_copies += 2000) {
-        // For miRNA A
-        let totalOccupancyA = 0;
-        deltaG_A.forEach(dg => {
-            const Ka = Math.exp(-dg / RT);
-            const occupancy = Ka / (1 + Ka);
-            totalOccupancyA += occupancy;
-        });
-        const bindingCapacityA = ceRNA_copies * totalOccupancyA;
-        let boundMirnaA = 0;
-        if (bindingCapacityA > 0.001) {
-            boundMirnaA = bindingCapacityA * (1 - Math.exp(-mirnaACount / bindingCapacityA));
-        }
-        const freeMirnaA = Math.max(0, mirnaACount - boundMirnaA);
-        const pctFreeA = (freeMirnaA / mirnaACount * 100);
+/**
+ * Model konkurencji między dwoma miRNA o wspólne ceRNA.
+ * @param {number} miRNA_A - liczba kopii miRNA A
+ * @param {number} miRNA_B - liczba kopii miRNA B
+ * @param {number} ceRNA_copies - liczba kopii ceRNA
+ * @param {number[]} deltaG_A - tablica wartości ΔG (kcal/mol) dla miejsc wiązania A w ceRNA
+ * @param {number[]} deltaG_B - jw. dla B
+ * @param {number} RT - stała gazowa * temp. (0.593 kcal/mol @ 37°C)
+ * @returns {object} { free_A, free_B } – frakcje wolnego miRNA (0..1)
+ */
+function computeCompetition({ miRNA_A, miRNA_B, ceRNA_copies, deltaG_A = [], deltaG_B = [], RT = 0.593 }) {
+    const total_miRNA = miRNA_A + miRNA_B;
+    if (total_miRNA === 0) return { free_A: 1, free_B: 1 };
 
-        // For miRNA B
-        let totalOccupancyB = 0;
-        deltaG_B.forEach(dg => {
-            const Ka = Math.exp(-dg / RT);
-            const occupancy = Ka / (1 + Ka);
-            totalOccupancyB += occupancy;
-        });
-        const bindingCapacityB = ceRNA_copies * totalOccupancyB;
-        let boundMirnaB = 0;
-        if (bindingCapacityB > 0.001) {
-            boundMirnaB = bindingCapacityB * (1 - Math.exp(-mirnaBCount / bindingCapacityB));
-        }
-        const freeMirnaB = Math.max(0, mirnaBCount - boundMirnaB);
-        const pctFreeB = (freeMirnaB / mirnaBCount * 100);
-
-        data.push({
-            ceRNA: ceRNA_copies,
-            freeA: pctFreeA,
-            freeB: pctFreeB
-        });
+    function computeCapacity(deltaG_list) {
+        if (!deltaG_list || deltaG_list.length === 0) return 0;
+        const Ka = deltaG_list.map(dG => Math.exp(-dG / RT));
+        const f = Ka.map(k => k / (1 + k));
+        return ceRNA_copies * f.reduce((s, v) => s + v, 0);
     }
 
+    const cap_A = computeCapacity(deltaG_A);
+    const cap_B = computeCapacity(deltaG_B);
+
+    const bound_A = cap_A > 0 ? cap_A * (1 - Math.exp(-miRNA_A / cap_A)) : 0;
+    const bound_B = cap_B > 0 ? cap_B * (1 - Math.exp(-miRNA_B / cap_B)) : 0;
+
+    return {
+        free_A: miRNA_A > 0 ? Math.max(0, Math.min(1, (miRNA_A - bound_A) / miRNA_A)) : 1,
+        free_B: miRNA_B > 0 ? Math.max(0, Math.min(1, (miRNA_B - bound_B) / miRNA_B)) : 1
+    };
+}
+
+/**
+ * Generuje dane do wykresu w zakresie liczby kopii ceRNA.
+ * @param {number} miRNA_A
+ * @param {number} miRNA_B
+ * @param {number[]} deltaG_A
+ * @param {number[]} deltaG_B
+ * @param {number} maxCopies - maksymalna liczba kopii ceRNA do przeliczenia (domyślnie 20000)
+ * @param {number} step - co ile kopii (domyślnie 200)
+ * @returns {Array} { ceRNA, freeA, freeB }
+ */
+function generateCompetitionData({ miRNA_A, miRNA_B, deltaG_A, deltaG_B, maxCopies = 20000, step = 200 }) {
+    const data = [];
+    for (let ceRNA = 0; ceRNA <= maxCopies; ceRNA += step) {
+        const { free_A, free_B } = computeCompetition({
+            miRNA_A, miRNA_B, ceRNA_copies: ceRNA,
+            deltaG_A, deltaG_B
+        });
+        const freeA = (!isNaN(free_A) && isFinite(free_A)) ? free_A * 100 : 100;
+        const freeB = (!isNaN(free_B) && isFinite(free_B)) ? free_B * 100 : 100;
+        data.push({
+            ceRNA,
+            freeA: Math.min(100, Math.max(0, freeA)),
+            freeB: Math.min(100, Math.max(0, freeB))
+        });
+    }
     return data;
 }
 
-// ── Render Chart.js graph for sponge effect ──
+// ============================================================
+// NOWA FUNKCJA RENDERUJĄCA WYKRES (z konkurencją)
+// Zastępuje starą renderSpongeChart
+// ============================================================
 function renderSpongeChart(data, resultEl, nameA, nameB) {
     const t = I18N[_lang] || I18N.pl;
-    
-    // Destroy old chart if it exists
+
+    // Usuń poprzedni wykres, jeśli istnieje
     if (window._spongeChartInstance) {
         window._spongeChartInstance.destroy();
     }
 
-    // Create container
-    const container = document.createElement('div');
-    container.style.cssText = 'margin-top:.8rem;padding:.5rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2)';
-    container.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">📈 ${t.sponge_chart_title}</div>
-        <canvas id="spongeEffectChart" width="400" height="150"></canvas>`;
-    
-    resultEl.appendChild(container);
+    // Znajdź lub stwórz kontener dla wykresu (zgodny z oryginalnym kodem)
+    let container = resultEl.querySelector('.sponge-chart-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'sponge-chart-container';
+        container.style.cssText = 'margin-top:.8rem;padding:.5rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2)';
+        container.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">📈 ${t.sponge_chart_title}</div>
+                               <canvas id="spongeEffectChart" width="400" height="150"></canvas>
+                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">Linia 50% oznacza liczbę kopii ceRNA, przy której połowa puli miRNA pozostaje wolna.</div>`;
+        resultEl.appendChild(container);
+    } else {
+        container.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">📈 ${t.sponge_chart_title}</div>
+                               <canvas id="spongeEffectChart" width="400" height="150"></canvas>
+                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">Linia 50% oznacza liczbę kopii ceRNA, przy której połowa puli miRNA pozostaje wolna.</div>`;
+    }
 
     const canvas = document.getElementById('spongeEffectChart');
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
+
+    console.debug('Sponge chart - rendering');
+    console.debug('  nameA:', nameA, 'nameB:', nameB);
+    console.debug('  data points:', data.length);
+    console.debug('  sample data:', data.slice(0, 3));
+    console.debug('  freeA values at [0, mid, last]:', 
+        data[0]?.freeA,
+        data[Math.floor(data.length/2)]?.freeA,
+        data[data.length-1]?.freeA);
+    console.debug('  freeB values at [0, mid, last]:', 
+        data[0]?.freeB,
+        data[Math.floor(data.length/2)]?.freeB,
+        data[data.length-1]?.freeB);
+
+    // Przygotuj zestaw danych
     const datasets = [
         {
-            label: `${nameA} — Free (%)`,
-            data: data.map(d => d.freeA),
+            label: `${nameA} — ${t.sponge_chart_free_mirna || 'Free miRNA (% of total pool)'}`,
+            data: data.map(d => (d.freeA !== undefined && !isNaN(d.freeA)) ? d.freeA : null),
             borderColor: '#60a5fa',
             backgroundColor: 'rgba(96, 165, 250, 0.1)',
             tension: 0.3,
+            borderWidth: 2,
             fill: false,
-            pointRadius: 2
+            pointRadius: 0,
+            spanGaps: true,
+            hidden: false
+        },
+        {
+            label: `${nameB || 'miRNA B'} — ${t.sponge_chart_free_mirna || 'Free miRNA (% of total pool)'}`,
+            data: data.map(d => (d.freeB !== undefined && !isNaN(d.freeB)) ? d.freeB : null),
+            borderColor: '#fb923c',
+            backgroundColor: 'rgba(251, 146, 60, 0.2)',
+            tension: 0.3,
+            borderWidth: 3,
+            borderDash: [8, 4],
+            fill: false,
+            pointRadius: 1,
+            hoverRadius: 4,
+            spanGaps: true,
+            hidden: false
+        },
+        {
+            label: t.sponge_chart_50_threshold || 'Próg 50% wolnych miRNA',
+            data: Array(data.length).fill(50),
+            borderColor: '#9ca3af',
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false
         }
     ];
 
-    if (nameB) {
-        datasets.push({
-            label: `${nameB} — Free (%)`,
-            data: data.map(d => d.freeB),
-            borderColor: '#fb923c',
-            backgroundColor: 'rgba(251, 146, 60, 0.1)',
-            tension: 0.3,
-            fill: false,
-            pointRadius: 2
-        });
-    }
-
-    datasets.push({
-        label: t.sponge_chart_50_threshold,
-        data: Array(data.length).fill(50),
-        borderColor: '#9ca3af',
-        borderDash: [5, 5],
-        pointRadius: 0,
-        fill: false
+    console.debug('Datasets created - count:', datasets.length);
+    datasets.forEach((ds, i) => {
+        const vals = ds.data.filter(v => v !== null && !isNaN(v));
+        if (vals.length > 0) {
+            const min = Math.min(...vals);
+            const max = Math.max(...vals);
+            console.debug(`  Dataset ${i} (${ds.label}): ${vals.length} points, range [${min.toFixed(1)}, ${max.toFixed(1)}]`);
+        } else {
+            console.debug(`  Dataset ${i} (${ds.label}): 0 valid points`);
+        }
     });
 
     window._spongeChartInstance = new Chart(ctx, {
@@ -9830,10 +9921,24 @@ function renderSpongeChart(data, resultEl, nameA, nameB) {
             plugins: {
                 legend: {
                     display: true,
+                    onClick: (e) => {
+                        // Prevent legend click from toggling dataset visibility
+                        // to ensure both miRNA lines stay visible
+                        e.native.stopImmediatePropagation();
+                    },
                     labels: {
                         font: { family: "'JetBrains Mono', monospace", size: 11 },
                         color: 'var(--text)',
                         padding: 12
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const label = context.dataset.label || '';
+                            const val = context.raw;
+                            return `${label}: ${val.toFixed(1)}%`;
+                        }
                     }
                 }
             },
@@ -9841,7 +9946,7 @@ function renderSpongeChart(data, resultEl, nameA, nameB) {
                 x: {
                     title: {
                         display: true,
-                        text: t.sponge_chart_x_label,
+                        text: t.sponge_chart_x_label || 'ceRNA [kopie]',
                         font: { size: 12, weight: 'bold' }
                     },
                     ticks: { font: { family: "'JetBrains Mono', monospace" } }
@@ -9849,11 +9954,11 @@ function renderSpongeChart(data, resultEl, nameA, nameB) {
                 y: {
                     title: {
                         display: true,
-                        text: t.sponge_chart_y_label,
+                        text: t.sponge_chart_y_label || 'Frakcja wolnych miRNA [%]',
                         font: { size: 12, weight: 'bold' }
                     },
                     min: 0,
-                    max: 100,
+                    max: 105,
                     ticks: { font: { family: "'JetBrains Mono', monospace" } }
                 }
             }
@@ -9985,7 +10090,7 @@ Object.assign(HELP_TEXTS, {
 // ============================================================
 // SYSTEM JĘZYKA PL / EN — pełne pokrycie interfejsu
 // ============================================================
-const I18N = {
+var I18N = {
   pl:{
     // Nagłówek
     lang_btn:'🌐 EN', theme_dark:'🌙 Ciemny', theme_light:'☀️ Jasny',
@@ -10066,10 +10171,10 @@ const I18N = {
     sponge_effect_high:'High sponge effect: significant miRNA depletion predicted',
     sponge_no_effect:'No sponge effect expected',
     sponge_chart_title:'Efekt gąbki: liczba ceRNA vs wolne miRNA',
-    sponge_chart_free_mirna:'Frakcja wolnych miRNA (%)',
-    sponge_chart_50_threshold:'Próg 50% (punkt przegięcia)',
-    sponge_chart_x_label:'Kopie ceRNA / komórkę',
-    sponge_chart_y_label:'% wolnych miRNA',
+    sponge_chart_free_mirna:'Frakcja wolnych miRNA [%]',
+    sponge_chart_50_threshold:'Próg 50% wolnych miRNA',
+    sponge_chart_x_label:'Liczba kopii ceRNA',
+    sponge_chart_y_label:'Frakcja wolnych miRNA [%]',
     sponge_preview_label_5p:"5' miRNA", sponge_preview_label_target:'target', sponge_preview_pos_label:'pos:',
     titration_y_label:'P(zajętości)', titration_x_label:'[miRNA] / Kd', titration_kd_label:'Kd', titration_slider_note:'[B]/[A] = {ratio}× (suwak)', titration_sponge_line:'Sponge A: ×{a} / B: ×{b}', titration_model_exclusive:'Model: wyklucz. wzajemne', titration_model_independent:'Model: niezależne',
     btn_clear_sponge:'✕ Wyczyść',
@@ -10188,10 +10293,10 @@ const I18N = {
     sponge_effect_high:'High sponge effect: significant miRNA depletion predicted',
     sponge_no_effect:'No sponge effect expected',
     sponge_chart_title:'Sponge effect: ceRNA copies vs free miRNA',
-    sponge_chart_free_mirna:'Free miRNA fraction (%)',
-    sponge_chart_50_threshold:'50% threshold (inflection point)',
-    sponge_chart_x_label:'ceRNA copies / cell',
-    sponge_chart_y_label:'% free miRNA',
+    sponge_chart_free_mirna:'Free miRNA fraction [%]',
+    sponge_chart_50_threshold:'50% free miRNA threshold',
+    sponge_chart_x_label:'ceRNA copies',
+    sponge_chart_y_label:'Free miRNA fraction [%]',
     sponge_preview_label_5p:"5' miRNA", sponge_preview_label_target:'target', sponge_preview_pos_label:'pos:',
     titration_y_label:'Occupancy P', titration_x_label:'[miRNA] / Kd', titration_kd_label:'Kd', titration_slider_note:'[B]/[A] = {ratio}× (slider)', titration_sponge_line:'Sponge A: ×{a} / B: ×{b}', titration_model_exclusive:'Model: mutually exclusive', titration_model_independent:'Model: independent',
     btn_clear_sponge:'✕ Clear',
@@ -10234,7 +10339,7 @@ const I18N = {
     pdf_page:'Page', pdf_results:'Results',
   }
 };
-let _lang = localStorage.getItem('mirna-lang')||'pl';
+var _lang = localStorage.getItem('mirna-lang')||'pl';
 
 function applyLang(lang) {
   _lang = lang;

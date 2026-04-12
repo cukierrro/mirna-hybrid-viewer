@@ -364,7 +364,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <span id="rnaStructLabel" style="color:var(--muted);font-weight:400;font-family:'JetBrains Mono',monospace;font-size:.62rem"></span>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem;overflow-x:auto">
-        <canvas id="rnaStructCanvas" height="38" style="display:block"></canvas>
+        <canvas id="rnaStructCanvas" height="95" style="display:block"></canvas>
       </div>
     </div>
     <div id="panel3d" style="display:none">
@@ -6953,99 +6953,117 @@ function rnaStackE(a, b, c, d) {
 }
 
 function zukerLiteMFE(seq) {
-  // Simplified Zuker DP: minimize ΔG over secondary structure
-  // V[i][j] = MFE of substructure with base pair (i,j)
-  // W[i][j] = MFE of best structure on seq[i..j]
+  // Zuker-lite DP with float64 arrays and explicit traceback pointers
+  // V[i][j] = MFE when i-j forced paired; W[i][j] = MFE of best structure on i..j
   const n = seq.length;
-  if (n < 4) return {mfe: 0, pairs: []};
+  if (n < 8) return {mfe: 0, pairs: new Array(n).fill(-1)};
 
   const INF = 1e9;
-  const MIN_LOOP = 3; // minimum hairpin loop size
+  const MIN_LOOP = 3;
 
-  // W[i][j] = best free energy for subsequence i..j
-  const W = Array.from({length:n}, () => new Float32Array(n));
-  // V[i][j] = best energy with i-j forced paired
-  const V = Array.from({length:n}, () => new Float32Array(n).fill(INF));
+  // Use regular JS arrays (float64) — Float32 causes traceback precision failures
+  const W = Array.from({length:n}, () => new Array(n).fill(0));
+  const V = Array.from({length:n}, () => new Array(n).fill(INF));
+  // TW[i][j]: -1=all unpaired, -2=i-j are paired (V path), k>=0=split at k
+  const TW = Array.from({length:n}, () => new Int16Array(n).fill(-1));
 
-  // Hairpin loop energy (simplified Turner 2004)
   function hairpinE(i, j) {
-    const loopSize = j - i - 1;
-    if (loopSize < MIN_LOOP) return INF;
-    // Initiation penalty from Turner 2004 table (simplified)
-    const initE = loopSize <= 6
-      ? [INF, INF, INF, 5.4, 5.6, 5.7, 5.4][loopSize]  // loop sizes 3,4,5,6
-      : 5.4 + 1.75 * Math.log(loopSize / 6);             // extrapolation
-    // Terminal mismatch contribution (approximated)
-    const mm = -0.3;
-    return initE + mm;
+    const ls = j - i - 1;
+    if (ls < MIN_LOOP) return INF;
+    const init = ls <= 6 ? [INF,INF,INF,5.4,5.6,5.7,5.4][ls]
+                         : 5.4 + 1.75 * Math.log(ls / 6);
+    return init - 0.3;
+  }
+  function internalE(ls) {
+    if (ls === 0) return 0;
+    if (ls === 1) return 3.9;
+    if (ls === 2) return 4.1;
+    return 4.1 + 1.75 * Math.log(ls / 2);
   }
 
-  // Internal loop energy (2x2 symmetric, simplified)
-  function internalLoopE(loopSize) {
-    if (loopSize === 0) return 0; // stacked pair
-    if (loopSize === 1) return 3.9; // 1x1 internal loop
-    if (loopSize === 2) return 4.1;
-    return 4.1 + 1.75 * Math.log(loopSize / 2);
-  }
-
-  // Fill DP tables (outer loop: subseq length)
+  // DP fill
   for (let len = MIN_LOOP + 1; len < n; len++) {
     for (let i = 0; i + len < n; i++) {
       const j = i + len;
-      // V[i][j]: forced pair (i,j)
       if (rnaCanPair(seq[i], seq[j])) {
-        // Option 1: hairpin
         let best = hairpinE(i, j);
-        // Option 2: stacking (i+1,j-1 also paired)
         if (len >= MIN_LOOP + 2 && V[i+1][j-1] < INF) {
-          const stkE = rnaStackE(seq[i], seq[i+1], seq[j], seq[j-1]);
-          best = Math.min(best, stkE + V[i+1][j-1]);
+          const e = rnaStackE(seq[i], seq[i+1], seq[j], seq[j-1]) + V[i+1][j-1];
+          if (e < best) best = e;
         }
-        // Option 3: internal loop (skip 1-2 unpaired on each side)
         for (let il = 1; il <= Math.min(3, len-MIN_LOOP-2); il++) {
           for (let ir = 1; ir <= Math.min(3, len-MIN_LOOP-2-il+1); ir++) {
-            const ni = i + il + 1, nj = j - ir - 1;
+            const ni = i+il+1, nj = j-ir-1;
             if (ni >= nj - MIN_LOOP) break;
             if (V[ni][nj] < INF && rnaCanPair(seq[ni], seq[nj])) {
-              best = Math.min(best, internalLoopE(il+ir) + V[ni][nj]);
+              const e = internalE(il+ir) + V[ni][nj];
+              if (e < best) best = e;
             }
           }
         }
         V[i][j] = best;
       }
-      // W[i][j]: best structure on i..j
-      let wBest = 0; // unpaired (reference)
-      if (V[i][j] < INF) wBest = Math.min(wBest, V[i][j]);
-      // bifurcation
+      // W: best of (unpaired=0, stem=V, bifurcation)
+      let wBest = 0, wTrace = -1;
+      if (V[i][j] < 0) { wBest = V[i][j]; wTrace = -2; }
       for (let k = i; k < j; k++) {
-        const split = W[i][k] + W[k+1][j];
-        wBest = Math.min(wBest, split);
+        const s = W[i][k] + W[k+1][j];
+        if (s < wBest) { wBest = s; wTrace = k; }
       }
       W[i][j] = wBest;
+      TW[i][j] = wTrace;
     }
   }
 
-  // Traceback to get base pairs
-  const pairs = new Int16Array(n).fill(-1);
-  function traceback(i, j) {
-    if (i >= j) return;
-    if (W[i][j] === 0) return; // all unpaired in this region
-    // Check if i-j paired
-    if (V[i][j] < INF && Math.abs(W[i][j] - V[i][j]) < 0.01) {
-      pairs[i] = j; pairs[j] = i;
-      if (i+1 < j-1) traceback(i+1, j-1);
-      return;
-    }
-    // Bifurcation
-    for (let k = i; k < j; k++) {
-      if (Math.abs(W[i][j] - W[i][k] - W[k+1][j]) < 0.01) {
-        traceback(i, k); traceback(k+1, j); return;
+  // Traceback using explicit pointers — no float comparison needed for W
+  const pairs = new Array(n).fill(-1);
+  const EPS = 0.15; // tolerance for V-only comparisons
+
+  function traceV(i, j) {
+    // i-j already resolved as paired; trace what's inside
+    if (i + 1 >= j - 1) return;
+    // Stacking: i+1 and j-1 also paired
+    if (rnaCanPair(seq[i+1], seq[j-1]) && V[i+1][j-1] < INF) {
+      const e = rnaStackE(seq[i], seq[i+1], seq[j], seq[j-1]) + V[i+1][j-1];
+      if (Math.abs(e - V[i][j]) < EPS) {
+        pairs[i+1] = j-1; pairs[j-1] = i+1;
+        traceV(i+1, j-1);
+        return;
       }
     }
+    // Internal loop
+    for (let il = 1; il <= 3; il++) {
+      for (let ir = 1; ir <= 3; ir++) {
+        const ni = i+il+1, nj = j-ir-1;
+        if (ni >= n || nj < 0 || ni >= nj - MIN_LOOP) continue;
+        if (V[ni][nj] < INF && rnaCanPair(seq[ni], seq[nj])) {
+          const e = internalE(il+ir) + V[ni][nj];
+          if (Math.abs(e - V[i][j]) < EPS) {
+            pairs[ni] = nj; pairs[nj] = ni;
+            traceV(ni, nj);
+            return;
+          }
+        }
+      }
+    }
+    // Hairpin — no inner pairs needed
   }
-  if (n > 1) traceback(0, n-1);
 
-  return {mfe: W[0][n-1], pairs: Array.from(pairs)};
+  function traceW(i, j) {
+    if (i >= j) return;
+    const t = TW[i][j];
+    if (t === -1) return;           // unpaired region
+    if (t === -2) {                 // i-j paired
+      pairs[i] = j; pairs[j] = i;
+      traceV(i, j);
+    } else {                        // bifurcation at t
+      traceW(i, t);
+      traceW(t + 1, j);
+    }
+  }
+
+  if (n > 1) traceW(0, n - 1);
+  return {mfe: W[0][n-1], pairs};
 }
 
 // Accessibility cache: key = "mrnaHash:pos:len" → result object
@@ -10501,76 +10519,91 @@ function drawLocalRNAStruct(seq, struct, bindStart, bindEnd) {
   panel.style.display = '';
   const n = seq.length;
   const NR = 7, SP = 14, PAD = 10;
+  const ARC_ZONE = 62; // pixels above nucleotides reserved for arcs
+  const H = ARC_ZONE + NR * 2 + 18;
   const W = PAD * 2 + n * SP;
-  canvas.width = W; canvas.height = 38;
+  canvas.width = W; canvas.height = H;
+  const Y = H - NR - 9; // nucleotide center near bottom
   const ctx = canvas.getContext('2d');
   const isLight = document.body.classList.contains('light');
 
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface2').trim();
-  ctx.fillRect(0, 0, W, 38);
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface2').trim()
+    || (isLight ? '#f5f7fa' : '#181c22');
+  ctx.fillRect(0, 0, W, H);
 
-  // Theme-aware base colors: darker in light mode for contrast on white background
+  // Theme-aware base colors
   const baseCol = isLight
-    ? {'A':'#007a62','U':'#6d28d9','G':'#1d4ed8','C':'#c2410c'}   // dark saturated for light bg
-    : {'A':'#00d4aa','U':'#a78bfa','G':'#60a5fa','C':'#fb923c'};   // vivid for dark bg
-  const Y = 20;
+    ? {'A':'#007a62','U':'#6d28d9','G':'#1d4ed8','C':'#c2410c'}
+    : {'A':'#00d4aa','U':'#a78bfa','G':'#60a5fa','C':'#fb923c'};
 
-  // Draw arcs for base pairs
-  ctx.strokeStyle = isLight ? 'rgba(100,116,139,0.4)' : 'rgba(148,163,184,0.3)';
-  ctx.lineWidth = 1;
+  // Parse pairs first so we know which bases are paired
+  const pairOf = new Array(n).fill(-1);
   const pairStack = [];
-  const pairPositions = {};
   for (let i = 0; i < struct.length; i++) {
     const c = struct[i];
     if (c === '(' || c === '[') pairStack.push(i);
     else if ((c === ')' || c === ']') && pairStack.length > 0) {
       const j = pairStack.pop();
-      pairPositions[j] = i; pairPositions[i] = j;
-      // Draw arc above bases
-      const x1 = PAD + j * SP, x2 = PAD + i * SP;
-      const cx = (x1 + x2) / 2, ry = Math.min((x2 - x1) * 0.3, 12);
-      ctx.beginPath();
-      ctx.ellipse(cx, Y - NR - 1, (x2-x1)/2, ry, 0, Math.PI, 0);
-      ctx.stroke();
+      pairOf[j] = i; pairOf[i] = j;
     }
   }
 
-  // Draw bases
+  // Draw arcs above nucleotides, scaled with span
+  for (let i = 0; i < n; i++) {
+    const j = pairOf[i];
+    if (j <= i) continue; // draw each pair once (i < j)
+    const x1 = PAD + i * SP, x2 = PAD + j * SP;
+    const span = x2 - x1;
+    const cx = (x1 + x2) / 2;
+    // Arc height scales with span (longer = higher arc), capped at ARC_ZONE-4
+    const ry = Math.min(span * 0.42, ARC_ZONE - 4);
+    const inBind = (i >= bindStart && i < bindEnd) || (j >= bindStart && j < bindEnd);
+    if (inBind) {
+      ctx.strokeStyle = isLight ? 'rgba(220,38,38,0.75)' : 'rgba(248,113,113,0.8)';
+      ctx.lineWidth = 1.8;
+    } else {
+      ctx.strokeStyle = isLight ? 'rgba(71,85,105,0.65)' : 'rgba(148,163,184,0.65)';
+      ctx.lineWidth = 1.2;
+    }
+    // Draw upper-half ellipse arc (from left point going clockwise through top to right point)
+    ctx.beginPath();
+    ctx.ellipse(cx, Y - NR, span / 2, ry, 0, Math.PI, 0);
+    ctx.stroke();
+  }
+
+  // Draw nucleotide circles
   for (let i = 0; i < n; i++) {
     const x = PAD + i * SP;
     const inBind = (i >= bindStart && i < bindEnd);
-    const isPaired = struct[i] !== '.';
+    const isPaired = pairOf[i] !== -1;
     const base = seq[i];
 
-    // Background
     ctx.beginPath(); ctx.arc(x, Y, NR, 0, Math.PI*2);
     if (inBind) {
-      ctx.fillStyle = isPaired ? 'rgba(248,113,113,0.25)' : 'rgba(0,212,170,0.18)';
+      ctx.fillStyle = isPaired ? 'rgba(248,113,113,0.28)' : 'rgba(0,212,170,0.20)';
     } else {
-      ctx.fillStyle = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+      ctx.fillStyle = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
     }
     ctx.fill();
-
-    // Ring
     ctx.strokeStyle = inBind ? (isPaired ? '#f87171' : '#00d4aa') : (baseCol[base] || '#6b7280');
-    ctx.lineWidth = inBind ? 1.5 : 1;
+    ctx.lineWidth = inBind ? 1.8 : 1.2;
     ctx.stroke();
 
-    // Letter
-    ctx.font = `bold 7px monospace`;
+    ctx.font = 'bold 7px monospace';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = isLight ? (baseCol[base] || '#374151') : (baseCol[base] || '#e8eaf0');
     ctx.fillText(base, x, Y);
+    ctx.textBaseline = 'alphabetic';
   }
 
-  // Labels
-  ctx.font = '7px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = isLight ? '#64748b' : '#6b7280';
-
-  // Label the struct line count
-  const paired = struct.split('').filter(c => c !== '.').length;
-  const bindPaired = struct.slice(bindStart, bindEnd).split('').filter(c => c !== '.').length;
-  label.textContent = `${paired} par łącznie · ${bindPaired} w regionie wiązania · [ ] = miejsce wiązania miRNA`;
+  // Position label
+  const paired = pairOf.filter(v => v !== -1).length;
+  const bindPaired = Array.from({length: Math.max(0, bindEnd - bindStart)},
+    (_, k) => pairOf[bindStart + k] !== -1).filter(Boolean).length;
+  const lang = typeof _lang !== 'undefined' ? _lang : 'pl';
+  label.textContent = lang === 'en'
+    ? `${paired} pairs total · ${bindPaired} in binding region · [ ] = miRNA binding site`
+    : `${paired} par łącznie · ${bindPaired} w regionie wiązania · [ ] = miejsce wiązania miRNA`;
 }
 
 

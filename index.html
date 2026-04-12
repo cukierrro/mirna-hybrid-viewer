@@ -458,9 +458,9 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <option value="3" data-i18n="opt_cons_3">Wszystkie 3</option>
       </select>
     </div>
-    <div><label>Konserwacja w <span class="help-badge" data-help="consorg">?</span></label>
+    <div><label><span data-i18n="lbl_filter_consorg">Konserwacja w</span> <span class="help-badge" data-help="consorg">?</span></label>
       <select id="fConsOrg" onchange="applyFilters()">
-        <option value="">Wszystkie</option>
+        <option value="" data-i18n="opt_filter_all">Wszystkie</option>
         <option value="hsa">hsa</option>
         <option value="mmu">mmu</option>
         <option value="rno">rno</option>
@@ -10298,7 +10298,7 @@ var I18N = {
     // Tabela wyników
     panel_results:'Tabela wyników',
     lbl_filter_mirna:'Filtruj miRNA', lbl_filter_seed:'Seed type',
-    lbl_filter_org:'Organizm', lbl_filter_cons:'Min. konserwacja',
+    lbl_filter_org:'Organizm', lbl_filter_cons:'Min. konserwacja', lbl_filter_consorg:'Konserwacja w',
     opt_filter_all:'Wszystkie', opt_cons_any:'Dowolna',
     opt_cons_1:'≥1 gatunek', opt_cons_2:'≥2 gatunki', opt_cons_3:'Wszystkie 3',
     btn_reset:'✕ Reset', btn_copy:'📋 Kopiuj',
@@ -10422,7 +10422,7 @@ var I18N = {
     dash_top5_dg:'Top 5 — ΔG', dash_top5_au:'Top 5 — AU%', dash_top5_cons:'Top 5 — Conservation',
     panel_results:'Results table',
     lbl_filter_mirna:'Filter miRNA', lbl_filter_seed:'Seed type',
-    lbl_filter_org:'Organism', lbl_filter_cons:'Min. conservation',
+    lbl_filter_org:'Organism', lbl_filter_cons:'Min. conservation', lbl_filter_consorg:'Conserved in',
     opt_filter_all:'All', opt_cons_any:'Any',
     opt_cons_1:'≥1 species', opt_cons_2:'≥2 species', opt_cons_3:'All 3',
     btn_reset:'✕ Reset', btn_copy:'📋 Copy',
@@ -10553,6 +10553,17 @@ function applyLang(lang) {
     dualDraw('A');
     dualDraw('B');
     updateBoltzmannSlider();
+  }
+  if(lang==='en') {
+    HELP_TEXTS.consorg = {
+      title: 'Filter: Conserved in',
+      body: 'Use this order:\n1. First set the "Organism" filter (e.g., hsa)\n2. Then choose "Conserved in" (e.g., mmu)\n\nShows only results conserved in the selected organism.'
+    };
+  } else {
+    HELP_TEXTS.consorg = {
+      title: 'Filtr: Konserwacja w',
+      body: 'Użyj w tej kolejności:\n1. Najpierw ustaw filtr "Organizm" (np. hsa)\n2. Następnie wybierz "Konserwacja w" (np. mmu)\n\nPokazuje tylko te wyniki, które są konserwowane w wybranym organizmie.'
+    };
   }
   document.documentElement.lang = lang;
 }

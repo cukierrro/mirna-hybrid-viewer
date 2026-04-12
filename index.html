@@ -9335,30 +9335,28 @@ function runSpongeAnalysis() {
         const mirnaACopies = parseFloat(document.getElementById('sqMirnaA')?.value) || 5000;
         const mirnaBCopies = parseFloat(document.getElementById('sqMirnaB')?.value) || 5000;
         const ceRNACopies  = parseFloat(document.getElementById('sqCeRNA')?.value)  || 1000;
+        const volUm3       = parseFloat(document.getElementById('sqVolume')?.value) || 1000;
         
         // (nie tylko najlepsze — suma Ka po wszystkich miejscach o ΔG ≤ -3 kcal/mol)
         const dgThreshold = parseFloat(document.getElementById('spongeDgThreshold')?.value ?? '-3.0') || -3.0;
 
         const analyzeForMirna = (mirna, mirnaName, mirnaCount, ceRNACopies) => {
-            let totalOccupancy = 0;
             let totalSites = 0;
-            let totalKa = 0;  // keep for reference/details
+            let totalKa = 0;
             const details = [];
-            
+            const allDeltaG = [];
+
             for (const s of seqs) {
                 const mrna = toRNA(s.seq);
                 if (mrna.length < 15) continue;
                 const sites = scanAllSites(mirna, mrna, minSeed, saltNa, dgThreshold);
                 if (sites.length > 0) {
                     let seqKa = 0;
-                    let seqOccupancy = 0;
                     sites.forEach(site => {
                         const Ka = Math.exp(-site.dg / RT);
-                        const occupancy = Ka / (1 + Ka);  // Plateau at 1.0, prevents divergence
-                        totalOccupancy += occupancy;
-                        seqOccupancy += occupancy;
                         seqKa += Ka;
                         totalKa += Ka;
+                        allDeltaG.push(site.dg);
                     });
                     totalSites += sites.length;
                     const bestSite = sites.reduce((a,b) => a.dg < b.dg ? a : b);
@@ -9368,41 +9366,34 @@ function runSpongeAnalysis() {
                         ka: seqKa,
                         seedType: bestSite.seedType,
                         nSites: sites.length,
-                        sites  // stored for on-demand preview
+                        sites
                     });
                 }
             }
-            
-            // NEW REALISTIC MODEL with stoichiometric constraint
-            // Effective binding capacity = ceRNA_copies × occupancy sum (expected # sites that can be bound per ceRNA molecule)
-            const bindingCapacity = ceRNACopies * totalOccupancy;
-            
-            // Apply soft saturation: bound = capacity × (1 - exp(-miRNA_total / capacity))
-            // This ensures: when miRNA >> capacity → bound ≈ capacity
-            //              when miRNA << capacity → bound ≈ miRNA
-            let boundMirna;
-            if (bindingCapacity > 0.001) {
-                boundMirna = bindingCapacity * (1 - Math.exp(-mirnaCount / bindingCapacity));
-            } else {
-                boundMirna = 0;
-            }
-            
-            const freeMirna = Math.max(0, mirnaCount - boundMirna);
-            const freeFraction = freeMirna / mirnaCount;
-            // Use higher precision and apply threshold for display
+
+            // Używamy tego samego solvera bisekcją co wykres (spójny model)
+            const Na = 6.022e23;
+            const V_L = volUm3 * 1e-15;
+            const Kd_list = allDeltaG.map(dG => Math.exp(dG / RT) * Na * V_L);
+            const freeMirna = _solveFreeByBisection(mirnaCount, Kd_list, ceRNACopies);
+            const boundMirna = Math.max(0, mirnaCount - freeMirna);
+            const freeFraction = mirnaCount > 0 ? freeMirna / mirnaCount : 1;
+
             let pctFree = (freeFraction * 100).toFixed(2);
             if (freeFraction > 0.999) pctFree = '>99.9';
-            
-            // Relative reduction in free miRNA
-            const reductionPct = ((mirnaCount - freeMirna) / mirnaCount * 100).toFixed(1);
-            
+            const reductionPct = ((1 - freeFraction) * 100).toFixed(1);
+
+            const totalOccupancy = Kd_list.length > 0
+                ? Kd_list.reduce((s, Kd) => s + ceRNACopies * freeMirna / ((Kd + freeMirna) * ceRNACopies), 0)
+                : 0;
+
             return {
-                totalKa, 
-                reductionPct, 
-                pctFree, 
-                details, 
+                totalKa,
+                reductionPct,
+                pctFree,
+                details,
                 mirnaName,
-                bindingCapacity,
+                bindingCapacity: ceRNACopies * totalOccupancy,
                 boundMirna,
                 freeMirna,
                 totalSites,
@@ -9505,7 +9496,8 @@ function runSpongeAnalysis() {
             deltaG_A: deltaG_A,
             deltaG_B: deltaG_B,
             maxCopies: 20000,
-            step: 200
+            step: 200,
+            volUm3: parseFloat(document.getElementById('sqVolume')?.value) || 1000
         });
 
         console.debug('After competition data - first 3 points:', competitionData.slice(0, 3));
@@ -9751,68 +9743,135 @@ function renderSpongeQuant(resA, resB, resultEl) {
 }
 
 // ============================================================
-// NOWY MODEL KONKURENCJI DLA WYKRESU SPONGE (ceRNA)
+// MODEL KONKURENCJI DLA WYKRESU SPONGE (ceRNA) — v3
+// Langmuir binding — rozwiązanie dokładne przez bisekcję
 // ============================================================
 
 /**
- * Model konkurencji między dwoma miRNA o wspólne ceRNA.
- * @param {number} miRNA_A - liczba kopii miRNA A
- * @param {number} miRNA_B - liczba kopii miRNA B
+ * Rozwiązuje równanie równowagi Langmuira dla jednego miRNA metodą bisekcji.
+ *
+ * Równanie: free + Σ_i[ ceRNA * free / (Kd_i + free) ] = miRNA_total
+ * gdzie Kd_i [kopie] = exp(ΔG_i / RT) * Na * V_L
+ *
+ * Bisekcja gwarantuje stabilność numeryczną i monotoniczność wyniku.
+ *
+ * @param {number} miRNA_total  - całkowita liczba kopii miRNA
+ * @param {number[]} Kd_list    - lista Kd w jednostkach kopii/komórkę
  * @param {number} ceRNA_copies - liczba kopii ceRNA
- * @param {number[]} deltaG_A - tablica wartości ΔG (kcal/mol) dla miejsc wiązania A w ceRNA
- * @param {number[]} deltaG_B - jw. dla B
- * @param {number} RT - stała gazowa * temp. (0.593 kcal/mol @ 37°C)
- * @returns {object} { free_A, free_B } – frakcje wolnego miRNA (0..1)
+ * @returns {number} free - liczba wolnych kopii miRNA
  */
-function computeCompetition({ miRNA_A, miRNA_B, ceRNA_copies, deltaG_A = [], deltaG_B = [], RT = 0.593 }) {
-    const total_miRNA = miRNA_A + miRNA_B;
-    if (total_miRNA === 0) return { free_A: 1, free_B: 1 };
-
-    function computeCapacity(deltaG_list) {
-        if (!deltaG_list || deltaG_list.length === 0) return 0;
-        const Ka = deltaG_list.map(dG => Math.exp(-dG / RT));
-        const f = Ka.map(k => k / (1 + k));
-        return ceRNA_copies * f.reduce((s, v) => s + v, 0);
+function _solveFreeByBisection(miRNA_total, Kd_list, ceRNA_copies) {
+    if (ceRNA_copies === 0 || Kd_list.length === 0) return miRNA_total;
+    // f(free) = free + Σ[ceRNA * free / (Kd_i + free)] - miRNA_total
+    // monotonicznie rosnąca → bisekcja
+    let lo = 0, hi = miRNA_total;
+    for (let i = 0; i < 120; i++) {
+        const mid = (lo + hi) / 2;
+        const val = mid + Kd_list.reduce((s, Kd) => s + ceRNA_copies * mid / (Kd + mid), 0) - miRNA_total;
+        if (val < 0) lo = mid; else hi = mid;
     }
+    return (lo + hi) / 2;
+}
 
-    const cap_A = computeCapacity(deltaG_A);
-    const cap_B = computeCapacity(deltaG_B);
+/**
+ * Model efektu gąbki ceRNA — wolna frakcja miRNA A i B.
+ *
+ * Założenia:
+ *  - Każde miRNA wiąże swoje specyficzne sity na ceRNA (niezależne miejsca).
+ *  - Kd [kopie/komórkę] = exp(ΔG/RT) × Na × V_L (konwersja z kcal/mol na kopie).
+ *  - Równowaga Langmuira: bound_i = ceRNA × free / (Kd_i + free).
+ *  - Rozwiązanie dokładne przez bisekcję (stabilne numerycznie, monotonne).
+ *  - Pule A i B są niezależne (nie ma cross-competition o te same sity).
+ *    Interakcja pośrednia przez ograniczoną pulę ceRNA nie jest modelowana
+ *    (każde miRNA "widzi" pełną pulę ceRNA — konserwatywna górna granica sekwestracji).
+ *
+ * @param {number} miRNA_A      - kopie miRNA A / komórkę
+ * @param {number} miRNA_B      - kopie miRNA B / komórkę
+ * @param {number} ceRNA_copies - kopie ceRNA / komórkę
+ * @param {number[]} deltaG_A   - ΔG [kcal/mol] sitów A na ceRNA
+ * @param {number[]} deltaG_B   - ΔG [kcal/mol] sitów B na ceRNA
+ * @param {number} RT           - 0.593 kcal/mol @ 37°C
+ * @param {number} volUm3       - objętość komórki w μm³ (domyślnie 1000)
+ * @returns {{ free_A: number, free_B: number }}
+ */
+function computeCompetition({ miRNA_A, miRNA_B, ceRNA_copies, deltaG_A = [], deltaG_B = [], RT = 0.593, volUm3 = 1000 }) {
+    if (miRNA_A + miRNA_B === 0) return { free_A: 1, free_B: 1 };
+    if (ceRNA_copies === 0) return { free_A: 1, free_B: 1 };
 
-    const bound_A = cap_A > 0 ? cap_A * (1 - Math.exp(-miRNA_A / cap_A)) : 0;
-    const bound_B = cap_B > 0 ? cap_B * (1 - Math.exp(-miRNA_B / cap_B)) : 0;
+    // Konwersja Kd: kcal/mol → kopie/komórkę
+    // Kd [nM] = exp(ΔG/RT);  Kd [kopie] = Kd[nM] × Na × V[L] × 1e-9
+    const Na = 6.022e23;
+    const V_L = volUm3 * 1e-15; // 1 μm³ = 1e-15 L
+    const toKd = dG => Math.exp(dG / RT) * Na * V_L;
+
+    const Kd_A = deltaG_A.map(toKd);
+    const Kd_B = deltaG_B.map(toKd);
+
+    const freeA = _solveFreeByBisection(miRNA_A, Kd_A, ceRNA_copies);
+    const freeB = _solveFreeByBisection(miRNA_B, Kd_B, ceRNA_copies);
 
     return {
-        free_A: miRNA_A > 0 ? Math.max(0, Math.min(1, (miRNA_A - bound_A) / miRNA_A)) : 1,
-        free_B: miRNA_B > 0 ? Math.max(0, Math.min(1, (miRNA_B - bound_B) / miRNA_B)) : 1
+        free_A: Math.max(0, Math.min(1, freeA / miRNA_A)),
+        free_B: Math.max(0, Math.min(1, freeB / miRNA_B))
     };
 }
 
 /**
- * Generuje dane do wykresu w zakresie liczby kopii ceRNA.
- * @param {number} miRNA_A
- * @param {number} miRNA_B
- * @param {number[]} deltaG_A
- * @param {number[]} deltaG_B
- * @param {number} maxCopies - maksymalna liczba kopii ceRNA do przeliczenia (domyślnie 20000)
- * @param {number} step - co ile kopii (domyślnie 200)
- * @returns {Array} { ceRNA, freeA, freeB }
+ * Generuje dane do wykresu: ceRNA_copies [0..maxCopies] → free frakcja miRNA A i B.
  */
-function generateCompetitionData({ miRNA_A, miRNA_B, deltaG_A, deltaG_B, maxCopies = 20000, step = 200 }) {
-    const data = [];
-    for (let ceRNA = 0; ceRNA <= maxCopies; ceRNA += step) {
+function generateCompetitionData({ miRNA_A, miRNA_B, deltaG_A, deltaG_B, maxCopies = 20000, step = 200, volUm3 = 1000 }) {
+    // Próbkowanie adaptacyjne: najpierw szacujemy EC50 każdej krzywej przez bisekcję,
+    // potem generujemy gęste punkty wokół każdego EC50 osobno.
+    // Daje płynne krzywe niezależnie od parametrów (małe/duże miRNA, mocne/słabe wiązanie).
+
+    function findEC50(miRNA_total, deltaG_list, lo, hi) {
+        // Szukamy ceRNA przy którym free = 0.5 (bisekcja po osi ceRNA)
+        for (let i = 0; i < 60; i++) {
+            const mid = (lo + hi) / 2;
+            const r = computeCompetition({
+                miRNA_A: miRNA_total, miRNA_B: 0,
+                ceRNA_copies: mid, deltaG_A: deltaG_list, deltaG_B: [], volUm3
+            });
+            if (r.free_A > 0.5) lo = mid; else hi = mid;
+        }
+        return (lo + hi) / 2;
+    }
+
+    const ec50_A = deltaG_A.length > 0 ? findEC50(miRNA_A, deltaG_A, 0, maxCopies * 5) : maxCopies;
+    const ec50_B = deltaG_B.length > 0 ? findEC50(miRNA_B, deltaG_B, 0, maxCopies * 5) : maxCopies;
+
+    const points = new Set([0, maxCopies]);
+
+    // Dla każdego EC50: 80 punktów w oknie [EC50/20 .. EC50*4], plus ogon rzadszy
+    [ec50_A, ec50_B].forEach(ec50 => {
+        if (!isFinite(ec50) || ec50 <= 0) return;
+        const lo = Math.max(0, ec50 / 20);
+        const hi = Math.min(maxCopies, ec50 * 4);
+        const n = 80;
+        for (let i = 0; i <= n; i++) {
+            points.add(Math.round(lo + (hi - lo) * i / n));
+        }
+    });
+
+    // Tło: 40 punktów logarytmicznie na całym zakresie
+    for (let i = 0; i <= 40; i++) {
+        const c = i === 0 ? 0 : Math.round(Math.exp(Math.log(maxCopies) * i / 40));
+        points.add(Math.min(c, maxCopies));
+    }
+
+    const sorted = Array.from(points).filter(c => c >= 0 && c <= maxCopies).sort((a, b) => a - b);
+
+    return sorted.map(ceRNA => {
         const { free_A, free_B } = computeCompetition({
             miRNA_A, miRNA_B, ceRNA_copies: ceRNA,
-            deltaG_A, deltaG_B
+            deltaG_A, deltaG_B, volUm3
         });
-        const freeA = (!isNaN(free_A) && isFinite(free_A)) ? free_A * 100 : 100;
-        const freeB = (!isNaN(free_B) && isFinite(free_B)) ? free_B * 100 : 100;
-        data.push({
+        return {
             ceRNA,
-            freeA: Math.min(100, Math.max(0, freeA)),
-            freeB: Math.min(100, Math.max(0, freeB))
-        });
-    }
-    return data;
+            freeA: Math.min(100, Math.max(0, (isFinite(free_A) ? free_A : 1) * 100)),
+            freeB: Math.min(100, Math.max(0, (isFinite(free_B) ? free_B : 1) * 100))
+        };
+    });
 }
 
 // ============================================================
@@ -9828,6 +9887,11 @@ function renderSpongeChart(data, resultEl, nameA, nameB) {
     }
 
     // Znajdź lub stwórz kontener dla wykresu (zgodny z oryginalnym kodem)
+
+    const _warnPL = '<div style="margin-top:.6rem;padding:.5rem .7rem;border-radius:6px;border-left:3px solid #f59e0b;background:rgba(245,158,11,.07);font-family:JetBrains Mono,monospace;font-size:.63rem;line-height:1.7;color:var(--text)"><span style="color:#f59e0b;font-weight:700">&#9888; Ograniczenia modelu</span><br><b>Kd absolutne s&#261; niedoszacowane.</b> &#916;G hybrydyzacji RNA (RNAfold/TargetScan) daje Kd ~0,01&#8211;50 pM, podczas gdy eksperymentalne Kd miRNA&#8211;mRNA <i>in vivo</i> (CLIP, biochemia AGO2) wynosz&#261; <b>1&#8211;100 nM</b> &#8212; r&#243;&#380;nica 3&#8211;6 rz&#281;d&#243;w wielko&#347;ci. Przyczyn&#261; jest dost&#281;pno&#347;&#263; strukturalna mRNA, obci&#261;&#380;enie RISC i bia&#322;ka RBP.<br><b>Co jest poprawne:</b> kszta&#322;t krzywej, EC&#8325;&#8320; jako stosunek <i>kopii ceRNA&nbsp;/&nbsp;kopii miRNA</i>, r&#243;&#380;nica selektywno&#347;ci A&nbsp;vs&nbsp;B.<br><b>Co NIE jest wiarygodne:</b> absolutna warto&#347;&#263; osi X &#8212; traktuj jako <i>ranking</i>, nie warto&#347;&#263; bezwzgl&#281;dn&#261;.</div>';
+    const _warnEN = '<div style="margin-top:.6rem;padding:.5rem .7rem;border-radius:6px;border-left:3px solid #f59e0b;background:rgba(245,158,11,.07);font-family:JetBrains Mono,monospace;font-size:.63rem;line-height:1.7;color:var(--text)"><span style="color:#f59e0b;font-weight:700">&#9888; Model limitations</span><br><b>Absolute Kd values are underestimated.</b> RNA hybridisation &#916;G (RNAfold/TargetScan) yields Kd ~0.01&#8211;50 pM, whereas experimental miRNA&#8211;mRNA Kd <i>in vivo</i> (CLIP, AGO2 biochemistry) are <b>1&#8211;100 nM</b> &#8212; a 3&#8211;6 order-of-magnitude discrepancy caused by mRNA structural accessibility, RISC loading, and RBP competition.<br><b>What is correct:</b> curve shape, EC&#8325;&#8320; as ratio of <i>ceRNA copies&nbsp;/&nbsp;miRNA copies</i>, selectivity A&nbsp;vs&nbsp;B.<br><b>What is NOT reliable:</b> absolute X-axis value &#8212; treat as a <i>ranking</i>, not an absolute quantity.</div>';
+    const _warn = (_lang === 'en') ? _warnEN : _warnPL;
+    const _foot50 = (_lang === 'en') ? 'The 50% line indicates the ceRNA copy number at which half the miRNA pool remains free.' : 'Linia 50% oznacza liczbę kopii ceRNA, przy której połowa puli miRNA pozostaje wolna.';
     let container = resultEl.querySelector('.sponge-chart-container');
     if (!container) {
         container = document.createElement('div');
@@ -9835,12 +9899,12 @@ function renderSpongeChart(data, resultEl, nameA, nameB) {
         container.style.cssText = 'margin-top:.8rem;padding:.5rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2)';
         container.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">📈 ${t.sponge_chart_title}</div>
                                <canvas id="spongeEffectChart" width="400" height="150"></canvas>
-                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">Linia 50% oznacza liczbę kopii ceRNA, przy której połowa puli miRNA pozostaje wolna.</div>`;
+                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">${_foot50}</div>${_warn}`;
         resultEl.appendChild(container);
     } else {
         container.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">📈 ${t.sponge_chart_title}</div>
                                <canvas id="spongeEffectChart" width="400" height="150"></canvas>
-                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">Linia 50% oznacza liczbę kopii ceRNA, przy której połowa puli miRNA pozostaje wolna.</div>`;
+                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">${_foot50}</div>${_warn}`;
     }
 
     const canvas = document.getElementById('spongeEffectChart');
@@ -9867,7 +9931,7 @@ function renderSpongeChart(data, resultEl, nameA, nameB) {
             data: data.map(d => (d.freeA !== undefined && !isNaN(d.freeA)) ? d.freeA : null),
             borderColor: '#60a5fa',
             backgroundColor: 'rgba(96, 165, 250, 0.1)',
-            tension: 0.3,
+            tension: 0.4,
             borderWidth: 2,
             fill: false,
             pointRadius: 0,
@@ -9879,7 +9943,7 @@ function renderSpongeChart(data, resultEl, nameA, nameB) {
             data: data.map(d => (d.freeB !== undefined && !isNaN(d.freeB)) ? d.freeB : null),
             borderColor: '#fb923c',
             backgroundColor: 'rgba(251, 146, 60, 0.2)',
-            tension: 0.3,
+            tension: 0.4,
             borderWidth: 3,
             borderDash: [8, 4],
             fill: false,
@@ -10158,7 +10222,7 @@ var I18N = {
     alert_select_both_mirna:'Wybierz oba miRNA w Dual View.', alert_select_mirna_a:'Wybierz miRNA A w Dual View.', alert_enter_cerna:'Wpisz sekwencje ceRNA w polu powyżej.', alert_parse_seq:'Nie można sparsować sekwencji.\n\nUżyj formatu FASTA:\n>nazwa_genu\nSEKWENCJA...',
     sponge_warning_no_headers:'⚠️ Brak nagłówków FASTA (>nazwa) — cały tekst potraktowany jako jedna sekwencja ceRNA-1. Dodaj nagłówki >nazwa przed każdą sekwencją dla poprawnego parsowania.',
     sponge_results_title:'Sponge potential (binding capacity)',
-    sponge_model_note:'Realistic model: occupancy sum (f_i = Ka_i/(1+Ka_i)), soft saturation by miRNA/ceRNA copy numbers. ΔG ≤ {dgThreshold} kcal/mol',
+    sponge_model_note:'Model: Langmuir binding — bisekcja dokładna, Kd[kopie]=exp(ΔG/RT)·Na·V. ΔG ≤ {dgThreshold} kcal/mol',
     sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect expected.',
     sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Sites', sponge_table_header_best_dg:'Best ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
     sponge_button_preview_sites:'👁 Sites', sponge_button_hide:'▲ Hide',
@@ -10280,7 +10344,7 @@ var I18N = {
     alert_select_both_mirna:'Select both miRNAs in Dual View.', alert_select_mirna_a:'Select miRNA A in Dual View.', alert_enter_cerna:'Enter ceRNA sequences in the field above.', alert_parse_seq:'Unable to parse sequences.\n\nUse FASTA format:\n>gene_name\nSEQUENCE...',
     sponge_warning_no_headers:'⚠️ Missing FASTA headers (>name) — the entire input was treated as one ceRNA sequence ceRNA-1. Add >name headers before each sequence for correct parsing.',
     sponge_results_title:'Sponge potential (binding capacity)',
-    sponge_model_note:'Realistic model: occupancy sum (f_i = Ka_i/(1+Ka_i)), soft saturation by miRNA/ceRNA copy numbers. ΔG ≤ {dgThreshold} kcal/mol',
+    sponge_model_note:'Model: Langmuir binding — bisekcja dokładna, Kd[kopie]=exp(ΔG/RT)·Na·V. ΔG ≤ {dgThreshold} kcal/mol',
     sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect expected.',
     sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Sites', sponge_table_header_best_dg:'Best ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
     sponge_button_preview_sites:'👁 Sites', sponge_button_hide:'▲ Hide',

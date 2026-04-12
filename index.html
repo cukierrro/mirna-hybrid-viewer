@@ -6486,16 +6486,17 @@ const SEED_MAP = {hsa: new Map(), mmu: new Map(), rno: new Map(), ath: new Map()
 
 function getSeedConservation(mirnaSeq, org) {
   const rna = mirnaSeq.toUpperCase().replace(/T/g,'U');
-  if(rna.length < 8) return {mmu:false, rno:false, ath:false, score:0};
+  if(rna.length < 8) return {hsa:false, mmu:false, rno:false, ath:false, score:0};
   const seed = rna.slice(1,8);
+  const hsa = SEED_MAP.hsa.has(seed);  
   const mmu = SEED_MAP.mmu.has(seed);
   const rno = SEED_MAP.rno.has(seed);
   const ath = SEED_MAP.ath.has(seed);
   let score = 0;
   if(org==='hsa'){ if(mmu)score++; if(rno)score++; }
-  else if(org==='mmu'){ if(SEED_MAP.hsa.has(seed))score++; if(rno)score++; }
-  else if(org==='rno'){ if(SEED_MAP.hsa.has(seed))score++; if(mmu)score++; }
-  return {mmu, rno, ath, score};
+  else if(org==='mmu'){ if(hsa)score++; if(rno)score++; }
+  else if(org==='rno'){ if(hsa)score++; if(mmu)score++; }
+  return {hsa, mmu, rno, ath, score};
 }
 
 // ============================================================
@@ -7418,14 +7419,47 @@ function renderDashboard(res, totalHits){
 // ============================================================
 const SEED_COLORS={'8mer':'#00d4aa','7mer-m8':'#fbbf24','7mer-A1':'#fbbf24','6mer':'#a78bfa','centered':'#f472b6','3prime-comp':'#60a5fa','none':'#6b7280'};
 
-function consIcons(cons, org){
+function consIcons(cons, org, mirnaName){
   if(!cons) return '—';
   let html='';
-  if(org==='hsa'||org==='mmu'||org==='rno'){
-    if(org!=='mmu') html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
-    if(org!=='rno') html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
+  
+  // Extract base miRNA name (remove organism prefix)
+  // e.g., "hsa-miR-143-5p" -> "miR-143"
+  const baseMirna = mirnaName ? mirnaName.split('-').slice(1).join('-').replace(/-(5p|3p|5|3)$/, '') : '';
+  
+  // Get list of organisms that have RESULTS for this same miRNA base
+  const orgsWithResults = new Set();
+  if(baseMirna){
+    RESULTS.forEach(r => {
+      const rBaseMirna = r.name.split('-').slice(1).join('-').replace(/-(5p|3p|5|3)$/, '');
+      if(rBaseMirna === baseMirna) {
+        orgsWithResults.add(r.org);
+      }
+    });
   }
-  if(org!=='ath') html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
+  
+  // Show conservation icons for organisms that have results (except current)
+  if(org==='hsa'){
+    if(orgsWithResults.has('mmu')) html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
+    if(orgsWithResults.has('rno')) html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
+    if(orgsWithResults.has('ath')) html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
+  }
+  else if(org==='mmu'){
+    if(orgsWithResults.has('hsa')) html+=`<span title="Człowiek (hsa)" style="opacity:${cons.hsa?1:.25}">👤</span>`;
+    if(orgsWithResults.has('rno')) html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
+    if(orgsWithResults.has('ath')) html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
+  }
+  else if(org==='rno'){
+    if(orgsWithResults.has('hsa')) html+=`<span title="Człowiek (hsa)" style="opacity:${cons.hsa?1:.25}">👤</span>`;
+    if(orgsWithResults.has('mmu')) html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
+    if(orgsWithResults.has('ath')) html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
+  }
+  else if(org==='ath'){
+    if(orgsWithResults.has('hsa')) html+=`<span title="Człowiek (hsa)" style="opacity:${cons.hsa?1:.25}">👤</span>`;
+    if(orgsWithResults.has('mmu')) html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
+    if(orgsWithResults.has('rno')) html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
+  }
+  
   return html||'—';
 }
 
@@ -7493,7 +7527,7 @@ function applyFilters(){
       <td style="color:var(--match)">${r.hit.wc}</td>
       <td style="color:var(--gu)">${r.hit.gu}</td>
       <td>${auBar}</td>
-      <td class="cons-badge">${consIcons(r.hit.conservation,r.org)}</td>
+      <td class="cons-badge">${consIcons(r.hit.conservation,r.org,r.name)}</td>
       <td data-tip="${accTip}">${accBar}</td>
       <td style="font-size:.65rem;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis">${esc(r.mirna)}</td>
     `;

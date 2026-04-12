@@ -458,6 +458,15 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <option value="3" data-i18n="opt_cons_3">Wszystkie 3</option>
       </select>
     </div>
+    <div><label>Konserwacja w <span class="help-badge" data-help="consorg">?</span></label>
+      <select id="fConsOrg" onchange="applyFilters()">
+        <option value="">Wszystkie</option>
+        <option value="hsa">hsa</option>
+        <option value="mmu">mmu</option>
+        <option value="rno">rno</option>
+        <option value="ath">ath</option>
+      </select>
+    </div>
     <button class="btn btn-g" onclick="resetFilters()"><span data-i18n="btn_reset">✕ Reset</span></button>
     <button class="btn btn-g" id="copyBtn" onclick="copyTable()" title="Kopiuj tabelę do schowka"><span data-i18n="btn_copy">📋 Kopiuj</span></button>
   </div>
@@ -7419,19 +7428,28 @@ function renderDashboard(res, totalHits){
 // ============================================================
 const SEED_COLORS={'8mer':'#00d4aa','7mer-m8':'#fbbf24','7mer-A1':'#fbbf24','6mer':'#a78bfa','centered':'#f472b6','3prime-comp':'#60a5fa','none':'#6b7280'};
 
+function normalizeMirFamilyName(name){
+  if(!name) return '';
+  let base = name.split('-').slice(1).join('-');
+  base = base.replace(/-(5p|3p|5|3)$/i,'');
+  base = base.replace(/-\d+$/,'');
+  base = base.replace(/(miR-\d+)[a-z]$/i,'$1');
+  return base;
+}
+
 function consIcons(cons, org, mirnaName){
   if(!cons) return '—';
   let html='';
   
   // Extract base miRNA name (remove organism prefix)
   // e.g., "hsa-miR-143-5p" -> "miR-143"
-  const baseMirna = mirnaName ? mirnaName.split('-').slice(1).join('-').replace(/-(5p|3p|5|3)$/, '') : '';
+  const baseMirna = normalizeMirFamilyName(mirnaName);
   
   // Get list of organisms that have RESULTS for this same miRNA base
   const orgsWithResults = new Set();
   if(baseMirna){
     RESULTS.forEach(r => {
-      const rBaseMirna = r.name.split('-').slice(1).join('-').replace(/-(5p|3p|5|3)$/, '');
+      const rBaseMirna = normalizeMirFamilyName(r.name);
       if(rBaseMirna === baseMirna) {
         orgsWithResults.add(r.org);
       }
@@ -7491,6 +7509,14 @@ function applyFilters(){
   const st=(document.getElementById('fSeed')||{}).value||'';
   const org=(document.getElementById('fOrg')||{}).value||'';
   const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
+  const consOrg=(document.getElementById('fConsOrg')||{}).value||'';
+  const orgsByFamily = new Map();
+  RESULTS.forEach(r=>{
+    const fam = normalizeMirFamilyName(r.name);
+    if(!fam) return;
+    if(!orgsByFamily.has(fam)) orgsByFamily.set(fam, new Set());
+    orgsByFamily.get(fam).add(r.org);
+  });
   let shown=0;
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   RESULTS.forEach((r,idx)=>{
@@ -7498,6 +7524,15 @@ function applyFilters(){
     if(st&&r.hit.seedType!==st) return;
     if(org&&r.org!==org) return;
     if(consMin>0&&(r.hit.conservation?.score??0)<consMin) return;
+    if(consOrg){
+      const fam = normalizeMirFamilyName(r.name);
+      const famOrgs = orgsByFamily.get(fam);
+      if(!famOrgs || !famOrgs.has(consOrg)) return;
+      if(consOrg==='hsa'&&!(r.hit.conservation?.hsa)) return;
+      if(consOrg==='mmu'&&!(r.hit.conservation?.mmu)) return;
+      if(consOrg==='rno'&&!(r.hit.conservation?.rno)) return;
+      if(consOrg==='ath'&&!(r.hit.conservation?.ath)) return;
+    }
     const dg=r.hit.dg;
     const dgCls=dg<-10?'dg-good':dg<-6?'dg-med':'dg-low';
     const sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
@@ -7537,7 +7572,7 @@ function applyFilters(){
   if(!shown) tb.innerHTML='<tr><td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td></tr>';
 }
 function renderTable(res){applyFilters();}
-function resetFilters(){['fMirna','fSeed','fOrg','fCons'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
+function resetFilters(){['fMirna','fSeed','fOrg','fCons','fConsOrg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
 
 // ============================================================
 // SHOW PREVIEW
@@ -7723,10 +7758,37 @@ function loadSettings(){SETTINGS.forEach(id=>{const v=localStorage.getItem('mirn
 SETTINGS.forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',saveSettings);});
 loadSettings();
 
+const initConservationFilter = () => {
+  const filterRow = document.getElementById('filterRow');
+  if(!filterRow || document.getElementById('fConsOrg')) return;
+  const label = document.createElement('label');
+  label.setAttribute('for','fConsOrg');
+  label.textContent = 'Konserwacja w';
+  const select = document.createElement('select');
+  select.id = 'fConsOrg';
+  const options = [
+    {value:'', text:'Wszystkie'},
+    {value:'hsa', text:'hsa'},
+    {value:'mmu', text:'mmu'},
+    {value:'rno', text:'rno'},
+    {value:'ath', text:'ath'},
+  ];
+  options.forEach(opt=>{
+    const el=document.createElement('option');
+    el.value=opt.value;
+    el.textContent=opt.text;
+    select.appendChild(el);
+  });
+  select.addEventListener('change',applyFilters);
+  filterRow.appendChild(label);
+  filterRow.appendChild(select);
+};
+
 // ============================================================
 // DOM INIT — runs after full DOM parse
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
+  initConservationFilter();
   // Populate SEED_MAP from full DB
   MIRNA_DB.forEach(([name, org, seq]) => {
     if(!SEED_MAP[org]) return;
@@ -8024,6 +8086,10 @@ const HELP_TEXTS = {
     cons: {
         title: 'Konserwacja ewolucyjna',
         body: 'Flagi konserwacji miejsca wiązania między organizmami:\n🧬 hsa — obecne u człowieka\n🐭 mmu — obecne u myszy\n🐀 rno — obecne u szczura\n🌿 ath — obecne u Arabidopsis\n\nWysokie podobieństwo między gatunkami sugeruje presję selekcyjną i funkcjonalne znaczenie miejsca wiązania.'
+    },
+    consorg: {
+      title: 'Filtr: Konserwacja w',
+      body: 'Użyj w tej kolejności:\n1. Najpierw ustaw filtr "Organizm" (np. hsa)\n2. Następnie wybierz "Konserwacja w" (np. mmu)\n\nPokazuje tylko te wyniki, które są konserwowane w wybranym organizmie.'
     },
     snp: {
         title: 'Tryb SNP — mutacje punktowe',

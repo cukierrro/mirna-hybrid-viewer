@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>miRNA Hybrid Viewer v1.0 — PRAMĀ</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
 :root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c22;--border:#252a34;--accent:#00d4aa;--accent3:#a78bfa;--text:#e8eaf0;--muted:#6b7280;--seed:#ff6b35;--match:#00d4aa;--mm:#a78bfa;--gu:#fbbf24;--heading:#ffffff;--heading2:#c8d0e0;}
@@ -201,7 +200,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <div class="logo-icon">🧬</div>
     <div>
       <h1>miRNA HYBRID <span>VIEWER v1.0</span></h1>
-      <p>PRAMĀ Institute — hsa/mmu/rno/ath/stu · Turner ΔG · salt correction · conservation · cooperative binding · centered/3'comp</p>
+      <p>PRAMĀ Institute — hsa/mmu/rno/ath · Turner ΔG · salt correction · conservation · cooperative binding · centered/3'comp</p>
     </div>
   </div>
   <div class="badges">
@@ -210,7 +209,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <span class="badge">Turner 2004 + Owczarzy</span>
     <span class="badge">8mer/7mer/6mer/centered/3'comp</span>
     <button id="themeToggle" onclick="toggleTheme()" title="Przełącz jasny/ciemny motyw"><span data-i18n="theme_dark">🌙 Ciemny</span></button>
-    <button id="langToggle" onclick="toggleLang()" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.75rem;font-weight:600;padding:.38rem .65rem;cursor:pointer;transition:all .2s;"><span data-i18n="lang_btn">EN</span></button>
+    <button id="langToggle" onclick="toggleLang()" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.75rem;font-weight:600;padding:.38rem .65rem;cursor:pointer;transition:all .2s;"><span data-i18n="lang_btn">🌐 EN</span></button>
   </div>
 </header>
 <!-- HELP POPOVER (global) -->
@@ -252,7 +251,6 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
           <option value="mouse" data-i18n="opt_mouse">Mysz (mmu)</option>
           <option value="rat" data-i18n="opt_rat">Szczur (rno)</option>
           <option value="plant" data-i18n="opt_plant">Arabidopsis (ath)</option>
-          <option value="potato" data-i18n="opt_potato">Ziemniak (stu)</option>
           <option value="mammals" selected data-i18n="opt_mammals">Ssaki (hsa+mmu+rno)</option>
           <option value="both" data-i18n="opt_all">Wszystkie</option>
         </select>
@@ -364,7 +362,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <span id="rnaStructLabel" style="color:var(--muted);font-weight:400;font-family:'JetBrains Mono',monospace;font-size:.62rem"></span>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem;overflow-x:auto">
-        <canvas id="rnaStructCanvas" height="95" style="display:block"></canvas>
+        <canvas id="rnaStructCanvas" height="38" style="display:block"></canvas>
       </div>
     </div>
     <div id="panel3d" style="display:none">
@@ -449,7 +447,6 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <option value="mmu">mmu</option>
         <option value="rno">rno</option>
         <option value="ath">ath</option>
-        <option value="stu">stu</option>
       </select>
     </div>
     <div><label data-i18n="lbl_filter_cons">Min. konserwacja</label>
@@ -457,18 +454,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <option value="0" data-i18n="opt_cons_any">Dowolna</option>
         <option value="1" data-i18n="opt_cons_1">≥1 gatunek</option>
         <option value="2" data-i18n="opt_cons_2">≥2 gatunki</option>
-        <option value="3" data-i18n="opt_cons_3">≥3 gatunki</option>
-        <option value="4" data-i18n="opt_cons_4">Wszystkie 4</option>
-      </select>
-    </div>
-    <div><label><span data-i18n="lbl_filter_consorg">Konserwacja w</span> <span class="help-badge" data-help="consorg">?</span></label>
-      <select id="fConsOrg" onchange="applyFilters()">
-        <option value="" data-i18n="opt_filter_all">Wszystkie</option>
-        <option value="hsa">hsa</option>
-        <option value="mmu">mmu</option>
-        <option value="rno">rno</option>
-        <option value="ath">ath</option>
-        <option value="stu">stu</option>
+        <option value="3" data-i18n="opt_cons_3">Wszystkie 3</option>
       </select>
     </div>
     <button class="btn btn-g" onclick="resetFilters()"><span data-i18n="btn_reset">✕ Reset</span></button>
@@ -520,9 +506,9 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
   <div class="dual-grid">
     <!-- LEFT -->
     <div class="dual-card">
-      <div class="dual-card-title" data-i18n="dual_card_title_a">🔵 miRNA A</div>
+      <div class="dual-card-title">🔵 miRNA A</div>
       <div class="dual-select-row">
-        <select id="dualSelA" onchange="dualDraw('A')"><option value="" data-i18n="dual_select_placeholder">— wybierz miRNA —</option></select>
+        <select id="dualSelA" onchange="dualDraw('A')"><option value="">— wybierz miRNA —</option></select>
         <span id="dualOrgA" style="font-size:.65rem;color:var(--muted)"></span>
       </div>
       <div class="dual-canvas-wrap"><canvas id="dualCanvasA" width="580" height="175"></canvas></div>
@@ -530,9 +516,9 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     </div>
     <!-- RIGHT -->
     <div class="dual-card">
-      <div class="dual-card-title" data-i18n="dual_card_title_b">🟠 miRNA B</div>
+      <div class="dual-card-title">🟠 miRNA B</div>
       <div class="dual-select-row">
-        <select id="dualSelB" onchange="dualDraw('B')"><option value="" data-i18n="dual_select_placeholder">— wybierz miRNA —</option></select>
+        <select id="dualSelB" onchange="dualDraw('B')"><option value="">— wybierz miRNA —</option></select>
         <span id="dualOrgB" style="font-size:.65rem;color:var(--muted)"></span>
       </div>
       <div class="dual-canvas-wrap"><canvas id="dualCanvasB" width="580" height="175"></canvas></div>
@@ -604,14 +590,14 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
         <div style="display:flex;align-items:center;gap:.45rem;margin-top:.35rem">
           <label style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin:0" data-i18n="sponge_lbl_threshold">Próg ΔG ≤</label>
           <input type="number" id="spongeDgThreshold" value="-3.0" step="0.5" min="-20" max="-0.5"
-            style="width:72px;font-size:.7rem" data-i18n-title="sponge_dg_threshold_title">
+            style="width:72px;font-size:.7rem" title="Minimalne ΔG uwzględniane w sponge (kcal/mol)">
           <span style="font-size:.65rem;color:var(--muted)">kcal/mol</span>
           <span class="help-badge" data-help="spongethreshold">?</span>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:.4rem;padding-top:1.4rem">
         <button class="btn btn-g" onclick="runSpongeAnalysis()" style="font-size:.68rem"><span data-i18n="btn_sponge_calc">🔬 Oblicz efekt gąbki</span></button>
-        <button class="btn btn-g" onclick="document.getElementById('spongeInput').value=''" style="font-size:.65rem"><span data-i18n="btn_clear_sponge">✕ Wyczyść</span></button>
+        <button class="btn btn-g" onclick="document.getElementById('spongeInput').value=''" style="font-size:.65rem">✕ Wyczyść</button>
       </div>
     </div>
 
@@ -6483,350 +6469,7 @@ const MIRNA_DB = [
   ["ath-miR8167d","ath","AGAUGUGGAGAUCGUGGGGAUG"],
   ["ath-miR8167e","ath","AGAUGUGGAGAUCGUGGGGAUG"],
   ["ath-miR8167f","ath","AGAUGUGGAGAUCGUGGGGAUG"],
-  ["ath-miR10515","ath","ACCCCGAUGGUUAUCCUCACC"],
-  ["stu-miR6022","stu","UGGAAGGGAGAAUAUCCAGGA"],
-  ["stu-miR6023","stu","UUCCAUGAAAGUGUUUUUGGAU"],
-  ["stu-miR6024-5p","stu","AGAAACAACACUUGCUAAAAGA"],
-  ["stu-miR6024-3p","stu","UUUUAGCAAGAGUUGUUUUCCC"],
-  ["stu-miR482c","stu","UUUCCUAUUCCACCCAUGCCAA"],
-  ["stu-miR482b-5p","stu","GGAGUGGGUGGCAUGGUAAGA"],
-  ["stu-miR482b-3p","stu","UUACCGAUUCCCCCCAUUCCAA"],
-  ["stu-miR482a-5p","stu","GGAAUUGGUGGAUUGGAAAGC"],
-  ["stu-miR482a-3p","stu","UUUCCAAUUCCACCCAUUCCUA"],
-  ["stu-miR482d-5p","stu","CGUGAGUGGUGGGGUAAGAUA"],
-  ["stu-miR482d-3p","stu","UCUUGCCUACACCGCCCAUGCC"],
-  ["stu-miR482e-5p","stu","AGUGGGUGGUGUGGUAAGAUU"],
-  ["stu-miR482e-3p","stu","UCUUGCCAAUACCGCCCAUUCC"],
-  ["stu-miR6025","stu","UACCAACAAUUGAGAUAACAUC"],
-  ["stu-miR6026-5p","stu","AAUACAACUAUUGCCAAGACAA"],
-  ["stu-miR6026-3p","stu","UUCUUGGCUAGAGUUGUAUUGC"],
-  ["stu-miR6027","stu","UGAAUCCUUCGGCUAUCCAUAA"],
-  ["stu-miR7979","stu","AGGUACAUGAACUCUAACGAGGCA"],
-  ["stu-miR7980a","stu","AUGAGAUGAAGUCAAUGUUUGGAC"],
-  ["stu-miR7981-5p","stu","GUUAAUUAAACUAUGGUCCUAUUA"],
-  ["stu-miR7981-3p","stu","AUAGGACUUUAGUUUAGUUAAGGU"],
-  ["stu-miR7982a","stu","AAGUUGGAUGAUAAUAAUAUAUAU"],
-  ["stu-miR7982b","stu","AAGUUGGAUGAUAAUAAUAUAUAU"],
-  ["stu-miR7983-5p","stu","UAAAGUCUUUAGCGACAUUGGUUC"],
-  ["stu-miR7983-3p","stu","ACUAAUGCCGGUAAAGACUUUAAC"],
-  ["stu-miR7984a","stu","AUACCGAACUUUGGAAAUGACCUU"],
-  ["stu-miR7984b-5p","stu","AUACCGAACUUUGGAAAUGACCUU"],
-  ["stu-miR7984b-3p","stu","GGUCUUUCAUAAAAUUUGGUAUCG"],
-  ["stu-miR7985","stu","CGGGCUUGCCUAGAACGGGUUACC"],
-  ["stu-miR5303c","stu","UUUUGGAGAAUCCGACACGCACCC"],
-  ["stu-miR5303a","stu","UUUUGGAGAAUCCGACACGCACCC"],
-  ["stu-miR5303b","stu","UUUUGGAGAAUCCGACACGCACCC"],
-  ["stu-miR5303d","stu","UUUUGGAGAAUCCGACACGCACCC"],
-  ["stu-miR7986","stu","AGUUUAAAACGUUACUGUCGGUAA"],
-  ["stu-miR7987","stu","ACACUAGUUGAUCUUAUUGAUGAC"],
-  ["stu-miR7984c-5p","stu","ACGAUACCAAACUUUAUGAAGGAC"],
-  ["stu-miR7984c-3p","stu","CCUUCAUAAAGUUUGGUAUCGUAA"],
-  ["stu-miR7988","stu","AACGGAAAAGGGCCAAAAAUACCC"],
-  ["stu-miR7989","stu","ACAAAUAAGUCCAUUACCUGAACC"],
-  ["stu-miR7990a","stu","UUCAAAUGAUCGUAACUUUGGCCU"],
-  ["stu-miR7991a","stu","AGGAGGUCGGAAUUUUUAAUGAAU"],
-  ["stu-miR7991b","stu","AGGAGGUCGGAAUUUUUAAUGAAU"],
-  ["stu-miR7991c","stu","AGGAGGUCGGAAUUUUUAAUGAAU"],
-  ["stu-miR7992-5p","stu","UUUGACAAUGCACAUCUAGACACU"],
-  ["stu-miR7992-3p","stu","UGUCUAGAUGUGCAUUUCAAAGU"],
-  ["stu-miR1886a","stu","AUGGUAUCGUGAGAUGAAAUCAGC"],
-  ["stu-miR1886b","stu","AUGGUAUCGUGAGAUGAAAUCAGC"],
-  ["stu-miR1886c","stu","AUGGUAUCGUGAGAUGAAAUCAGC"],
-  ["stu-miR1886d","stu","AUGGUAUCGUGAGAUGAAAUCAGC"],
-  ["stu-miR1886e","stu","AUGGUAUCGUGAGAUGAAAUCAGC"],
-  ["stu-miR1886f","stu","AUGGUAUCGUGAGAUGAAAUCAGC"],
-  ["stu-miR7993a","stu","AUAUUUUAUGUGGUUAACUUAACU"],
-  ["stu-miR7993b-5p","stu","UUAAGUUAACCACAUAAAAUAUGU"],
-  ["stu-miR7993b-3p","stu","AUAUUUUAUGUGGUUAACUUAACU"],
-  ["stu-miR7993c","stu","AUAUUUUAUGUGGUUAACUUAACU"],
-  ["stu-miR7993d","stu","AUAUUUUAUGUGGUUAACUUAACU"],
-  ["stu-miR7994a","stu","AUAUUAUACUUGGGCAUAAACUCC"],
-  ["stu-miR7994b-5p","stu","AGUUUAUGCCCAAGUAUAUAAUAUAU"],
-  ["stu-miR7994b-3p","stu","AUAUUAUACUUGGGCAUAAACUCC"],
-  ["stu-miR7995","stu","UUACACGUAGACAAGUUGACCAUU"],
-  ["stu-miR7996a","stu","AUGUGGUACAUAUGAAAUUUGAAA"],
-  ["stu-miR7996b","stu","AUGUGGUACAUAUGAAAUUUGAAA"],
-  ["stu-miR7996c","stu","AUGUGGUACAUAUGAAAUUUGAAA"],
-  ["stu-miR7997a","stu","AUGCUGCUCGGACUCUUCAAA"],
-  ["stu-miR7997b","stu","AUGCUGCUCGGACUCUUCAAA"],
-  ["stu-miR7997c","stu","AUAUUGCUCGGACUCUUCAAAAAU"],
-  ["stu-miR7998","stu","ACGGACCGUAGAUCAAUCCACAGU"],
-  ["stu-miR7999-5p","stu","CUGGGUCACUUCUACGGGUCCUUC"],
-  ["stu-miR7999-3p","stu","ACGACCCGUAGAACUGCCCACGAC"],
-  ["stu-miR8000","stu","ACACCGAAGAACUGACACCGAAGA"],
-  ["stu-miR8001a","stu","UCCUGGGGAUUAGUAUGAAAAUUC"],
-  ["stu-miR8002-5p","stu","UUUUUCGUGAUAAUAAUGGAAUCA"],
-  ["stu-miR8002-3p","stu","AUUCCAUUAUUAUCAAGAAAAAAG"],
-  ["stu-miR8003","stu","AUUUCGGUAUACAAAUGGGAUGAC"],
-  ["stu-miR8004","stu","AGGGGUUGUGUAUGUGUUUGGCCU"],
-  ["stu-miR8005a","stu","UUUAGAGUUUAAGGUUUAGAGUUU"],
-  ["stu-miR8005b-5p","stu","ACUCUAAAUUUUAAAUUCUAAAUC"],
-  ["stu-miR8005b-3p","stu","UUUAGAGUUUAAGGUUUAGAGUUU"],
-  ["stu-miR8005c","stu","UUUAGAGUUUAAGGUUUAGAGUUU"],
-  ["stu-miR8006-5p","stu","UAGUUUUUGGACGACAGGGGCACC"],
-  ["stu-miR8006-3p","stu","UGCCCUGCCGUCCAAAAAAUAGA"],
-  ["stu-miR8007a-5p","stu","AUGUGGCACUUUUCGGAUUUUGAG"],
-  ["stu-miR8007a-3p","stu","CGAAAAAUGAAAAGUGCCACAUAA"],
-  ["stu-miR1886g-5p","stu","GAGAUGAGAUCAAUGUUUGGACAU"],
-  ["stu-miR1886g-3p","stu","UUUCAUAUUGAUUUCAUCUCAU"],
-  ["stu-miR8008a","stu","AUUUCCAGAAAAGCGACGGACAGU"],
-  ["stu-miR8009","stu","AUUUCCAGAAAAGCGACGGACAGU"],
-  ["stu-miR5303e","stu","UUUUGGAGAAUCUGACACGGGUGU"],
-  ["stu-miR5303f","stu","AUUUUUGGAGAAUCUGACACGGGU"],
-  ["stu-miR1886h","stu","AUUUUACGUUGAUUUCAUCUCAUG"],
-  ["stu-miR8010","stu","AUAGGACCCUAGUUAAAUUUAGGU"],
-  ["stu-miR8011a-5p","stu","UUGUGUGAGGUUUCUUUUUGUUUC"],
-  ["stu-miR8011a-3p","stu","AAUAAAAAGAAGCCUCACACAACU"],
-  ["stu-miR8012","stu","AUGACUUUAAGUCGCGUCUGGCCC"],
-  ["stu-miR8013","stu","AGAAGAAAAUCGCUCCGUCAGAAG"],
-  ["stu-miR8014-5p","stu","AUUGUUUCAUAUUGUAUUGUAUUU"],
-  ["stu-miR8014-3p","stu","AUGAAUACAAUGUUUGGAUAAAUU"],
-  ["stu-miR8007b-5p","stu","AUGUGACACUUUUUGAAUUUCGAG"],
-  ["stu-miR8007b-3p","stu","CGAAAAAUGAAAAGUACCACAUAA"],
-  ["stu-miR8015-5p","stu","UAUUGGAUAUUGAAAAUGAAACUU"],
-  ["stu-miR8015-3p","stu","GUUUCAUUUUCAAGGUCCAAUAGC"],
-  ["stu-miR8016","stu","AUUUUUGAAUGGAAGGCCCAUGUG"],
-  ["stu-miR8017","stu","AUCCAAGUGAAGUGUAUCGUCUCA"],
-  ["stu-miR8018","stu","ACGAACCGUAGAUCCCAUCCGUGG"],
-  ["stu-miR8019-5p","stu","AGGGAAGCAGGUCAUUCUUUAUG"],
-  ["stu-miR8019-3p","stu","AAAAGAAUGACCUGGUUUGACUUG"],
-  ["stu-miR8001b-5p","stu","AUGGGGAUUAGUAUGAAAAUUUGC"],
-  ["stu-miR8001b-3p","stu","GGAUUUUCAUACUAAUUCCUAGAA"],
-  ["stu-miR7990b","stu","GAAUUUUCAAAUGAUCGUAACUUU"],
-  ["stu-miR8020","stu","AAUUUCAUUGAGUAUGUUGUUGUU"],
-  ["stu-miR8021","stu","AUUCAAGGCUCAAACUCGAGACCU"],
-  ["stu-miR8022","stu","UUUAAAUGAGAAUUUUGGACUAUU"],
-  ["stu-miR8023","stu","UUUGGCACAAUUUCAUUGGCAACC"],
-  ["stu-miR8024a-5p","stu","UUGAAGAAUUUAAAGACUUCAACU"],
-  ["stu-miR8024a-3p","stu","UUGGAGGAUUUGAAGAUUUCAACU"],
-  ["stu-miR8024b","stu","UUGGAGGAUUUGAAGAUUUCAACU"],
-  ["stu-miR1886i-5p","stu","AUGAGAUGAAAUUAGCGUUUGGAU"],
-  ["stu-miR1886i-3p","stu","UUUACGUUGAUUUCAUCUCAUGA"],
-  ["stu-miR8025-5p","stu","ACAUACUCGACAUGCAAUUAAAUU"],
-  ["stu-miR8025-3p","stu","UUUAAUUGCAUGCCAAGUGUGUGG"],
-  ["stu-miR8026","stu","AUGUAGAGAAUAUGUGGUAACCCU"],
-  ["stu-miR7984d-5p","stu","AUCCGAACUUUGACCGAAAUUGCU"],
-  ["stu-miR7984d-3p","stu","CAAUUUCGGUCAAAGUUCGGAUAU"],
-  ["stu-miR8027","stu","AUCUCGAGAUAAGUUAUUCUGGAC"],
-  ["stu-miR7980b-5p","stu","GUCCAAACACUGAUUCCAUCUCAU"],
-  ["stu-miR7980b-3p","stu","GAGAUGGAAUCAGUGUUUGGACAU"],
-  ["stu-miR8008b","stu","AAACCCAGAAAAGCGACGGACAGU"],
-  ["stu-miR8028-5p","stu","UCCUUAUGCUACAAUUGUGAACAA"],
-  ["stu-miR8028-3p","stu","GUUCAUAAUUAUAGUAUAAGGAUG"],
-  ["stu-miR8029","stu","AGCCAUUUUUCUUUGUUUUGGAGC"],
-  ["stu-miR8030-5p","stu","UUGGGUUGGUUUGGUCUCGGGUU"],
-  ["stu-miR8030-3p","stu","UUAAAACCAAAUCAACCCAAAU"],
-  ["stu-miR8031","stu","UUAGACACCUCAACUAAGACUUG"],
-  ["stu-miR8032a-5p","stu","UGGUCGGCAUGACUCCCGAGGU"],
-  ["stu-miR8032a-3p","stu","AGUGUGAGUCGGUGUGAUUAGG"],
-  ["stu-miR8032b-5p","stu","UGGUCGGCAUGACUCCCGAGGU"],
-  ["stu-miR8032b-3p","stu","AGUGUGAGUCGGUGCGAUUAGG"],
-  ["stu-miR8032c","stu","UGGUCGGCAUGACUCCCGAGGU"],
-  ["stu-miR8032d-5p","stu","UGGUCGGCAUGACUCCCGAGGU"],
-  ["stu-miR8032d-3p","stu","AGUGUGAGUUGGUGCGAUUAGG"],
-  ["stu-miR8032e-5p","stu","UGGUCGGCAUGACUCCCGAGGU"],
-  ["stu-miR8032e-3p","stu","AGUGUGAGUCGGUGUGAUUAGG"],
-  ["stu-miR8032f-5p","stu","UGGUCGGCAUGACUCCCGAGGU"],
-  ["stu-miR8032f-3p","stu","AGUGUGAGUCGGUGCGAUUAGG"],
-  ["stu-miR8032g-5p","stu","UGGUCGGCAUGACUCCCGAGGU"],
-  ["stu-miR8032g-3p","stu","AGUGUGAGUCGGUGCGAUUAGG"],
-  ["stu-miR8033-5p","stu","UUCCAAAGCUGCAGAAAUGAGU"],
-  ["stu-miR8033-3p","stu","UCAAUUCUGCAGCUUUAGGAGU"],
-  ["stu-miR8034","stu","UAUGACAAACACUGCAAAAACU"],
-  ["stu-miR8035","stu","UCCAUCUUCAAUAUCACUUUCU"],
-  ["stu-miR8036-5p","stu","GGAGGAAUCGAAAGAUAUAAG"],
-  ["stu-miR8036-3p","stu","UAUGUCUUUCCGAUGCCUCCCA"],
-  ["stu-miR8037","stu","AUAAUUUGGAGGAAUAGGAACC"],
-  ["stu-miR8038a-5p","stu","CCUUGUGAGUAAGUUGAAUCUC"],
-  ["stu-miR8038a-3p","stu","GUUCAACUUGCUCACUUGGAG"],
-  ["stu-miR8038b-5p","stu","CCUUGUGAGUAAGUUGAAUCUC"],
-  ["stu-miR8038b-3p","stu","GUUCAACUUGCUCACUUGGAG"],
-  ["stu-miR8011b-5p","stu","ACUCAUUUUUGUCUCACAAAAA"],
-  ["stu-miR8011b-3p","stu","UUCGUGAGACAAAAAGAAGCCU"],
-  ["stu-miR8039","stu","UUUCCUAUCUGAACUAUCACC"],
-  ["stu-miR319-5p","stu","AGGAAACUGUUUAGUCCAACC"],
-  ["stu-miR319-3p","stu","UUGGACUGAAGGGUUCCCUUC"],
-  ["stu-miR8040-5p","stu","UCAUAAUUACAAUUAUAAGCC"],
-  ["stu-miR8040-3p","stu","CUUAUAAUUGUAAUUAUGAUC"],
-  ["stu-miR8041a-5p","stu","GUGCUUUGCUAUUUUCAUUG"],
-  ["stu-miR8041a-3p","stu","AUGAUGUAUAGCAAAGAGCCU"],
-  ["stu-miR8041b-5p","stu","GUGCUUUGCUAUUUUCAUUG"],
-  ["stu-miR8041b-3p","stu","AUGAUGUAUAGCAAAGAGCCU"],
-  ["stu-miR8042","stu","AUUAGACUGAAGUGCUGAUCU"],
-  ["stu-miR8043","stu","UGAUAUAAUUGGACUUUGGCC"],
-  ["stu-miR8044-5p","stu","UUUCAAAUAUGGUUGGAGAUG"],
-  ["stu-miR8044-3p","stu","UCUCCAGCGAUAUUUGAAACU"],
-  ["stu-miR8045","stu","AUUGAUAGUUGAGGUGUGUUU"],
-  ["stu-miR7122-5p","stu","UUAUACAGAGAAACCGCUGUCG"],
-  ["stu-miR7122-3p","stu","ACAGCGUUUCUCUGUAUAACC"],
-  ["stu-miR8046-5p","stu","UAUGAUCGAAGUUUCAAUGAC"],
-  ["stu-miR8046-3p","stu","CGCUGAAAUUUCGAUCAUAAU"],
-  ["stu-miR8047","stu","CCAUUUUUUCGAAAUUAGACC"],
-  ["stu-miR6149-5p","stu","UUGCAACACACCUGAAUCGUC"],
-  ["stu-miR6149-3p","stu","UGAUUCAGGUUUGUAUGCAAAC"],
-  ["stu-miR399a-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399a-3p","stu","UGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399b-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399b-3p","stu","UGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399c-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399c-3p","stu","UGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399d-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399d-3p","stu","UGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399e-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399e-3p","stu","UGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399f-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399f-3p","stu","UGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399g-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399g-3p","stu","CGCCAAAGGGGAGCUGCCCUA"],
-  ["stu-miR399h","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR8048-5p","stu","CUCAUUAGCAUCUCCAUCUUG"],
-  ["stu-miR8048-3p","stu","AGAUGGACAUGCUAAUGAACA"],
-  ["stu-miR164-5p","stu","UGGAGAAGCAGGGCACAUGCU"],
-  ["stu-miR164-3p","stu","CAUGUGCUCUAGCUCUCCAGC"],
-  ["stu-miR5304-5p","stu","CAAUGCAACAUACUCAUCACC"],
-  ["stu-miR5304-3p","stu","AGAUGAGUAUGGUGCAUUGGA"],
-  ["stu-miR8049-5p","stu","CAAGGCUCAUGCAGACAUGCA"],
-  ["stu-miR8049-3p","stu","CAUGUCUACAUGAGCCUGAUA"],
-  ["stu-miR8050-5p","stu","AAGUAGGAAUCAAGGUCAAU"],
-  ["stu-miR8050-3p","stu","UGACUUGAGAUUCCUACUUGG"],
-  ["stu-miR1919-5p","stu","UGUCGCAGAUGACUUUCGCCC"],
-  ["stu-miR1919-3p","stu","ACGAGAGUCAUCUGUGACAGG"],
-  ["stu-miR8051-5p","stu","UAGUAUGGUAGAAAGAUUCA"],
-  ["stu-miR8051-3p","stu","UAUUUCUUCUACCAUACUAUU"],
-  ["stu-miR5303j","stu","AAUAUUUUUGAAGAGUCUGAGCAA"],
-  ["stu-miR5303g","stu","AUAUUUUUGAAGAGUCUGAGCAAC"],
-  ["stu-miR5303h","stu","AACAUUUUUGAAGAGUCUGAGCAA"],
-  ["stu-miR5303i","stu","AUAUUUUUGAAGAGUCUGAGCAAC"],
-  ["stu-miR3627-5p","stu","UCGCAGGAGAGAUGGCACUUAG"],
-  ["stu-miR3627-3p","stu","AAGUGCCUCUGUCUUUCGACA"],
-  ["stu-miR171b-5p","stu","AGAUAUUGAUGUGGCUCAAUC"],
-  ["stu-miR171b-3p","stu","UUGAGCCGCGUCAAUAUCUCU"],
-  ["stu-miR166a-5p","stu","GGAAUGUUGUCUGGCUCGAGG"],
-  ["stu-miR166a-3p","stu","UCGGACCAGGCUUCAUUCCCC"],
-  ["stu-miR166b","stu","UCGGACCAGGCUUCAUUCCUC"],
-  ["stu-miR166c-5p","stu","GGAAUGUUGUUUGGCUCGAGG"],
-  ["stu-miR166c-3p","stu","UCGGACCAGGCUUCAUUCCCC"],
-  ["stu-miR166d-5p","stu","AGAAUGUCGUCUGGUUCGAGA"],
-  ["stu-miR166d-3p","stu","UCGGACCAGGCUUCAUUCCCC"],
-  ["stu-miR171a-5p","stu","UAUUGGCCUGGUUCACUCAGA"],
-  ["stu-miR171a-3p","stu","UGAUUGAGCCGUGCCAAUAUC"],
-  ["stu-miR171c-5p","stu","UAUUGGCCUGGUUCACUCAGA"],
-  ["stu-miR171c-3p","stu","UGAUUGAGCCGUGUCAAUAUC"],
-  ["stu-miR399i-5p","stu","GGGCUACACUCUAUUGGCAUG"],
-  ["stu-miR399i-3p","stu","UGCCAAAGGAGAGUUGCCCUA"],
-  ["stu-miR395a","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395b","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395c","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395d","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395e","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395f","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395g","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395h","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395i","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR395j","stu","CUGAAGUGUUUGGGGGAACUC"],
-  ["stu-miR827-5p","stu","UUUGUUGAUGGUCAUCUAUUC"],
-  ["stu-miR827-3p","stu","UUAGAUGAACAUCAACAAACA"],
-  ["stu-miR391-5p","stu","UACGCAGGAGAGAUGAUGCUG"],
-  ["stu-miR391-3p","stu","GCAUCAUACUCCUGCAUAUU"],
-  ["stu-miR319b","stu","UUGGACUGAAGGGAGCUCCU"],
-  ["stu-miR319a-5p","stu","AGAGCUUUCUUCGGUCCACAC"],
-  ["stu-miR319a-3p","stu","UUGGACUGAAGGGAGCUCCCU"],
-  ["stu-miR162a-5p","stu","GGAGGCAGCGGUUCAUCGAUC"],
-  ["stu-miR162a-3p","stu","UCGAUAAACCUCUGCAUCCAG"],
-  ["stu-miR162b-5p","stu","GGAGGCAGCGGUUCAUCGAUC"],
-  ["stu-miR162b-3p","stu","UCGAUAAACCUCUGCAUCCAG"],
-  ["stu-miR160a-5p","stu","UGCCUGGCUCCCUGUAUGCCA"],
-  ["stu-miR160a-3p","stu","GCGUAUGAGGAGCCAAGCAUA"],
-  ["stu-miR160b","stu","UGCCUGGCUCCCUGUAUGCCA"],
-  ["stu-miR172b-5p","stu","GCAGCACCAUCAAGAUUCACA"],
-  ["stu-miR172b-3p","stu","AGAAUCUUGAUGAUGCUGCAU"],
-  ["stu-miR172c-5p","stu","AGCAUCUUCAAGAUUCACA"],
-  ["stu-miR172c-3p","stu","AGAAUCUUGAUGAUGCUGC"],
-  ["stu-miR172a-5p","stu","GUAGCAUAAUCAAGAUUCACA"],
-  ["stu-miR172a-3p","stu","AGAAUCUUGAUGAUGCUGCAU"],
-  ["stu-miR172d-5p","stu","GGAGCAUCAUCAAGAUUCACA"],
-  ["stu-miR172d-3p","stu","GGAAUCUUGAUGAUGCUGCAG"],
-  ["stu-miR172e-5p","stu","GCAACAUCAUCAAGAUUCACA"],
-  ["stu-miR172e-3p","stu","AGAAUCUUGAUGAUGCUGCAU"],
-  ["stu-miR156a","stu","UUGACAGAAGAUAGAGAGCAC"],
-  ["stu-miR156b","stu","UUGACAGAAGAUAGAGAGCAC"],
-  ["stu-miR156c","stu","UUGACAGAAGAUAGAGAGCAC"],
-  ["stu-miR156d-5p","stu","UUGACAGAAGAUAGAGAGCAC"],
-  ["stu-miR156d-3p","stu","GCUCUCUAUGCUUCUGUCAUCA"],
-  ["stu-miR171d-5p","stu","AGAUAUUGGUGCGGUUCAAUU"],
-  ["stu-miR171d-3p","stu","UUGAGCCGUGCCAAUAUCACG"],
-  ["stu-miR167c-5p","stu","UGAAGCUGCCAGCAUGAUCUA"],
-  ["stu-miR167c-3p","stu","GGUCAUGCUCGGACAGCCUCACU"],
-  ["stu-miR167b-5p","stu","UGAAGCUGCCAGCAUGAUCUA"],
-  ["stu-miR167b-3p","stu","GAUCAUGUGGCAGCAUCACC"],
-  ["stu-miR167a-5p","stu","UGAAGCUGCCAGCAUGAUCUA"],
-  ["stu-miR167a-3p","stu","GAUCAUGUGGCAGCCUCACC"],
-  ["stu-miR167d-5p","stu","UGAAGCUGCCAGCAUGAUCUA"],
-  ["stu-miR167d-3p","stu","GAUCAUGUGGUUGCUUCACC"],
-  ["stu-miR479","stu","UGAGCCGAACCAAUAUCACUC"],
-  ["stu-miR399j-5p","stu","GGGCUACUCUCUAUUGGCAUA"],
-  ["stu-miR399j-3p","stu","CGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399k-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399k-3p","stu","CGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399l-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399l-3p","stu","CGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399m-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399m-3p","stu","CGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399n-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399n-3p","stu","CGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR399o-5p","stu","GGGCUACUCUCUAUUGGCAUG"],
-  ["stu-miR399o-3p","stu","CGCCAAAGGAGAGCUGCCCUG"],
-  ["stu-miR393-5p","stu","UCCAAAGGGAUCGCAUUGAUCC"],
-  ["stu-miR393-3p","stu","AUCAUGCGAUCUCUUCGGAAU"],
-  ["stu-miR477a-5p","stu","CCUCUCCCUCAAGGGCUUCUC"],
-  ["stu-miR477a-3p","stu","GAAGCUCUAGCAGGGAGAGCCA"],
-  ["stu-miR477b-5p","stu","ACUCUCCCUCAAAGGCUUCUG"],
-  ["stu-miR477b-3p","stu","GAGGUCUUUCGAGUGAGAGUGA"],
-  ["stu-miR530","stu","UCUGCAUUUGCACCUGCACCU"],
-  ["stu-miR398a-5p","stu","GGGUUGAUUUGAGAACAUAUG"],
-  ["stu-miR398a-3p","stu","UAUGUUCUCAGGUCGCCCCUG"],
-  ["stu-miR398b-5p","stu","GAGUGUGCCUUAGAACACAGGU"],
-  ["stu-miR398b-3p","stu","UUGUGUUCUCAGGUCACCCCU"],
-  ["stu-miR396-5p","stu","UUCCACAGCUUUCUUGAACUU"],
-  ["stu-miR396-3p","stu","GUCCAAGAAAGCUGUGGGAAA"],
-  ["stu-miR408a-5p","stu","ACAGGGACGAGGCAGCGCAUG"],
-  ["stu-miR408a-3p","stu","UGCACAGCCUCUUCCCUGGUU"],
-  ["stu-miR408b-5p","stu","ACGGGGACGAGACAGAGCAUG"],
-  ["stu-miR408b-3p","stu","UGCACUGCCUCUUCCCUGGCU"],
-  ["stu-miR397-5p","stu","AUUGAGUGCAGCGUUGAUGAC"],
-  ["stu-miR397-3p","stu","CAUCAACGCUACACUCAAUCA"],
-  ["stu-miR390-5p","stu","AAGCUCAGGAGGGAUAGCACC"],
-  ["stu-miR390-3p","stu","CGCUAUCCAUCUUGAGUUUUA"],
-  ["stu-miR171e","stu","UGAUUGAGCCGUGCCAAUAUC"],
-  ["stu-miR156e","stu","UGACAGAAGAGAGUGAGCAC"],
-  ["stu-miR156f-5p","stu","CUGACAGAAGAGAGUGAGCA"],
-  ["stu-miR156f-3p","stu","CUCACUUCUCUUUCUGUCAAUC"],
-  ["stu-miR156g-5p","stu","UGACAGAAGAGAGUGAGCAC"],
-  ["stu-miR156g-3p","stu","GCUUACUCUCUAUCUGUCACC"],
-  ["stu-miR156h-5p","stu","UGACAGAAGAGAGUGAGCAC"],
-  ["stu-miR156h-3p","stu","GCUCACUGCUCUAUCUGUCACC"],
-  ["stu-miR156i-5p","stu","UGACAGAAGAGAGUGAGCAC"],
-  ["stu-miR156i-3p","stu","GCUCACUGCUCUAUCUGUCACC"],
-  ["stu-miR156j-5p","stu","UGACAGAAGAGAGUGAGCAC"],
-  ["stu-miR156j-3p","stu","GCUCACUGCUCUAUCUGUCACC"],
-  ["stu-miR156k-5p","stu","UGACAGAAGAGAGUGAGCAC"],
-  ["stu-miR156k-3p","stu","GCUCACUGCUCUAUCUGUCACC"],
-  ["stu-miR169a-5p","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR169a-3p","stu","GCAGUCUCCUUGGCUACU"],
-  ["stu-miR169b-5p","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR169b-3p","stu","GCAGUCUCCUUGGCUACU"],
-  ["stu-miR169c-5p","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR169c-3p","stu","GCAGUCUCCUUGGCUACC"],
-  ["stu-miR169d-5p","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR169d-3p","stu","GCAGGUCAUCUUUAGCUAACU"],
-  ["stu-miR169e-5p","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR169e-3p","stu","GCAAGUUAUCCUGGCUAUC"],
-  ["stu-miR169f-5p","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR169f-3p","stu","GCAAGCAUCCUUGGCGACU"],
-  ["stu-miR169g","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR169h","stu","UAGCCAAGGAUGACUUGCCU"],
-  ["stu-miR384-5p","stu","UUGGCAUUCUGUCCACCUCC"],
-  ["stu-miR384-3p","stu","AGGGGGCCAAAGUGCCAAAC"],
+  ["ath-miR10515","ath","ACCCCGAUGGUUAUCCUCACC"]
 ];
 
 // ============================================================
@@ -6838,20 +6481,20 @@ const MIRNA_DB = [
 // ============================================================
 // SEED CONSERVATION MAP (build once at load)
 // ============================================================
-const SEED_MAP = {hsa: new Map(), mmu: new Map(), rno: new Map(), ath: new Map(), stu: new Map()}; // populated on load
+const SEED_MAP = {hsa: new Map(), mmu: new Map(), rno: new Map(), ath: new Map()}; // populated on load
 
 function getSeedConservation(mirnaSeq, org) {
   const rna = mirnaSeq.toUpperCase().replace(/T/g,'U');
-  if(rna.length < 8) return {hsa:false, mmu:false, rno:false, ath:false, stu:false, score:0};
+  if(rna.length < 8) return {mmu:false, rno:false, ath:false, score:0};
   const seed = rna.slice(1,8);
-  const hsa = SEED_MAP.hsa.has(seed);  
   const mmu = SEED_MAP.mmu.has(seed);
   const rno = SEED_MAP.rno.has(seed);
   const ath = SEED_MAP.ath.has(seed);
-  const stu = SEED_MAP.stu.has(seed);
-  const flags = {hsa, mmu, rno, ath, stu};
-  const score = Object.entries(flags).reduce((acc,[k,v])=>acc + ((k!==org && v)?1:0),0);
-  return {hsa, mmu, rno, ath, stu, score};
+  let score = 0;
+  if(org==='hsa'){ if(mmu)score++; if(rno)score++; }
+  else if(org==='mmu'){ if(SEED_MAP.hsa.has(seed))score++; if(rno)score++; }
+  else if(org==='rno'){ if(SEED_MAP.hsa.has(seed))score++; if(mmu)score++; }
+  return {mmu, rno, ath, score};
 }
 
 // ============================================================
@@ -6953,117 +6596,99 @@ function rnaStackE(a, b, c, d) {
 }
 
 function zukerLiteMFE(seq) {
-  // Zuker-lite DP with float64 arrays and explicit traceback pointers
-  // V[i][j] = MFE when i-j forced paired; W[i][j] = MFE of best structure on i..j
+  // Simplified Zuker DP: minimize ΔG over secondary structure
+  // V[i][j] = MFE of substructure with base pair (i,j)
+  // W[i][j] = MFE of best structure on seq[i..j]
   const n = seq.length;
-  if (n < 8) return {mfe: 0, pairs: new Array(n).fill(-1)};
+  if (n < 4) return {mfe: 0, pairs: []};
 
   const INF = 1e9;
-  const MIN_LOOP = 3;
+  const MIN_LOOP = 3; // minimum hairpin loop size
 
-  // Use regular JS arrays (float64) — Float32 causes traceback precision failures
-  const W = Array.from({length:n}, () => new Array(n).fill(0));
-  const V = Array.from({length:n}, () => new Array(n).fill(INF));
-  // TW[i][j]: -1=all unpaired, -2=i-j are paired (V path), k>=0=split at k
-  const TW = Array.from({length:n}, () => new Int16Array(n).fill(-1));
+  // W[i][j] = best free energy for subsequence i..j
+  const W = Array.from({length:n}, () => new Float32Array(n));
+  // V[i][j] = best energy with i-j forced paired
+  const V = Array.from({length:n}, () => new Float32Array(n).fill(INF));
 
+  // Hairpin loop energy (simplified Turner 2004)
   function hairpinE(i, j) {
-    const ls = j - i - 1;
-    if (ls < MIN_LOOP) return INF;
-    const init = ls <= 6 ? [INF,INF,INF,5.4,5.6,5.7,5.4][ls]
-                         : 5.4 + 1.75 * Math.log(ls / 6);
-    return init - 0.3;
-  }
-  function internalE(ls) {
-    if (ls === 0) return 0;
-    if (ls === 1) return 3.9;
-    if (ls === 2) return 4.1;
-    return 4.1 + 1.75 * Math.log(ls / 2);
+    const loopSize = j - i - 1;
+    if (loopSize < MIN_LOOP) return INF;
+    // Initiation penalty from Turner 2004 table (simplified)
+    const initE = loopSize <= 6
+      ? [INF, INF, INF, 5.4, 5.6, 5.7, 5.4][loopSize]  // loop sizes 3,4,5,6
+      : 5.4 + 1.75 * Math.log(loopSize / 6);             // extrapolation
+    // Terminal mismatch contribution (approximated)
+    const mm = -0.3;
+    return initE + mm;
   }
 
-  // DP fill
+  // Internal loop energy (2x2 symmetric, simplified)
+  function internalLoopE(loopSize) {
+    if (loopSize === 0) return 0; // stacked pair
+    if (loopSize === 1) return 3.9; // 1x1 internal loop
+    if (loopSize === 2) return 4.1;
+    return 4.1 + 1.75 * Math.log(loopSize / 2);
+  }
+
+  // Fill DP tables (outer loop: subseq length)
   for (let len = MIN_LOOP + 1; len < n; len++) {
     for (let i = 0; i + len < n; i++) {
       const j = i + len;
+      // V[i][j]: forced pair (i,j)
       if (rnaCanPair(seq[i], seq[j])) {
+        // Option 1: hairpin
         let best = hairpinE(i, j);
+        // Option 2: stacking (i+1,j-1 also paired)
         if (len >= MIN_LOOP + 2 && V[i+1][j-1] < INF) {
-          const e = rnaStackE(seq[i], seq[i+1], seq[j], seq[j-1]) + V[i+1][j-1];
-          if (e < best) best = e;
+          const stkE = rnaStackE(seq[i], seq[i+1], seq[j], seq[j-1]);
+          best = Math.min(best, stkE + V[i+1][j-1]);
         }
+        // Option 3: internal loop (skip 1-2 unpaired on each side)
         for (let il = 1; il <= Math.min(3, len-MIN_LOOP-2); il++) {
           for (let ir = 1; ir <= Math.min(3, len-MIN_LOOP-2-il+1); ir++) {
-            const ni = i+il+1, nj = j-ir-1;
+            const ni = i + il + 1, nj = j - ir - 1;
             if (ni >= nj - MIN_LOOP) break;
             if (V[ni][nj] < INF && rnaCanPair(seq[ni], seq[nj])) {
-              const e = internalE(il+ir) + V[ni][nj];
-              if (e < best) best = e;
+              best = Math.min(best, internalLoopE(il+ir) + V[ni][nj]);
             }
           }
         }
         V[i][j] = best;
       }
-      // W: best of (unpaired=0, stem=V, bifurcation)
-      let wBest = 0, wTrace = -1;
-      if (V[i][j] < 0) { wBest = V[i][j]; wTrace = -2; }
+      // W[i][j]: best structure on i..j
+      let wBest = 0; // unpaired (reference)
+      if (V[i][j] < INF) wBest = Math.min(wBest, V[i][j]);
+      // bifurcation
       for (let k = i; k < j; k++) {
-        const s = W[i][k] + W[k+1][j];
-        if (s < wBest) { wBest = s; wTrace = k; }
+        const split = W[i][k] + W[k+1][j];
+        wBest = Math.min(wBest, split);
       }
       W[i][j] = wBest;
-      TW[i][j] = wTrace;
     }
   }
 
-  // Traceback using explicit pointers — no float comparison needed for W
-  const pairs = new Array(n).fill(-1);
-  const EPS = 0.15; // tolerance for V-only comparisons
-
-  function traceV(i, j) {
-    // i-j already resolved as paired; trace what's inside
-    if (i + 1 >= j - 1) return;
-    // Stacking: i+1 and j-1 also paired
-    if (rnaCanPair(seq[i+1], seq[j-1]) && V[i+1][j-1] < INF) {
-      const e = rnaStackE(seq[i], seq[i+1], seq[j], seq[j-1]) + V[i+1][j-1];
-      if (Math.abs(e - V[i][j]) < EPS) {
-        pairs[i+1] = j-1; pairs[j-1] = i+1;
-        traceV(i+1, j-1);
-        return;
-      }
-    }
-    // Internal loop
-    for (let il = 1; il <= 3; il++) {
-      for (let ir = 1; ir <= 3; ir++) {
-        const ni = i+il+1, nj = j-ir-1;
-        if (ni >= n || nj < 0 || ni >= nj - MIN_LOOP) continue;
-        if (V[ni][nj] < INF && rnaCanPair(seq[ni], seq[nj])) {
-          const e = internalE(il+ir) + V[ni][nj];
-          if (Math.abs(e - V[i][j]) < EPS) {
-            pairs[ni] = nj; pairs[nj] = ni;
-            traceV(ni, nj);
-            return;
-          }
-        }
-      }
-    }
-    // Hairpin — no inner pairs needed
-  }
-
-  function traceW(i, j) {
+  // Traceback to get base pairs
+  const pairs = new Int16Array(n).fill(-1);
+  function traceback(i, j) {
     if (i >= j) return;
-    const t = TW[i][j];
-    if (t === -1) return;           // unpaired region
-    if (t === -2) {                 // i-j paired
+    if (W[i][j] === 0) return; // all unpaired in this region
+    // Check if i-j paired
+    if (V[i][j] < INF && Math.abs(W[i][j] - V[i][j]) < 0.01) {
       pairs[i] = j; pairs[j] = i;
-      traceV(i, j);
-    } else {                        // bifurcation at t
-      traceW(i, t);
-      traceW(t + 1, j);
+      if (i+1 < j-1) traceback(i+1, j-1);
+      return;
+    }
+    // Bifurcation
+    for (let k = i; k < j; k++) {
+      if (Math.abs(W[i][j] - W[i][k] - W[k+1][j]) < 0.01) {
+        traceback(i, k); traceback(k+1, j); return;
+      }
     }
   }
+  if (n > 1) traceback(0, n-1);
 
-  if (n > 1) traceW(0, n - 1);
-  return {mfe: W[0][n-1], pairs};
+  return {mfe: W[0][n-1], pairs: Array.from(pairs)};
 }
 
 // Accessibility cache: key = "mrnaHash:pos:len" → result object
@@ -7567,7 +7192,6 @@ function getDB(species){
   if(species==='mouse')  return MIRNA_DB.filter(r=>r[1]==='mmu');
   if(species==='rat')    return MIRNA_DB.filter(r=>r[1]==='rno');
   if(species==='plant')  return MIRNA_DB.filter(r=>r[1]==='ath');
-  if(species==='potato') return MIRNA_DB.filter(r=>r[1]==='stu');
   if(species==='mammals')return MIRNA_DB.filter(r=>['hsa','mmu','rno'].includes(r[1]));
   return MIRNA_DB;
 }
@@ -7793,66 +7417,14 @@ function renderDashboard(res, totalHits){
 // ============================================================
 const SEED_COLORS={'8mer':'#00d4aa','7mer-m8':'#fbbf24','7mer-A1':'#fbbf24','6mer':'#a78bfa','centered':'#f472b6','3prime-comp':'#60a5fa','none':'#6b7280'};
 
-function normalizeMirFamilyName(name){
-  if(!name) return '';
-  let base = name.split('-').slice(1).join('-');
-  base = base.replace(/-(5p|3p|5|3)$/i,'');
-  base = base.replace(/-\d+$/,'');
-  base = base.replace(/(miR-\d+)[a-z]$/i,'$1');
-  return base;
-}
-
-function consIcons(cons, org, mirnaName){
+function consIcons(cons, org){
   if(!cons) return '—';
   let html='';
-  
-  // Extract base miRNA name (remove organism prefix)
-  // e.g., "hsa-miR-143-5p" -> "miR-143"
-  const baseMirna = normalizeMirFamilyName(mirnaName);
-  
-  // Get list of organisms that have RESULTS for this same miRNA base
-  const orgsWithResults = new Set();
-  if(baseMirna){
-    RESULTS.forEach(r => {
-      const rBaseMirna = normalizeMirFamilyName(r.name);
-      if(rBaseMirna === baseMirna) {
-        orgsWithResults.add(r.org);
-      }
-    });
+  if(org==='hsa'||org==='mmu'||org==='rno'){
+    if(org!=='mmu') html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
+    if(org!=='rno') html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
   }
-  
-  // Show conservation icons for organisms that have results (except current)
-  if(org==='hsa'){
-    if(orgsWithResults.has('mmu')) html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
-    if(orgsWithResults.has('rno')) html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
-    if(orgsWithResults.has('ath')) html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
-    if(orgsWithResults.has('stu')) html+=`<span title="Ziemniak (stu)" style="opacity:${cons.stu?1:.25}">🥔</span>`;
-  }
-  else if(org==='mmu'){
-    if(orgsWithResults.has('hsa')) html+=`<span title="Człowiek (hsa)" style="opacity:${cons.hsa?1:.25}">👤</span>`;
-    if(orgsWithResults.has('rno')) html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
-    if(orgsWithResults.has('ath')) html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
-    if(orgsWithResults.has('stu')) html+=`<span title="Ziemniak (stu)" style="opacity:${cons.stu?1:.25}">🥔</span>`;
-  }
-  else if(org==='rno'){
-    if(orgsWithResults.has('hsa')) html+=`<span title="Człowiek (hsa)" style="opacity:${cons.hsa?1:.25}">👤</span>`;
-    if(orgsWithResults.has('mmu')) html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
-    if(orgsWithResults.has('ath')) html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
-    if(orgsWithResults.has('stu')) html+=`<span title="Ziemniak (stu)" style="opacity:${cons.stu?1:.25}">🥔</span>`;
-  }
-  else if(org==='ath'){
-    if(orgsWithResults.has('hsa')) html+=`<span title="Człowiek (hsa)" style="opacity:${cons.hsa?1:.25}">👤</span>`;
-    if(orgsWithResults.has('mmu')) html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
-    if(orgsWithResults.has('rno')) html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
-    if(orgsWithResults.has('stu')) html+=`<span title="Ziemniak (stu)" style="opacity:${cons.stu?1:.25}">🥔</span>`;
-  }
-  else if(org==='stu'){
-    if(orgsWithResults.has('hsa')) html+=`<span title="Człowiek (hsa)" style="opacity:${cons.hsa?1:.25}">👤</span>`;
-    if(orgsWithResults.has('mmu')) html+=`<span title="Mysz (mmu)" style="opacity:${cons.mmu?1:.25}">🐭</span>`;
-    if(orgsWithResults.has('rno')) html+=`<span title="Szczur (rno)" style="opacity:${cons.rno?1:.25}">🐀</span>`;
-    if(orgsWithResults.has('ath')) html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
-  }
-  
+  if(org!=='ath') html+=`<span title="Arabidopsis (ath)" style="opacity:${cons.ath?1:.25}">🌿</span>`;
   return html||'—';
 }
 
@@ -7884,14 +7456,6 @@ function applyFilters(){
   const st=(document.getElementById('fSeed')||{}).value||'';
   const org=(document.getElementById('fOrg')||{}).value||'';
   const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
-  const consOrg=(document.getElementById('fConsOrg')||{}).value||'';
-  const orgsByFamily = new Map();
-  RESULTS.forEach(r=>{
-    const fam = normalizeMirFamilyName(r.name);
-    if(!fam) return;
-    if(!orgsByFamily.has(fam)) orgsByFamily.set(fam, new Set());
-    orgsByFamily.get(fam).add(r.org);
-  });
   let shown=0;
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   RESULTS.forEach((r,idx)=>{
@@ -7899,22 +7463,12 @@ function applyFilters(){
     if(st&&r.hit.seedType!==st) return;
     if(org&&r.org!==org) return;
     if(consMin>0&&(r.hit.conservation?.score??0)<consMin) return;
-    if(consOrg){
-      const fam = normalizeMirFamilyName(r.name);
-      const famOrgs = orgsByFamily.get(fam);
-      if(!famOrgs || !famOrgs.has(consOrg)) return;
-      if(consOrg==='hsa'&&!(r.hit.conservation?.hsa)) return;
-      if(consOrg==='mmu'&&!(r.hit.conservation?.mmu)) return;
-      if(consOrg==='rno'&&!(r.hit.conservation?.rno)) return;
-      if(consOrg==='ath'&&!(r.hit.conservation?.ath)) return;
-      if(consOrg==='stu'&&!(r.hit.conservation?.stu)) return;
-    }
     const dg=r.hit.dg;
     const dgCls=dg<-10?'dg-good':dg<-6?'dg-med':'dg-low';
     const sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
     const coopStr=r.hit.coopBonus<0?`<span style="color:var(--accent3)">${r.hit.dgCoop}⊕</span>`:r.hit.dgCoop;
     const auBar=`<span>${r.hit.auPct}%</span><span style="display:inline-block;width:${Math.min(r.hit.auPct,100)*0.3}px;height:4px;background:${r.hit.auPct>60?'#fbbf24':'#6b7280'};border-radius:2px;margin-left:3px;vertical-align:middle"></span>`;
-    const orgColor=r.org==='hsa'?'var(--accent)':r.org==='mmu'?'#60a5fa':r.org==='rno'?'#f87171':r.org==='stu'?'#f59e0b':'var(--accent3)';
+    const orgColor=r.org==='hsa'?'var(--accent)':r.org==='mmu'?'#60a5fa':r.org==='rno'?'#f87171':'var(--accent3)';
     const tip={'8mer':'seed pos2-8 + A1 + m8','7mer-m8':'seed pos2-8 + m8','7mer-A1':'seed pos2-8 + A1','6mer':'seed pos2-7','centered':'11+ WC konsekutywne pos4-15','3prime-comp':'3+ WC pos13-16'};
     const tr=document.createElement('tr');
     const dgTotalCol = (r.hit.dgTotal??dg) < -10 ? 'var(--accent)' : (r.hit.dgTotal??dg) < -6 ? 'var(--gu)' : 'var(--muted)';
@@ -7938,7 +7492,7 @@ function applyFilters(){
       <td style="color:var(--match)">${r.hit.wc}</td>
       <td style="color:var(--gu)">${r.hit.gu}</td>
       <td>${auBar}</td>
-      <td class="cons-badge">${consIcons(r.hit.conservation,r.org,r.name)}</td>
+      <td class="cons-badge">${consIcons(r.hit.conservation,r.org)}</td>
       <td data-tip="${accTip}">${accBar}</td>
       <td style="font-size:.65rem;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis">${esc(r.mirna)}</td>
     `;
@@ -7948,7 +7502,7 @@ function applyFilters(){
   if(!shown) tb.innerHTML='<tr><td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td></tr>';
 }
 function renderTable(res){applyFilters();}
-function resetFilters(){['fMirna','fSeed','fOrg','fCons','fConsOrg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
+function resetFilters(){['fMirna','fSeed','fOrg','fCons'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
 
 // ============================================================
 // SHOW PREVIEW
@@ -7956,7 +7510,7 @@ function resetFilters(){['fMirna','fSeed','fOrg','fCons','fConsOrg'].forEach(id=
 function showPrev(r,idx){
   document.querySelectorAll('tbody tr').forEach((t,i)=>t.classList.toggle('act',i===idx));
   document.getElementById('sn').textContent=r.name;
-  document.getElementById('ss').textContent=`${r.org==='hsa'?'Homo sapiens':r.org==='mmu'?'Mus musculus':r.org==='rno'?'Rattus norvegicus':r.org==='stu'?'Solanum tuberosum':'Arabidopsis thaliana'} · pos ${r.hit.pos+1}–${r.hit.pos+r.mirna.length}`;
+  document.getElementById('ss').textContent=`${r.org==='hsa'?'Homo sapiens':r.org==='mmu'?'Mus musculus':r.org==='rno'?'Rattus norvegicus':'Arabidopsis thaliana'} · pos ${r.hit.pos+1}–${r.hit.pos+r.mirna.length}`;
   const dg=r.hit.dg,sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
   const consHtml=r.hit.conservation?`<span class="pill">Cons: ${consIcons(r.hit.conservation,r.org)}</span>`:'';
   const coopPill=r.hit.coopBonus<0?`<span class="pill b">ΔG+coop: ${r.hit.dgCoop}</span>`:'';
@@ -8082,14 +7636,14 @@ function exportManuscript(){
   if(!RESULTS.length) return;
   const na=parseFloat(document.getElementById('saltConc').value)||0.15;
   let txt='# miRNA Target Prediction Report\n# Tool: miRNA Hybrid Viewer v1.0 (PRAMĀ Institute for Fundamentals)\n';
-  const _dbc = window.MIRNA_DB_COUNTS || {hsa:0,mmu:0,rno:0,ath:0,stu:0};
-  txt+=`# miRBase v22.1: hsa:${_dbc.hsa}, mmu:${_dbc.mmu}, rno:${_dbc.rno}, ath:${_dbc.ath}, stu:${_dbc.stu}\n`;
+  const _dbc = window.MIRNA_DB_COUNTS || {hsa:0,mmu:0,rno:0,ath:0};
+  txt+=`# miRBase v22.1: hsa:${_dbc.hsa}, mmu:${_dbc.mmu}, rno:${_dbc.rno}, ath:${_dbc.ath}\n`;
   txt+=`# Method: Seed matching (TargetScan canonical 6/7/8mer + centered + 3'comp)\n`;
   txt+=`#          Turner (2004) nearest-neighbor ΔG; salt correction: Owczarzy (2004) Eq.26\n`;
   txt+=`# Salt: [Na+] = ${na} M (correction from 1M standard, error ±0.14 kcal/mol)\n`;
   txt+=`# AU-rich context: ±30 nt window around binding site\n`;
   txt+=`# Cooperative bonus: -2.0 kcal/mol for sites 13-35 nt apart (same miRNA)\n`;
-  txt+=`# Conservation: seed 7mer (pos 2-8) homolog presence in hsa/mmu/rno/ath/stu\n`;
+  txt+=`# Conservation: seed 7mer (pos 2-8) homolog presence in mmu/rno\n`;
   txt+=`# Date: ${new Date().toISOString().slice(0,10)}\n\n`;
   txt+=['#','miRNA','Org',`ΔG_${na}M`,'ΔG(1M)','ΔG_coop','Seed_type','Pos','WC','GU','MM','AU%','Cons_score','mmu_cons','rno_cons','Seq'].join('\t')+'\n';
   RESULTS.forEach((r,i)=>{
@@ -8134,38 +7688,10 @@ function loadSettings(){SETTINGS.forEach(id=>{const v=localStorage.getItem('mirn
 SETTINGS.forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',saveSettings);});
 loadSettings();
 
-const initConservationFilter = () => {
-  const filterRow = document.getElementById('filterRow');
-  if(!filterRow || document.getElementById('fConsOrg')) return;
-  const label = document.createElement('label');
-  label.setAttribute('for','fConsOrg');
-  label.textContent = 'Konserwacja w';
-  const select = document.createElement('select');
-  select.id = 'fConsOrg';
-  const options = [
-    {value:'', text:'Wszystkie'},
-    {value:'hsa', text:'hsa'},
-    {value:'mmu', text:'mmu'},
-    {value:'rno', text:'rno'},
-    {value:'ath', text:'ath'},
-    {value:'stu', text:'stu'},
-  ];
-  options.forEach(opt=>{
-    const el=document.createElement('option');
-    el.value=opt.value;
-    el.textContent=opt.text;
-    select.appendChild(el);
-  });
-  select.addEventListener('change',applyFilters);
-  filterRow.appendChild(label);
-  filterRow.appendChild(select);
-};
-
 // ============================================================
 // DOM INIT — runs after full DOM parse
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-  initConservationFilter();
   // Populate SEED_MAP from full DB
   MIRNA_DB.forEach(([name, org, seq]) => {
     if(!SEED_MAP[org]) return;
@@ -8177,11 +7703,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   // Set database badge — expose counts globally for exports
-  const c = {hsa:0,mmu:0,rno:0,ath:0,stu:0};
+  const c = {hsa:0,mmu:0,rno:0,ath:0};
   MIRNA_DB.forEach(r => { if(c[r[1]]!==undefined) c[r[1]]++; });
   window.MIRNA_DB_COUNTS = c;
   const badge = document.getElementById('dbBadge');
-  if(badge) badge.textContent = `miRBase v22.1 · hsa:${c.hsa} mmu:${c.mmu} rno:${c.rno} ath:${c.ath} stu:${c.stu}`;
+  if(badge) badge.textContent = `miRBase v22.1 · hsa:${c.hsa} mmu:${c.mmu} rno:${c.rno} ath:${c.ath}`;
   // Re-apply saved settings to UI
   loadSettings();
 });
@@ -8250,7 +7776,7 @@ async function exportPDF() {
       if(consMin>0&&(r.hit.conservation?.score??0)<consMin)return false;
       return true;
     });
-    const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0,stu:0};
+    const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0};
     const rowsPerPage=Math.floor((pgH-headerH-margin)/rowH);
     const totalPages=Math.ceil(filtered.length/rowsPerPage)||1;
     const pageWord=t?t.pdf_page:'Strona';
@@ -8260,7 +7786,7 @@ async function exportPDF() {
       pdf.setTextColor(0,212,170);pdf.setFontSize(11);pdf.setFont('helvetica','bold');
       pdf.text('miRNA Hybrid Viewer v1.0 \u2014 PRAM\u0100 Institute',margin,8);
       pdf.setTextColor(180,180,180);pdf.setFontSize(7);pdf.setFont('helvetica','normal');
-      pdf.text(`Generated: ${new Date().toISOString().slice(0,19)} | ${resultsWord}: ${filtered.length} / ${RESULTS.length} | hsa:${_dbc.hsa} mmu:${_dbc.mmu} rno:${_dbc.rno} ath:${_dbc.ath} stu:${_dbc.stu}`,margin,13);
+      pdf.text(`Generated: ${new Date().toISOString().slice(0,19)} | ${resultsWord}: ${filtered.length} / ${RESULTS.length} | hsa:${_dbc.hsa} mmu:${_dbc.mmu} rno:${_dbc.rno} ath:${_dbc.ath}`,margin,13);
       pdf.text(`${pageWord} ${pn}/${tp}`,pgW-margin-20,13);
       pdf.setFillColor(0,80,60);pdf.rect(margin,16,colWidths.reduce((a,b)=>a+b,0),6,'F');
       let x=margin;pdf.setTextColor(0,212,170);pdf.setFontSize(6);pdf.setFont('helvetica','bold');
@@ -8324,7 +7850,7 @@ const _docxBuilder=(()=>{
       const hdrs=['#','miRNA','Org','\u0394G','\u0394G(1M)','\u0394G coop','\u0394G_tot','Seed type','Pos','WC','G:U','AU%','Konserw.','Acc.','Seq'];
       const hdrRow=mr(hdrs.map((h,i)=>mc(h,{bold:true,bg:'1a3a2a',color:'00d4aa',sz:13,w:cw[i]})),true);
       const rows=res.map((r,i)=>{const bg=i%2===0?'1a1e26':'151820',dg=r.hit.dg;return mr([mc(String(i+1),{bg,color:'6b7280',sz:12,w:cw[0]}),mc(r.name,{bg,sz:13,w:cw[1]}),mc(r.org,{bg,color:r.org==='hsa'?'00d4aa':r.org==='mmu'?'60a5fa':'f87171',sz:12,w:cw[2]}),mc(String(dg),{bg,color:dg<-10?'00d4aa':dg<-6?'fbbf24':'9ca3af',sz:13,w:cw[3]}),mc(String(r.hit.dg1M??dg),{bg,color:'9ca3af',sz:12,w:cw[4]}),mc(String(r.hit.dgCoop),{bg,color:r.hit.coopBonus<0?'a78bfa':'9ca3af',sz:12,w:cw[5]}),mc(String(r.hit.dgTotal??dg),{bg,sz:12,w:cw[6]}),mc(r.hit.seedType,{bg,color:'ff6b35',sz:12,w:cw[7]}),mc(String(r.hit.pos+1),{bg,color:'9ca3af',sz:12,w:cw[8]}),mc(String(r.hit.wc),{bg,color:'00d4aa',sz:13,w:cw[9]}),mc(String(r.hit.gu),{bg,color:'fbbf24',sz:12,w:cw[10]}),mc(r.hit.auPct+'%',{bg,sz:12,w:cw[11]}),mc(String(r.hit.conservation?.score??'\u2014'),{bg,sz:12,w:cw[12]}),mc(r.hit.accessibility??'\u2014',{bg,color:r.hit.accessibility==='HIGH'?'00d4aa':r.hit.accessibility==='MED'?'fbbf24':'f87171',sz:12,w:cw[13]}),mc(r.mirna,{bg,color:'6b7280',sz:11,w:cw[14]})]);});
-      const body='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n'+mp('miRNA Target Prediction Report',{bold:true,sz:32,color:'00d4aa'})+'\n'+mp('Date: '+new Date().toISOString().slice(0,10)+' | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: '+meta.na+'M',{sz:15,color:'6b7280'})+'\n'+mp('miRBase v22.1: hsa:'+meta.hsa+' mmu:'+meta.mmu+' rno:'+meta.rno+' ath:'+meta.ath+' stu:'+meta.stu+' | Hits: '+res.length,{sz:15,color:'6b7280'})+'\n'+mp('')+'\n'+mt([hdrRow,...rows],cw)+'\n<w:sectPr><w:pgSz w:w="23811" w:h="16838" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>\n</w:body></w:document>';
+      const body='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n'+mp('miRNA Target Prediction Report',{bold:true,sz:32,color:'00d4aa'})+'\n'+mp('Date: '+new Date().toISOString().slice(0,10)+' | Tool: miRNA Hybrid Viewer v1.0 | [Na+]: '+meta.na+'M',{sz:15,color:'6b7280'})+'\n'+mp('miRBase v22.1: hsa:'+meta.hsa+' mmu:'+meta.mmu+' rno:'+meta.rno+' ath:'+meta.ath+' | Hits: '+res.length,{sz:15,color:'6b7280'})+'\n'+mp('')+'\n'+mt([hdrRow,...rows],cw)+'\n<w:sectPr><w:pgSz w:w="23811" w:h="16838" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>\n</w:body></w:document>';
       return pack(body);
     },
     dual(A,B,ov){
@@ -8342,7 +7868,7 @@ const _docxBuilder=(()=>{
 async function exportDOCX() {
   if(!RESULTS.length) return;
   try {
-    const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0,stu:0};
+    const _dbc=window.MIRNA_DB_COUNTS||{hsa:0,mmu:0,rno:0,ath:0};
     const na=document.getElementById('saltConc').value||0.15;
     const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
     const st2=(document.getElementById('fSeed')||{}).value||'';
@@ -8355,7 +7881,7 @@ async function exportDOCX() {
       if(consMin>0&&(r.hit.conservation?.score??0)<consMin)return false;
       return true;
     });
-    const blob=_docxBuilder.results(filtered,{na,hsa:_dbc.hsa,mmu:_dbc.mmu,rno:_dbc.rno,ath:_dbc.ath,stu:_dbc.stu});
+    const blob=_docxBuilder.results(filtered,{na,hsa:_dbc.hsa,mmu:_dbc.mmu,rno:_dbc.rno,ath:_dbc.ath});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
     a.download='mirna_report_v1.0_'+filtered.length+'wynikow.docx';a.click();URL.revokeObjectURL(a.href);
   } catch(e){alert('B\u0142\u0105d eksportu DOCX: '+e.message);console.error(e);}
@@ -8418,7 +7944,7 @@ function toggleTheme() {
 const HELP_TEXTS = {
     organism: {
         title: 'Organizm / baza miRNA',
-      body: 'Wybierz organizm źródłowy bazy miRBase:\n• Człowiek (hsa) — 2656 miRNA\n• Mysz (mmu) — 1978 miRNA\n• Szczur (rno) — 764 miRNA\n• Arabidopsis (ath) — 428 miRNA\n• Ziemniak (stu) — wg zawartości bazy\n• Ssaki — łączy hsa+mmu+rno\n• Wszystkie — pełna baza\n\nWpływa na zbiór miRNA użytych w skanowaniu oraz na kolumny konserwacji.'
+        body: 'Wybierz organizm źródłowy bazy miRBase:\n• Człowiek (hsa) — 2656 miRNA\n• Mysz (mmu) — 1978 miRNA\n• Szczur (rno) — 764 miRNA\n• Arabidopsis (ath) — 428 miRNA\n• Ssaki — łączy hsa+mmu+rno\n• Wszystkie — pełna baza\n\nWpływa na zbiór miRNA użytych w skanowaniu oraz na kolumny konserwacji.'
     },
     minseed: {
         title: 'Minimalna długość regionu seed',
@@ -8462,11 +7988,7 @@ const HELP_TEXTS = {
     },
     cons: {
         title: 'Konserwacja ewolucyjna',
-      body: 'Flagi konserwacji miejsca wiązania między organizmami:\n🧬 hsa — obecne u człowieka\n🐭 mmu — obecne u myszy\n🐀 rno — obecne u szczura\n🌿 ath — obecne u Arabidopsis\n🥔 stu — obecne u ziemniaka\n\nWysokie podobieństwo między gatunkami sugeruje presję selekcyjną i funkcjonalne znaczenie miejsca wiązania.'
-    },
-    consorg: {
-      title: 'Filtr: Konserwacja w',
-      body: 'Użyj w tej kolejności:\n1. Najpierw ustaw filtr "Organizm" (np. hsa)\n2. Następnie wybierz "Konserwacja w" (np. mmu)\n\nPokazuje tylko te wyniki, które są konserwowane w wybranym organizmie.'
+        body: 'Flagi konserwacji miejsca wiązania między organizmami:\n🧬 hsa — obecne u człowieka\n🐭 mmu — obecne u myszy\n🐀 rno — obecne u szczura\n🌿 ath — obecne u Arabidopsis\n\nWysokie podobieństwo między gatunkami sugeruje presję selekcyjną i funkcjonalne znaczenie miejsca wiązania.'
     },
     snp: {
         title: 'Tryb SNP — mutacje punktowe',
@@ -8515,23 +8037,11 @@ function hideHelp() {
 
 function positionHelp(el) {
     const rect = el.getBoundingClientRect();
-    const pw = 300, ph = 200; // approximate popup height for collision detection
-    let left = rect.left;
-    let top = rect.bottom + 6;
-    
-    // Adjust if popup goes off right edge
-    if (left + pw > window.innerWidth - 10) {
-        left = window.innerWidth - pw - 10;
-    }
-    // Adjust if popup goes off left edge
-    if (left < 6) {
-        left = 6;
-    }
-    // Adjust if popup goes off bottom edge (show above instead)
-    if (top + ph > window.innerHeight - 10) {
-        top = rect.top - ph - 6;
-    }
-    
+    const pw = 300, ph = 20;
+    let left = rect.left + window.scrollX;
+    let top = rect.bottom + window.scrollY + 6;
+    if (left + pw > window.innerWidth - 10) left = window.innerWidth - pw - 10;
+    if (left < 6) left = 6;
     helpPopover.style.left = left + 'px';
     helpPopover.style.top = top + 'px';
     helpPopover.style.maxWidth = pw + 'px';
@@ -8575,7 +8085,7 @@ let currentHit = null;
 let currentRowIdx = null;
 
 // Historia mutacji: stos obiektów { mrna, hit, label }
-var snpHistory = [];
+let snpHistory = [];
 
 function enableSNPMode(canvas, aln, hit, rowIdx) {
     if (snpActive) { disableSNPMode(); return; }
@@ -8979,18 +8489,16 @@ function toggleDualView() {
     dualViewOpen = !dualViewOpen;
     const sec = document.getElementById('dualViewSection');
     const btn = document.getElementById('dualViewBtn');
-    const t = I18N[_lang] || I18N.pl;
-    const span = btn.querySelector('span');
     if (dualViewOpen) {
         sec.classList.add('show');
-        if (span) span.textContent = `${t.btn_dualview} ✓`;
+        btn.textContent = '⚖ Dual View ✓';
         btn.style.borderColor = 'var(--accent3)';
         btn.style.color = 'var(--accent3)';
         populateDualSelects();
         sec.scrollIntoView({behavior:'smooth', block:'start'});
     } else {
         sec.classList.remove('show');
-        if (span) span.textContent = t.btn_dualview;
+        btn.textContent = '⚖ Dual View';
         btn.style.borderColor = '';
         btn.style.color = '';
     }
@@ -9001,12 +8509,11 @@ function populateDualSelects() {
     ['A','B'].forEach(side => {
         const sel = document.getElementById(`dualSel${side}`);
         const prev = sel.value;
-        const t = I18N[_lang] || I18N.pl;
-        sel.innerHTML = `<option value="">${t.dual_select_placeholder}</option>`;
+        sel.innerHTML = '<option value="">— wybierz miRNA —</option>';
         RESULTS.forEach((r, i) => {
             const opt = document.createElement('option');
             opt.value = i;
-            opt.textContent = `${r.name} (${r.hit.seedType}, ${t.dual_stat_dg.replace(':','')} ${r.hit.dg})`;
+            opt.textContent = `${r.name} (${r.hit.seedType}, ΔG ${r.hit.dg})`;
             sel.appendChild(opt);
         });
         // auto-select first two
@@ -9023,7 +8530,6 @@ function dualDraw(side) {
     const r = RESULTS[idx];
     const canvas = document.getElementById(`dualCanvas${side}`);
     const orgEl = document.getElementById(`dualOrg${side}`);
-    const t = I18N[_lang] || I18N.pl;
     orgEl.textContent = `${r.org} · ${r.transcript || ''}`;
     drawDuplex2D(canvas, r.hit.aln, r.name, r.hit.pos, r.hit.centeredRange, r.hit.comp3Range);
     // Reset sponge state when pair changes — stale dilution factors would corrupt titration
@@ -9031,18 +8537,18 @@ function dualDraw(side) {
     // Clear sponge result panel to avoid showing stale data
     const spongeRes = document.getElementById('spongeResult');
     if (spongeRes && spongeRes.innerHTML) {
-        spongeRes.innerHTML = `<span style="color:var(--muted);font-size:.65rem">${t.dual_pair_changed_note}</span>`;
+        spongeRes.innerHTML = '<span style="color:var(--muted);font-size:.65rem">⚠ Zmieniono parę miRNA — uruchom ponownie analizę gąbki.</span>';
     }
     const statsEl = document.getElementById(`dualStats${side}`);
     const dgCol = r.hit.dg < -10 ? 'var(--accent)' : r.hit.dg < -6 ? 'var(--gu)' : 'var(--muted)';
     statsEl.innerHTML = `
-        <span>${t.dual_stat_dg} <span class="dual-stat-val" style="color:${dgCol}">${r.hit.dg}</span></span>
-        <span>${t.dual_stat_dg1m} <span class="dual-stat-val">${r.hit.dg1M ?? r.hit.dg}</span></span>
-        <span>${t.dual_stat_seed} <span class="dual-stat-val">${r.hit.seedType}</span></span>
-        <span>${t.dual_stat_wc} <span class="dual-stat-val">${r.hit.wc}</span></span>
-        <span>${t.dual_stat_gu} <span class="dual-stat-val">${r.hit.gu}</span></span>
-        <span>${t.dual_stat_au} <span class="dual-stat-val">${r.hit.auPct}%</span></span>
-        <span>${t.dual_stat_pos} <span class="dual-stat-val">${r.hit.pos + 1}</span></span>
+        <span>ΔG: <span class="dual-stat-val" style="color:${dgCol}">${r.hit.dg}</span></span>
+        <span>ΔG(1M): <span class="dual-stat-val">${r.hit.dg1M ?? r.hit.dg}</span></span>
+        <span>Seed: <span class="dual-stat-val">${r.hit.seedType}</span></span>
+        <span>WC: <span class="dual-stat-val">${r.hit.wc}</span></span>
+        <span>G:U: <span class="dual-stat-val">${r.hit.gu}</span></span>
+        <span>AU%: <span class="dual-stat-val">${r.hit.auPct}%</span></span>
+        <span>Pos: <span class="dual-stat-val">${r.hit.pos + 1}</span></span>
     `;
     dualCompare();
 }
@@ -9059,7 +8565,6 @@ function dualCompare() {
         [diffEl,compEl,shadowWr,exportRow].forEach(e=>e&&(e.style.display='none')); return;
     }
     const A = RESULTS[idxA], B = RESULTS[idxB];
-    const t = I18N[_lang] || I18N.pl;
     if (idxA === idxB) { [diffEl,compEl,shadowWr,exportRow].forEach(e=>e&&(e.style.display='none')); return; }
 
     // ── 1. BASIC DIFF ──────────────────────────────────────────────
@@ -9067,7 +8572,7 @@ function dualCompare() {
     const wcDiff  = B.hit.wc - A.hit.wc;
     const auDiff  = (B.hit.auPct - A.hit.auPct).toFixed(1);
     const posDiff = B.hit.pos - A.hit.pos;
-    const better  = B.hit.dg < A.hit.dg ? t.dual_better_b : A.hit.dg < B.hit.dg ? t.dual_better_a : t.dual_equal;
+    const better  = B.hit.dg < A.hit.dg ? '🟠 B silniejsze' : A.hit.dg < B.hit.dg ? '🔵 A silniejsze' : '⚪ Równe ΔG';
 
     const startA = A.hit.pos, endA = A.hit.pos + A.mirna.length;
     const startB = B.hit.pos, endB = B.hit.pos + B.mirna.length;
@@ -9077,19 +8582,19 @@ function dualCompare() {
 
     let coopNote;
     if (overlapNt > 0) {
-        coopNote = t.dual_overlap_note.replace('{overlap}', overlapNt);
+        coopNote = `⚠️ Nakładanie się miejsc (${overlapNt} nt) — wiązanie wzajemnie wykluczone`;
     } else if (dist >= 13 && dist <= 35) {
-        coopNote = t.dual_coop_note.replace('{dist}', dist);
+        coopNote = `✅ Odległość ${dist} nt — potencjalny efekt kooperatywny (13–35 nt)`;
     } else {
-        coopNote = t.dual_no_coop_note.replace('{dist}', dist);
+        coopNote = `📍 Odległość ${dist} nt — brak efektu kooperatywnego`;
     }
 
     diffEl.style.display = '';
     diffEl.innerHTML = `
-        <strong style="color:var(--accent3)">${t.dual_compare_title}</strong><br>
+        <strong style="color:var(--accent3)">Porównanie A vs B:</strong><br>
         ${better} &nbsp;|&nbsp; ΔΔG = <strong>${dgDiff > 0 ? '+' : ''}${dgDiff}</strong> kcal/mol<br>
         ΔWC = ${wcDiff > 0 ? '+' : ''}${wcDiff} &nbsp;|&nbsp; ΔAU% = ${auDiff > 0 ? '+' : ''}${auDiff}%<br>
-        ${t.dual_positions}: A=${startA+1}–${endA}, B=${startB+1}–${endB} (Δstart = ${posDiff > 0 ? '+' : ''}${posDiff} nt)<br>
+        Pozycje: A=${startA+1}–${endA}, B=${startB+1}–${endB} (Δstart = ${posDiff > 0 ? '+' : ''}${posDiff} nt)<br>
         ${coopNote}
     `;
 
@@ -9106,7 +8611,6 @@ function dualCompare() {
 function dualCompetitionModel(A, B, overlapNt, el) {
     el.style.display = '';
     const RT = 0.593; // kcal/mol at 37°C
-    const t = I18N[_lang] || I18N.pl;
 
     if (overlapNt <= 0) {
         // Non-competing — independent binding probabilities
@@ -9116,18 +8620,18 @@ function dualCompetitionModel(A, B, overlapNt, el) {
         const pNone = (1 - pA) * (1 - pB);
 
         el.innerHTML = `
-            <strong style="color:var(--seed)">${t.comp_independent_title}</strong><br>
-            ${t.comp_boltzmann_note}<br>
+            <strong style="color:var(--seed)">Model niezależnego wiązania (brak nakładania)</strong><br>
+            Prawdopodobieństwo zajętości (Boltzmann, 37°C):<br>
             <div class="compete-bar-wrap">
-              ${t.comp_prob_a} <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
+              🔵 A: <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
               <span style="color:#60a5fa;font-weight:700">${(pA*100).toFixed(1)}%</span>
             </div>
             <div class="compete-bar-wrap">
-              ${t.comp_prob_b} <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
+              🟠 B: <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
               <span style="color:#fb923c;font-weight:700">${(pB*100).toFixed(1)}%</span>
             </div>
-            ${t.comp_both_free_line.replace('{both}', (pBoth*100).toFixed(1)).replace('{free}', (pNone*100).toFixed(1))}<br>
-            <span style="color:var(--muted);font-size:.63rem">${t.comp_model_note}</span>
+            P(oba zajęte) = ${(pBoth*100).toFixed(1)}% &nbsp;|&nbsp; P(wolne) = ${(pNone*100).toFixed(1)}%<br>
+            <span style="color:var(--muted);font-size:.63rem">Model: p = 1/(1+exp(ΔG/RT)), RT=0.593 kcal/mol @ 37°C. Zakłada równe stężenia miRNA i brak efektów strukturalnych mRNA.</span>
         `;
     } else {
         // Competing — mutual exclusion model
@@ -9141,21 +8645,21 @@ function dualCompetitionModel(A, B, overlapNt, el) {
 
         // Winner probability ratio
         const ratio = (pA / pB).toFixed(2);
-        const winner = pA > pB ? t.comp_winner_a.replace('{ratio}', ratio) : pB > pA ? t.comp_winner_b.replace('{ratio}', (1/ratio).toFixed(2)) : t.comp_winner_equal;
+        const winner = pA > pB ? `🔵 A dominuje (${ratio}× częściej zajmuje)` : pB > pA ? `🟠 B dominuje (${(1/ratio).toFixed(2)}× częściej zajmuje)` : '⚪ Równa konkurencja';
 
         el.innerHTML = `
-            <strong style="color:var(--seed)">${t.comp_mutual_title.replace('{overlap}', overlapNt)}</strong><br>
-            ${t.comp_equil_note}<br>
+            <strong style="color:var(--seed)">Model konkurencji wzajemnie wykluczającej (${overlapNt} nt overlap)</strong><br>
+            Równowagowe prawdopodobieństwo zajęcia miejsca:<br>
             <div class="compete-bar-wrap">
-              ${t.comp_prob_a} <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
+              🔵 A: <div class="compete-bar-bg"><div class="compete-bar-a" style="width:${(pA*100).toFixed(0)}%"></div></div>
               <span style="color:#60a5fa;font-weight:700">${(pA*100).toFixed(1)}%</span>
             </div>
             <div class="compete-bar-wrap">
-              ${t.comp_prob_b} <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
+              🟠 B: <div class="compete-bar-bg"><div class="compete-bar-b" style="width:${(pB*100).toFixed(0)}%"></div></div>
               <span style="color:#fb923c;font-weight:700">${(pB*100).toFixed(1)}%</span>
             </div>
-            ${t.comp_free_line.replace('{free}', (pFree*100).toFixed(1)).replace('{winner}', winner)}<br>
-            <span style="color:var(--muted);font-size:.63rem">${t.comp_mutual_note}</span>
+            P(wolne) = ${(pFree*100).toFixed(1)}% &nbsp;|&nbsp; ${winner}<br>
+            <span style="color:var(--muted);font-size:.63rem">Model: stany wzajemnie wykluczające się, funkcja podziału Z=1+exp(-ΔG_A/RT)+exp(-ΔG_B/RT). Zakłada równe stężenia i brak kooperatywności trzeciorzędowej.</span>
         `;
     }
 }
@@ -9550,14 +9054,13 @@ function updateBoltzmannSlider() {
     const idxB = parseInt(document.getElementById('dualSelB').value);
     if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) return;
     const A = RESULTS[idxA], B = RESULTS[idxB];
-    const t = I18N[_lang] || I18N.pl;
 
     const sliderVal = parseInt(document.getElementById('boltSlider').value); // -20..+20
     // Convert to concentration ratio: 2^(sliderVal/4), range ~0.03x to ~32x
     const ratioB = Math.pow(2, sliderVal / 4);
     const label = document.getElementById('boltRatioLabel');
-    label.textContent = ratioB < 0.99 ? `${(1/ratioB).toFixed(1)}× ${t.bolt_less_b}` :
-                        ratioB > 1.01 ? `${ratioB.toFixed(1)}× ${t.bolt_more_b}` : t.bolt_equal;
+    label.textContent = ratioB < 0.99 ? `${(1/ratioB).toFixed(1)}× mniej B` :
+                        ratioB > 1.01 ? `${ratioB.toFixed(1)}× więcej B` : '1.0× (równe)';
 
     const RT = 0.593;
     const ZA = Math.exp(-A.hit.dg / RT);           // partition weight A
@@ -9575,11 +9078,11 @@ function updateBoltzmannSlider() {
     }
 
     const res = document.getElementById('boltSliderResult');
-    const winner = pA > pB ? t.winner_a : pB > pA ? t.winner_b : t.winner_equal;
+    const winner = pA > pB ? `🔵 A dominuje` : pB > pA ? `🟠 B dominuje` : '⚪ Równe';
     res.innerHTML = `
-        <span style="color:#60a5fa">${t.bolt_pa} ${(pA*100).toFixed(1)}%</span> &nbsp;|&nbsp;
-        <span style="color:#fb923c">${t.bolt_pb} ${(pB*100).toFixed(1)}%</span>
-        ${pFree !== null ? `&nbsp;|&nbsp; ${t.bolt_pfree} ${(pFree*100).toFixed(1)}%` : ''}
+        <span style="color:#60a5fa">P(A) = ${(pA*100).toFixed(1)}%</span> &nbsp;|&nbsp;
+        <span style="color:#fb923c">P(B) = ${(pB*100).toFixed(1)}%</span>
+        ${pFree !== null ? `&nbsp;|&nbsp; P(wolne) = ${(pFree*100).toFixed(1)}%` : ''}
         &nbsp;→&nbsp; <strong>${winner}</strong>
     `;
 }
@@ -9607,10 +9110,9 @@ function drawTitrationChart() {
     const idxA = parseInt(document.getElementById('dualSelA').value);
     const idxB = parseInt(document.getElementById('dualSelB').value);
     if (isNaN(idxA) || isNaN(idxB) || !RESULTS[idxA] || !RESULTS[idxB]) {
-        alert(t.alert_select_both_mirna); return;
+        alert('Wybierz oba miRNA w Dual View.'); return;
     }
     const A = RESULTS[idxA], B = RESULTS[idxB];
-    const t = I18N[_lang] || I18N.pl;
     const wrap = document.getElementById('titrationWrap');
     wrap.style.display = '';
     wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
@@ -9658,8 +9160,8 @@ function drawTitrationChart() {
 
     // Axes labels
     ctx.fillStyle = textCol; ctx.font = '9px Inter, sans-serif';
-    ctx.fillText(t.titration_y_label, 2, PAD.t - 4);
-    ctx.fillText(t.titration_x_label, W/2 - 25, 215);
+    ctx.fillText('P(zajętości)', 2, PAD.t - 4);
+    ctx.fillText('[miRNA] / Kd', W/2 - 25, 215);
 
     // EC50 vertical line (x=0, conc=Kd)
     ctx.strokeStyle = isLight ? '#94a3b8' : '#374151';
@@ -9667,7 +9169,7 @@ function drawTitrationChart() {
     ctx.beginPath(); ctx.moveTo(toX(0), PAD.t); ctx.lineTo(toX(0), PAD.t+CH); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = textCol; ctx.font = '8px Inter, monospace';
-    ctx.fillText(t.titration_kd_label, toX(0)+2, PAD.t+10);
+    ctx.fillText('Kd', toX(0)+2, PAD.t+10);
 
     const steps = 200;
     // Get sponge dilution factor if computed
@@ -9732,14 +9234,14 @@ function drawTitrationChart() {
     ctx.fillText(`B: ${B.name} (ΔG=${B.hit.dg})`, W-172, lgY+18);
     if (relConcB !== 1.0) {
         ctx.fillStyle='#a78bfa'; ctx.font='8px JetBrains Mono,monospace';
-        ctx.fillText(t.titration_slider_note.replace('{ratio}', relConcB.toFixed(2)), W-190, lgY+32);
+        ctx.fillText(`[B]/[A] = ${relConcB.toFixed(2)}× (suwak)`, W-190, lgY+32);
     }
     if (spongeFactor > 1.01) {
         ctx.fillStyle='#a78bfa'; ctx.font='8px JetBrains Mono,monospace';
-        ctx.fillText(t.titration_sponge_line.replace('{a}', spongeFactor.toFixed(2)).replace('{b}', spongeFactorB.toFixed(2)), W-190, lgY+(relConcB!==1?46:32));
+        ctx.fillText(`Sponge A: ×${spongeFactor.toFixed(2)} / B: ×${spongeFactorB.toFixed(2)}`, W-190, lgY+(relConcB!==1?46:32));
     }
     ctx.fillStyle=textCol; ctx.font='8px Inter,sans-serif';
-    ctx.fillText(mutualExclude ? t.titration_model_exclusive : t.titration_model_independent, W-190, lgY+(spongeFactor>1.01?60:relConcB!==1?46:32));
+    ctx.fillText(mutualExclude ? 'Model: wyklucz. wzajemne' : 'Model: niezależne', W-190, lgY+(spongeFactor>1.01?60:relConcB!==1?46:32));
 }
 
 function exportTitrationPNG() {
@@ -9760,15 +9262,14 @@ function toggleSponge() {
 }
 
 function runSpongeAnalysis() {
-    const t = I18N[_lang] || I18N.pl;
     const idxA = parseInt(document.getElementById('dualSelA').value);
     const idxB = parseInt(document.getElementById('dualSelB').value);
-    if (isNaN(idxA) || !RESULTS[idxA]) { alert(t.alert_select_mirna_a); return; }
+    if (isNaN(idxA) || !RESULTS[idxA]) { alert('Wybierz miRNA A w Dual View.'); return; }
     const rA = RESULTS[idxA];
     const rB = RESULTS[idxB] && idxA !== idxB ? RESULTS[idxB] : null;
 
     const raw = document.getElementById('spongeInput').value.trim();
-    if (!raw) { alert(t.alert_enter_cerna); return; }
+    if (!raw) { alert('Wpisz sekwencje ceRNA w polu powyżej.'); return; }
 
     const RT = 0.593;
     const saltNa = parseFloat(document.getElementById('saltConc').value) || 0.15;
@@ -9795,47 +9296,33 @@ function runSpongeAnalysis() {
         }
     }
     if (cur && cur.seq) seqs.push(cur);
-    if (!seqs.length) { alert(t.alert_parse_seq); return; }
+    if (!seqs.length) { alert('Nie można sparsować sekwencji.\n\nUżyj formatu FASTA:\n>nazwa_genu\nSEKWENCJA...'); return; }
 
     const resultEl = document.getElementById('spongeResult');
     // Always reset result div before new analysis (fix 3: no stale warnings left over)
     resultEl.innerHTML = '';
 
     const warningHtml = hasWarning
-        ? `<div style="color:var(--gu);font-size:.67rem;margin-bottom:.4rem">${t.sponge_warning_no_headers}</div>`
+        ? `<div style="color:var(--gu);font-size:.67rem;margin-bottom:.4rem">⚠️ Brak nagłówków FASTA (&gt;nazwa) — cały tekst potraktowany jako jedna sekwencja ceRNA-1. Dodaj nagłówki &gt;nazwa przed każdą sekwencją dla poprawnego parsowania.</div>`
         : '';
-    resultEl.innerHTML = warningHtml + `<span style="color:var(--muted)">${t.sponge_calculating}</span>`;
+    resultEl.innerHTML = warningHtml + '<span style="color:var(--muted)">⏳ Obliczanie...</span>';
 
     setTimeout(() => {
         try {
-        // Extract molecule counts for realistic model
-        const mirnaACopies = parseFloat(document.getElementById('sqMirnaA')?.value) || 5000;
-        const mirnaBCopies = parseFloat(document.getElementById('sqMirnaB')?.value) || 5000;
-        const ceRNACopies  = parseFloat(document.getElementById('sqCeRNA')?.value)  || 1000;
-        const volUm3       = parseFloat(document.getElementById('sqVolume')?.value) || 1000;
-        
         // (nie tylko najlepsze — suma Ka po wszystkich miejscach o ΔG ≤ -3 kcal/mol)
         const dgThreshold = parseFloat(document.getElementById('spongeDgThreshold')?.value ?? '-3.0') || -3.0;
 
-        const analyzeForMirna = (mirna, mirnaName, mirnaCount, ceRNACopies) => {
-            let totalSites = 0;
+        const analyzeForMirna = (mirna, mirnaName) => {
             let totalKa = 0;
             const details = [];
-            const allDeltaG = [];
-
             for (const s of seqs) {
                 const mrna = toRNA(s.seq);
                 if (mrna.length < 15) continue;
                 const sites = scanAllSites(mirna, mrna, minSeed, saltNa, dgThreshold);
                 if (sites.length > 0) {
                     let seqKa = 0;
-                    sites.forEach(site => {
-                        const Ka = Math.exp(-site.dg / RT);
-                        seqKa += Ka;
-                        totalKa += Ka;
-                        allDeltaG.push(site.dg);
-                    });
-                    totalSites += sites.length;
+                    sites.forEach(site => { seqKa += Math.exp(-site.dg / RT); });
+                    totalKa += seqKa;
                     const bestSite = sites.reduce((a,b) => a.dg < b.dg ? a : b);
                     details.push({
                         name: s.name,
@@ -9843,76 +9330,34 @@ function runSpongeAnalysis() {
                         ka: seqKa,
                         seedType: bestSite.seedType,
                         nSites: sites.length,
-                        sites
+                        sites  // stored for on-demand preview
                     });
                 }
             }
-
-            // Używamy tego samego solvera bisekcją co wykres (spójny model)
-            const Na = 6.022e23;
-            const V_L = volUm3 * 1e-15;
-            const Kd_list = allDeltaG.map(dG => Math.exp(dG / RT) * Na * V_L);
-            const freeMirna = _solveFreeByBisection(mirnaCount, Kd_list, ceRNACopies);
-            const boundMirna = Math.max(0, mirnaCount - freeMirna);
-            const freeFraction = mirnaCount > 0 ? freeMirna / mirnaCount : 1;
-
-            let pctFree = (freeFraction * 100).toFixed(2);
-            if (freeFraction > 0.999) pctFree = '>99.9';
-            const reductionPct = ((1 - freeFraction) * 100).toFixed(1);
-
-            const totalOccupancy = Kd_list.length > 0
-                ? Kd_list.reduce((s, Kd) => s + ceRNACopies * freeMirna / ((Kd + freeMirna) * ceRNACopies), 0)
-                : 0;
-
-            return {
-                totalKa,
-                reductionPct,
-                pctFree,
-                details,
-                mirnaName,
-                bindingCapacity: ceRNACopies * totalOccupancy,
-                boundMirna,
-                freeMirna,
-                totalSites,
-                totalOccupancy
-            };
+            const dilution = 1 + totalKa;
+            const pctFree = (1 / dilution * 100).toFixed(1);
+            return {totalKa, dilution, pctFree, details, mirnaName};
         };
 
-        const resA = analyzeForMirna(rA.mirna, rA.name, mirnaACopies, ceRNACopies);
-        window._spongeDilutionA = parseFloat(resA.reductionPct); // now reduction percentage as number
+        const resA = analyzeForMirna(rA.mirna, rA.name);
+        window._spongeDilutionA = resA.dilution;
         window._spongeDilutionB = 1.0;
 
         let html = warningHtml;
-        html += `<strong style="color:var(--accent3)">${t.sponge_results_title}</strong><br>`;
-        html += `<span style="color:var(--muted)">${t.sponge_model_note.replace('{dgThreshold}', dgThreshold)}</span><br><br>`;
+        html += `<strong style="color:var(--accent3)">Wyniki analizy Sponge Effect</strong><br>`;
+        html += `<span style="color:var(--muted)">Model: dilution = 1 + Σ Ka_i (suma WSZYSTKICH miejsc o ΔG ≤ ${dgThreshold} kcal/mol), zakłada [ceRNA] ≫ Kd</span><br><br>`;
 
         const renderRes = (res, color) => {
             html += `<strong style="color:${color}">● ${res.mirnaName}</strong>: `;
             if (res.details.length === 0) {
-                html += `${t.sponge_no_sites.replace('{dgThreshold}', dgThreshold)}<br>`;
+                html += `Brak miejsc wiązania (ΔG ≤ ${dgThreshold}) w podanych ceRNA → brak efektu gąbki.<br>`;
             } else {
                 const totalSites = res.details.reduce((s,d) => s+d.nSites, 0);
-                html += t.sponge_summary_sites.replace('{count}', totalSites).replace('{found}', res.details.length).replace('{total}', seqs.length);
-                html += `${t.sponge_dilution_prefix} <strong>${res.reductionPct}%</strong> → `;
-                html += `${t.sponge_free_mirna_prefix} <strong style="color:${parseFloat(res.pctFree)<50?'var(--seed)':'var(--accent)'}">${res.pctFree}%</strong>`;
-                html += ` · ${t.sponge_bound_mirna_prefix} <strong>${Math.round(res.boundMirna).toLocaleString()}</strong>`;
-                
-                // Biological interpretation
-                const freePctNum = parseFloat(res.pctFree);
-                let bioMsg = '';
-                if (totalSites === 0) {
-                    bioMsg = `<span style="color:var(--muted);font-size:.65rem"> (${t.sponge_no_effect})</span>`;
-                } else if (freePctNum > 90) {
-                    bioMsg = `<span style="color:var(--accent);font-size:.65rem"> (${t.sponge_effect_low})</span>`;
-                } else if (freePctNum > 50) {
-                    bioMsg = `<span style="color:var(--gu);font-size:.65rem"> (${t.sponge_effect_moderate})</span>`;
-                } else {
-                    bioMsg = `<span style="color:var(--seed);font-size:.65rem"> (${t.sponge_effect_high})</span>`;
-                }
-                html += bioMsg + '<br>';
-                
+                html += `${totalSites} miejsc w ${res.details.length}/${seqs.length} ceRNA · `;
+                html += `Rozcieńczenie: <strong>${res.dilution.toFixed(2)}×</strong> → `;
+                html += `Wolne miRNA: <strong style="color:${parseFloat(res.pctFree)<50?'var(--seed)':'var(--accent)'}">${res.pctFree}%</strong><br>`;
                 html += `<table style="margin:.3rem 0;border-collapse:collapse;font-size:.64rem;width:100%">`;
-                html += `<tr><td style="padding:0 .5rem 0 0;color:var(--muted)">${t.sponge_table_header_cerna}</td><td style="padding:0 .4rem;color:var(--muted)">${t.sponge_table_header_sites}</td><td style="padding:0 .4rem;color:var(--muted)">${t.sponge_table_header_best_dg}</td><td style="padding:0 .4rem;color:var(--muted)">${t.sponge_table_header_seed}</td><td style="padding:0 .35rem;color:var(--muted)">${t.sponge_table_header_ka}</td><td></td></tr>`;
+                html += `<tr><td style="padding:0 .5rem 0 0;color:var(--muted)">ceRNA</td><td style="padding:0 .4rem;color:var(--muted)">Miejsc</td><td style="padding:0 .4rem;color:var(--muted)">Najlepsze ΔG</td><td style="padding:0 .4rem;color:var(--muted)">Seed</td><td style="padding:0 .35rem;color:var(--muted)">Ka</td><td></td></tr>`;
                 res.details.sort((a,b) => a.dg - b.dg).forEach((d, di) => {
                     // Store site data on window for lazy on-click generation
                     const uid = 'spz_' + color.replace(/[^a-z0-9]/gi,'') + '_' + di;
@@ -9925,7 +9370,7 @@ function runSpongeAnalysis() {
                     html += `<td style="padding:.15rem .35rem">${d.ka.toFixed(1)}×</td>`;
                     html += `<td style="padding:.15rem 0">`;
                     html += `<button class="btn btn-g" style="font-size:.58rem;padding:.12rem .38rem;white-space:nowrap" `;
-                    html += `onclick="spongeLazyPreview('` + uid + `',this)">${t.sponge_button_preview_sites}</button>`;
+                    html += `onclick="spongeLazyPreview('` + uid + `',this)">👁 Miejsca</button>`;
                     html += `</td></tr>`;
                     html += `<tr><td colspan="6" style="padding:0"><div id="${uid}_panel" style="display:none;padding:.3rem 0 .4rem 0"></div></td></tr>`;
                 });
@@ -9936,56 +9381,27 @@ function runSpongeAnalysis() {
 
         renderRes(resA, '#60a5fa');
 
-        let resB = null;
         if (rB) {
-            resB = analyzeForMirna(rB.mirna, rB.name, mirnaBCopies, ceRNACopies);
-            window._spongeDilutionB = parseFloat(resB.reductionPct);
+            const resB = analyzeForMirna(rB.mirna, rB.name);
+            window._spongeDilutionB = resB.dilution;
             renderRes(resB, '#fb923c');
             if (resA.details.length > 0 || resB.details.length > 0) {
-                html += `<br><strong style="color:var(--accent3)">${t.sponge_selectivity_title}</strong> `;
-                const ratio = resA.reductionPct / resB.reductionPct;
-                if (Math.abs(ratio - 1) < 0.05) html += t.sponge_selectivity_balanced;
-                else if (ratio > 1) html += t.sponge_selectivity_more_a.replace('{ratio}', ratio.toFixed(2));
-                else html += t.sponge_selectivity_more_b.replace('{ratio}', (1/ratio).toFixed(2));
+                html += `<br><strong style="color:var(--accent3)">Selektywność gąbki:</strong> `;
+                const ratio = resA.dilution / resB.dilution;
+                if (Math.abs(ratio - 1) < 0.05) html += `Gąbka równomiernie rozcieńcza oba miRNA.`;
+                else if (ratio > 1) html += `Gąbka bardziej sekwestruje <span style="color:#60a5fa">A</span> (${ratio.toFixed(2)}× silniej niż B).`;
+                else html += `Gąbka bardziej sekwestruje <span style="color:#fb923c">B</span> (${(1/ratio).toFixed(2)}× silniej niż A).`;
             }
         }
 
-        html += `<br><button class="btn btn-g" onclick="drawTitrationChart()" style="margin-top:.4rem;font-size:.65rem">${t.sponge_update_titration}</button>`;
+        html += `<br><button class="btn btn-g" onclick="drawTitrationChart()" style="margin-top:.4rem;font-size:.65rem">🔄 Zaktualizuj krzywą miareczkowania</button>`;
         resultEl.innerHTML = html;
-        
         // Quantitative model (if enabled)
-        renderSpongeQuant(resA, resB, resultEl);
-        
-        // Generuj dane do wykresu z konkurencją
-        const deltaG_A = resA.details.map(d => d.dg);
-        const deltaG_B = resB ? resB.details.map(d => d.dg) : [];
-
-        console.debug('Before competition data:');
-        console.debug('  idxB:', idxB, 'rB exists:', !!rB, 'rB name:', rB?.name);
-        console.debug('  resA.details.length:', resA.details.length, 'resB.details.length:', resB ? resB.details.length : 'null');
-        console.debug('  mirnaACopies:', mirnaACopies, 'mirnaBCopies:', mirnaBCopies);
-        console.debug('  deltaG_A (length):', deltaG_A.length, 'sample:', deltaG_A.slice(0, 3));
-        console.debug('  deltaG_B (length):', deltaG_B.length, 'sample:', deltaG_B.slice(0, 3));
-
-        const competitionData = generateCompetitionData({
-            miRNA_A: mirnaACopies,
-            miRNA_B: mirnaBCopies,
-            deltaG_A: deltaG_A,
-            deltaG_B: deltaG_B,
-            maxCopies: 20000,
-            step: 200,
-            volUm3: parseFloat(document.getElementById('sqVolume')?.value) || 1000
-        });
-
-        console.debug('After competition data - first 3 points:', competitionData.slice(0, 3));
-        console.debug('After competition data - last point:', competitionData[competitionData.length-1]);
-        console.debug('Data summary: ceRNA range [0,' + competitionData[competitionData.length-1]?.ceRNA + '], points count:', competitionData.length);
-
-        // Zamiast starego renderSpongeChart – wywołaj nowy
-        renderSpongeChart(competitionData, resultEl, rA.name, rB ? rB.name : '');
+        const _resB = rB ? analyzeForMirna(rB.mirna, rB.name) : null;
+        renderSpongeQuant(resA, _resB, resultEl);
         sessionSave();
         } catch(err) {
-            resultEl.innerHTML = `<div style="color:var(--seed);font-size:.7rem;padding:.4rem">${t.sponge_error_prefix} ${err.message}<br><pre style="font-size:.6rem;white-space:pre-wrap">${err.stack||''}</pre></div>`;
+            resultEl.innerHTML = `<div style="color:var(--seed);font-size:.7rem;padding:.4rem">❌ Błąd: ${err.message}<br><pre style="font-size:.6rem;white-space:pre-wrap">${err.stack||''}</pre></div>`;
             console.error('runSpongeAnalysis error:', err);
         }
     }, 10);
@@ -9995,7 +9411,6 @@ function runSpongeAnalysis() {
 // SPONGE LAZY PREVIEW — generates 2D/ASCII for ceRNA sites on demand
 // ============================================================
 function spongeLazyPreview(uid, btn) {
-    const t = I18N[_lang] || I18N.pl;
     const panel = document.getElementById(uid + '_panel');
     if (!panel) return;
 
@@ -10003,7 +9418,7 @@ function spongeLazyPreview(uid, btn) {
     if (panel.children.length > 0) {
         const open = panel.style.display !== 'none';
         panel.style.display = open ? 'none' : 'block';
-        btn.textContent = open ? t.sponge_button_preview_sites : t.sponge_button_hide;
+        btn.textContent = open ? '👁 Miejsca' : '▲ Ukryj';
         return;
     }
 
@@ -10011,7 +9426,7 @@ function spongeLazyPreview(uid, btn) {
     const data = window[uid];
     if (!data || !data.sites) return;
     panel.style.display = 'block';
-    btn.textContent = t.sponge_button_hide;
+    btn.textContent = '▲ Ukryj';
 
     data.sites.forEach((site, si) => {
         // Compute centered/3'comp lazily now (deferred from scanAllSites)
@@ -10077,7 +9492,7 @@ function spongeLazyPreview(uid, btn) {
         const mLine = aln.map(a=>a.mb).join('');
         const bLine = aln.map(a=>a.type==='wc'?'|':a.type==='gu'?':':' ').join('');
         const tLine = aln.map(a=>a.tb).join('');
-        pre.textContent = `${t.sponge_preview_label_5p} ${mLine}  3'\n          ${bLine}\n3' ${t.sponge_preview_label_target} ${tLine}  5'\n${t.sponge_preview_pos_label} ${site.pos+1}\u2013${site.pos+alen} | ${site.seedType} | ΔG: ${site.dg}`;
+        pre.textContent = `5' miRNA  ${mLine}  3'\n          ${bLine}\n3' target ${tLine}  5'\npos: ${site.pos+1}\u20133${site.pos+alen} | ${site.seedType} | \u0394G: ${site.dg}`;
         asciiWrap.appendChild(pre);
         body.appendChild(asciiWrap);
 
@@ -10164,10 +9579,10 @@ function renderSpongeQuant(resA, resB, resultEl) {
     const volUm3       = parseFloat(document.getElementById('sqVolume')?.value) || 1000;
 
     const RT = 0.593;
-    // Get total Ka (sum over all binding sites) directly from result
-    // With new model: totalKa = Σ exp(-ΔG_i/RT)
-    const sumKaA = resA.totalKa || 0;
-    const sumKaB = resB ? (resB.totalKa || 0) : 0;
+    // Get total Ka (sum over all binding sites) from dilution: dilution = 1 + sumKa_dimensionless
+    // But we need Ka in M⁻¹ — sumKa_dimensionless is already exp(-ΔG/RT) which is Ka[M]
+    const sumKaA = resA.dilution - 1;  // = Σ exp(-ΔG_i/RT)
+    const sumKaB = resB ? (resB.dilution - 1) : 0;
 
     const qA = sumKaA > 0 ? spongeQuantModel(mirnaACopies, ceRNACopies, sumKaA, volUm3) : null;
     const qB = (sumKaB > 0 && resB) ? spongeQuantModel(mirnaBCopies, ceRNACopies, sumKaB, volUm3) : null;
@@ -10176,12 +9591,10 @@ function renderSpongeQuant(resA, resB, resultEl) {
     div.style.cssText = 'margin-top:.6rem;padding:.5rem .65rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font-size:.67rem';
     div.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">🔢 Model ilościowy — wyniki</div>`;
 
-    const V_L = volUm3 * 1e-15;
-    const Na = 6.022e23;
     const fmtNM = (copies) => {
         const val = copies / (Na * V_L * 1000);
         if (val === 0) return '0';
-        if (val < 0.0001) return val.toExponential(2);
+        if (val < 0.0001) return val.toExponential(2) + ' nM';
         if (val < 0.01)   return val.toFixed(5);
         if (val < 1)      return val.toFixed(3);
         return val.toFixed(2);
@@ -10220,294 +9633,6 @@ function renderSpongeQuant(resA, resB, resultEl) {
 }
 
 // ============================================================
-// MODEL KONKURENCJI DLA WYKRESU SPONGE (ceRNA) — v3
-// Langmuir binding — rozwiązanie dokładne przez bisekcję
-// ============================================================
-
-/**
- * Rozwiązuje równanie równowagi Langmuira dla jednego miRNA metodą bisekcji.
- *
- * Równanie: free + Σ_i[ ceRNA * free / (Kd_i + free) ] = miRNA_total
- * gdzie Kd_i [kopie] = exp(ΔG_i / RT) * Na * V_L
- *
- * Bisekcja gwarantuje stabilność numeryczną i monotoniczność wyniku.
- *
- * @param {number} miRNA_total  - całkowita liczba kopii miRNA
- * @param {number[]} Kd_list    - lista Kd w jednostkach kopii/komórkę
- * @param {number} ceRNA_copies - liczba kopii ceRNA
- * @returns {number} free - liczba wolnych kopii miRNA
- */
-function _solveFreeByBisection(miRNA_total, Kd_list, ceRNA_copies) {
-    if (ceRNA_copies === 0 || Kd_list.length === 0) return miRNA_total;
-    // f(free) = free + Σ[ceRNA * free / (Kd_i + free)] - miRNA_total
-    // monotonicznie rosnąca → bisekcja
-    let lo = 0, hi = miRNA_total;
-    for (let i = 0; i < 120; i++) {
-        const mid = (lo + hi) / 2;
-        const val = mid + Kd_list.reduce((s, Kd) => s + ceRNA_copies * mid / (Kd + mid), 0) - miRNA_total;
-        if (val < 0) lo = mid; else hi = mid;
-    }
-    return (lo + hi) / 2;
-}
-
-/**
- * Model efektu gąbki ceRNA — wolna frakcja miRNA A i B.
- *
- * Założenia:
- *  - Każde miRNA wiąże swoje specyficzne sity na ceRNA (niezależne miejsca).
- *  - Kd [kopie/komórkę] = exp(ΔG/RT) × Na × V_L (konwersja z kcal/mol na kopie).
- *  - Równowaga Langmuira: bound_i = ceRNA × free / (Kd_i + free).
- *  - Rozwiązanie dokładne przez bisekcję (stabilne numerycznie, monotonne).
- *  - Pule A i B są niezależne (nie ma cross-competition o te same sity).
- *    Interakcja pośrednia przez ograniczoną pulę ceRNA nie jest modelowana
- *    (każde miRNA "widzi" pełną pulę ceRNA — konserwatywna górna granica sekwestracji).
- *
- * @param {number} miRNA_A      - kopie miRNA A / komórkę
- * @param {number} miRNA_B      - kopie miRNA B / komórkę
- * @param {number} ceRNA_copies - kopie ceRNA / komórkę
- * @param {number[]} deltaG_A   - ΔG [kcal/mol] sitów A na ceRNA
- * @param {number[]} deltaG_B   - ΔG [kcal/mol] sitów B na ceRNA
- * @param {number} RT           - 0.593 kcal/mol @ 37°C
- * @param {number} volUm3       - objętość komórki w μm³ (domyślnie 1000)
- * @returns {{ free_A: number, free_B: number }}
- */
-function computeCompetition({ miRNA_A, miRNA_B, ceRNA_copies, deltaG_A = [], deltaG_B = [], RT = 0.593, volUm3 = 1000 }) {
-    if (miRNA_A + miRNA_B === 0) return { free_A: 1, free_B: 1 };
-    if (ceRNA_copies === 0) return { free_A: 1, free_B: 1 };
-
-    // Konwersja Kd: kcal/mol → kopie/komórkę
-    // Kd [nM] = exp(ΔG/RT);  Kd [kopie] = Kd[nM] × Na × V[L] × 1e-9
-    const Na = 6.022e23;
-    const V_L = volUm3 * 1e-15; // 1 μm³ = 1e-15 L
-    const toKd = dG => Math.exp(dG / RT) * Na * V_L;
-
-    const Kd_A = deltaG_A.map(toKd);
-    const Kd_B = deltaG_B.map(toKd);
-
-    const freeA = _solveFreeByBisection(miRNA_A, Kd_A, ceRNA_copies);
-    const freeB = _solveFreeByBisection(miRNA_B, Kd_B, ceRNA_copies);
-
-    return {
-        free_A: Math.max(0, Math.min(1, freeA / miRNA_A)),
-        free_B: Math.max(0, Math.min(1, freeB / miRNA_B))
-    };
-}
-
-/**
- * Generuje dane do wykresu: ceRNA_copies [0..maxCopies] → free frakcja miRNA A i B.
- */
-function generateCompetitionData({ miRNA_A, miRNA_B, deltaG_A, deltaG_B, maxCopies = 20000, step = 200, volUm3 = 1000 }) {
-    // Próbkowanie adaptacyjne: najpierw szacujemy EC50 każdej krzywej przez bisekcję,
-    // potem generujemy gęste punkty wokół każdego EC50 osobno.
-    // Daje płynne krzywe niezależnie od parametrów (małe/duże miRNA, mocne/słabe wiązanie).
-
-    function findEC50(miRNA_total, deltaG_list, lo, hi) {
-        // Szukamy ceRNA przy którym free = 0.5 (bisekcja po osi ceRNA)
-        for (let i = 0; i < 60; i++) {
-            const mid = (lo + hi) / 2;
-            const r = computeCompetition({
-                miRNA_A: miRNA_total, miRNA_B: 0,
-                ceRNA_copies: mid, deltaG_A: deltaG_list, deltaG_B: [], volUm3
-            });
-            if (r.free_A > 0.5) lo = mid; else hi = mid;
-        }
-        return (lo + hi) / 2;
-    }
-
-    const ec50_A = deltaG_A.length > 0 ? findEC50(miRNA_A, deltaG_A, 0, maxCopies * 5) : maxCopies;
-    const ec50_B = deltaG_B.length > 0 ? findEC50(miRNA_B, deltaG_B, 0, maxCopies * 5) : maxCopies;
-
-    const points = new Set([0, maxCopies]);
-
-    // Dla każdego EC50: 80 punktów w oknie [EC50/20 .. EC50*4], plus ogon rzadszy
-    [ec50_A, ec50_B].forEach(ec50 => {
-        if (!isFinite(ec50) || ec50 <= 0) return;
-        const lo = Math.max(0, ec50 / 20);
-        const hi = Math.min(maxCopies, ec50 * 4);
-        const n = 80;
-        for (let i = 0; i <= n; i++) {
-            points.add(Math.round(lo + (hi - lo) * i / n));
-        }
-    });
-
-    // Tło: 40 punktów logarytmicznie na całym zakresie
-    for (let i = 0; i <= 40; i++) {
-        const c = i === 0 ? 0 : Math.round(Math.exp(Math.log(maxCopies) * i / 40));
-        points.add(Math.min(c, maxCopies));
-    }
-
-    const sorted = Array.from(points).filter(c => c >= 0 && c <= maxCopies).sort((a, b) => a - b);
-
-    return sorted.map(ceRNA => {
-        const { free_A, free_B } = computeCompetition({
-            miRNA_A, miRNA_B, ceRNA_copies: ceRNA,
-            deltaG_A, deltaG_B, volUm3
-        });
-        return {
-            ceRNA,
-            freeA: Math.min(100, Math.max(0, (isFinite(free_A) ? free_A : 1) * 100)),
-            freeB: Math.min(100, Math.max(0, (isFinite(free_B) ? free_B : 1) * 100))
-        };
-    });
-}
-
-// ============================================================
-// NOWA FUNKCJA RENDERUJĄCA WYKRES (z konkurencją)
-// Zastępuje starą renderSpongeChart
-// ============================================================
-function renderSpongeChart(data, resultEl, nameA, nameB) {
-    const t = I18N[_lang] || I18N.pl;
-
-    // Usuń poprzedni wykres, jeśli istnieje
-    if (window._spongeChartInstance) {
-        window._spongeChartInstance.destroy();
-    }
-
-    // Znajdź lub stwórz kontener dla wykresu (zgodny z oryginalnym kodem)
-
-    const _warnPL = '<div style="margin-top:.6rem;padding:.5rem .7rem;border-radius:6px;border-left:3px solid #f59e0b;background:rgba(245,158,11,.07);font-family:JetBrains Mono,monospace;font-size:.63rem;line-height:1.7;color:var(--text)"><span style="color:#f59e0b;font-weight:700">&#9888; Ograniczenia modelu</span><br><b>Kd absolutne s&#261; niedoszacowane.</b> &#916;G hybrydyzacji RNA (RNAfold/TargetScan) daje Kd ~0,01&#8211;50 pM, podczas gdy eksperymentalne Kd miRNA&#8211;mRNA <i>in vivo</i> (CLIP, biochemia AGO2) wynosz&#261; <b>1&#8211;100 nM</b> &#8212; r&#243;&#380;nica 3&#8211;6 rz&#281;d&#243;w wielko&#347;ci. Przyczyn&#261; jest dost&#281;pno&#347;&#263; strukturalna mRNA, obci&#261;&#380;enie RISC i bia&#322;ka RBP.<br><b>Co jest poprawne:</b> kszta&#322;t krzywej, EC&#8325;&#8320; jako stosunek <i>kopii ceRNA&nbsp;/&nbsp;kopii miRNA</i>, r&#243;&#380;nica selektywno&#347;ci A&nbsp;vs&nbsp;B.<br><b>Co NIE jest wiarygodne:</b> absolutna warto&#347;&#263; osi X &#8212; traktuj jako <i>ranking</i>, nie warto&#347;&#263; bezwzgl&#281;dn&#261;.</div>';
-    const _warnEN = '<div style="margin-top:.6rem;padding:.5rem .7rem;border-radius:6px;border-left:3px solid #f59e0b;background:rgba(245,158,11,.07);font-family:JetBrains Mono,monospace;font-size:.63rem;line-height:1.7;color:var(--text)"><span style="color:#f59e0b;font-weight:700">&#9888; Model limitations</span><br><b>Absolute Kd values are underestimated.</b> RNA hybridisation &#916;G (RNAfold/TargetScan) yields Kd ~0.01&#8211;50 pM, whereas experimental miRNA&#8211;mRNA Kd <i>in vivo</i> (CLIP, AGO2 biochemistry) are <b>1&#8211;100 nM</b> &#8212; a 3&#8211;6 order-of-magnitude discrepancy caused by mRNA structural accessibility, RISC loading, and RBP competition.<br><b>What is correct:</b> curve shape, EC&#8325;&#8320; as ratio of <i>ceRNA copies&nbsp;/&nbsp;miRNA copies</i>, selectivity A&nbsp;vs&nbsp;B.<br><b>What is NOT reliable:</b> absolute X-axis value &#8212; treat as a <i>ranking</i>, not an absolute quantity.</div>';
-    const _warn = (_lang === 'en') ? _warnEN : _warnPL;
-    const _foot50 = (_lang === 'en') ? 'The 50% line indicates the ceRNA copy number at which half the miRNA pool remains free.' : 'Linia 50% oznacza liczbę kopii ceRNA, przy której połowa puli miRNA pozostaje wolna.';
-    let container = resultEl.querySelector('.sponge-chart-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'sponge-chart-container';
-        container.style.cssText = 'margin-top:.8rem;padding:.5rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2)';
-        container.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">📈 ${t.sponge_chart_title}</div>
-                               <canvas id="spongeEffectChart" width="400" height="150"></canvas>
-                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">${_foot50}</div>${_warn}`;
-        resultEl.appendChild(container);
-    } else {
-        container.innerHTML = `<div style="font-weight:700;color:var(--heading2);margin-bottom:.4rem;font-size:.68rem">📈 ${t.sponge_chart_title}</div>
-                               <canvas id="spongeEffectChart" width="400" height="150"></canvas>
-                               <div style="font-size:.62rem;color:var(--muted);margin-top:.35rem">${_foot50}</div>${_warn}`;
-    }
-
-    const canvas = document.getElementById('spongeEffectChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    console.debug('Sponge chart - rendering');
-    console.debug('  nameA:', nameA, 'nameB:', nameB);
-    console.debug('  data points:', data.length);
-    console.debug('  sample data:', data.slice(0, 3));
-    console.debug('  freeA values at [0, mid, last]:', 
-        data[0]?.freeA,
-        data[Math.floor(data.length/2)]?.freeA,
-        data[data.length-1]?.freeA);
-    console.debug('  freeB values at [0, mid, last]:', 
-        data[0]?.freeB,
-        data[Math.floor(data.length/2)]?.freeB,
-        data[data.length-1]?.freeB);
-
-    // Przygotuj zestaw danych
-    const datasets = [
-        {
-            label: `${nameA} — ${t.sponge_chart_free_mirna || 'Free miRNA (% of total pool)'}`,
-            data: data.map(d => (d.freeA !== undefined && !isNaN(d.freeA)) ? d.freeA : null),
-            borderColor: '#60a5fa',
-            backgroundColor: 'rgba(96, 165, 250, 0.1)',
-            tension: 0.4,
-            borderWidth: 2,
-            fill: false,
-            pointRadius: 0,
-            spanGaps: true,
-            hidden: false
-        },
-        {
-            label: `${nameB || 'miRNA B'} — ${t.sponge_chart_free_mirna || 'Free miRNA (% of total pool)'}`,
-            data: data.map(d => (d.freeB !== undefined && !isNaN(d.freeB)) ? d.freeB : null),
-            borderColor: '#fb923c',
-            backgroundColor: 'rgba(251, 146, 60, 0.2)',
-            tension: 0.4,
-            borderWidth: 3,
-            borderDash: [8, 4],
-            fill: false,
-            pointRadius: 1,
-            hoverRadius: 4,
-            spanGaps: true,
-            hidden: false
-        },
-        {
-            label: t.sponge_chart_50_threshold || 'Próg 50% wolnych miRNA',
-            data: Array(data.length).fill(50),
-            borderColor: '#9ca3af',
-            borderDash: [5, 5],
-            pointRadius: 0,
-            fill: false
-        }
-    ];
-
-    console.debug('Datasets created - count:', datasets.length);
-    datasets.forEach((ds, i) => {
-        const vals = ds.data.filter(v => v !== null && !isNaN(v));
-        if (vals.length > 0) {
-            const min = Math.min(...vals);
-            const max = Math.max(...vals);
-            console.debug(`  Dataset ${i} (${ds.label}): ${vals.length} points, range [${min.toFixed(1)}, ${max.toFixed(1)}]`);
-        } else {
-            console.debug(`  Dataset ${i} (${ds.label}): 0 valid points`);
-        }
-    });
-
-    window._spongeChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.map(d => d.ceRNA),
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    onClick: (e) => {
-                        // Prevent legend click from toggling dataset visibility
-                        // to ensure both miRNA lines stay visible
-                        e.native.stopImmediatePropagation();
-                    },
-                    labels: {
-                        font: { family: "'JetBrains Mono', monospace", size: 11 },
-                        color: 'var(--text)',
-                        padding: 12
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: (context) => {
-                            const label = context.dataset.label || '';
-                            const val = context.raw;
-                            return `${label}: ${val.toFixed(1)}%`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: t.sponge_chart_x_label || 'ceRNA [kopie]',
-                        font: { size: 12, weight: 'bold' }
-                    },
-                    ticks: { font: { family: "'JetBrains Mono', monospace" } }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: t.sponge_chart_y_label || 'Frakcja wolnych miRNA [%]',
-                        font: { size: 12, weight: 'bold' }
-                    },
-                    min: 0,
-                    max: 105,
-                    ticks: { font: { family: "'JetBrains Mono', monospace" } }
-                }
-            }
-        }
-    });
-}
-
-// ============================================================
 // LOCAL RNA STRUCTURE VISUALIZATION (Zuker-lite dot-bracket)
 // ============================================================
 function drawLocalRNAStruct(seq, struct, bindStart, bindEnd) {
@@ -10519,91 +9644,76 @@ function drawLocalRNAStruct(seq, struct, bindStart, bindEnd) {
   panel.style.display = '';
   const n = seq.length;
   const NR = 7, SP = 14, PAD = 10;
-  const ARC_ZONE = 62; // pixels above nucleotides reserved for arcs
-  const H = ARC_ZONE + NR * 2 + 18;
   const W = PAD * 2 + n * SP;
-  canvas.width = W; canvas.height = H;
-  const Y = H - NR - 9; // nucleotide center near bottom
+  canvas.width = W; canvas.height = 38;
   const ctx = canvas.getContext('2d');
   const isLight = document.body.classList.contains('light');
 
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface2').trim()
-    || (isLight ? '#f5f7fa' : '#181c22');
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface2').trim();
+  ctx.fillRect(0, 0, W, 38);
 
-  // Theme-aware base colors
+  // Theme-aware base colors: darker in light mode for contrast on white background
   const baseCol = isLight
-    ? {'A':'#007a62','U':'#6d28d9','G':'#1d4ed8','C':'#c2410c'}
-    : {'A':'#00d4aa','U':'#a78bfa','G':'#60a5fa','C':'#fb923c'};
+    ? {'A':'#007a62','U':'#6d28d9','G':'#1d4ed8','C':'#c2410c'}   // dark saturated for light bg
+    : {'A':'#00d4aa','U':'#a78bfa','G':'#60a5fa','C':'#fb923c'};   // vivid for dark bg
+  const Y = 20;
 
-  // Parse pairs first so we know which bases are paired
-  const pairOf = new Array(n).fill(-1);
+  // Draw arcs for base pairs
+  ctx.strokeStyle = isLight ? 'rgba(100,116,139,0.4)' : 'rgba(148,163,184,0.3)';
+  ctx.lineWidth = 1;
   const pairStack = [];
+  const pairPositions = {};
   for (let i = 0; i < struct.length; i++) {
     const c = struct[i];
     if (c === '(' || c === '[') pairStack.push(i);
     else if ((c === ')' || c === ']') && pairStack.length > 0) {
       const j = pairStack.pop();
-      pairOf[j] = i; pairOf[i] = j;
+      pairPositions[j] = i; pairPositions[i] = j;
+      // Draw arc above bases
+      const x1 = PAD + j * SP, x2 = PAD + i * SP;
+      const cx = (x1 + x2) / 2, ry = Math.min((x2 - x1) * 0.3, 12);
+      ctx.beginPath();
+      ctx.ellipse(cx, Y - NR - 1, (x2-x1)/2, ry, 0, Math.PI, 0);
+      ctx.stroke();
     }
   }
 
-  // Draw arcs above nucleotides, scaled with span
-  for (let i = 0; i < n; i++) {
-    const j = pairOf[i];
-    if (j <= i) continue; // draw each pair once (i < j)
-    const x1 = PAD + i * SP, x2 = PAD + j * SP;
-    const span = x2 - x1;
-    const cx = (x1 + x2) / 2;
-    // Arc height scales with span (longer = higher arc), capped at ARC_ZONE-4
-    const ry = Math.min(span * 0.42, ARC_ZONE - 4);
-    const inBind = (i >= bindStart && i < bindEnd) || (j >= bindStart && j < bindEnd);
-    if (inBind) {
-      ctx.strokeStyle = isLight ? 'rgba(220,38,38,0.75)' : 'rgba(248,113,113,0.8)';
-      ctx.lineWidth = 1.8;
-    } else {
-      ctx.strokeStyle = isLight ? 'rgba(71,85,105,0.65)' : 'rgba(148,163,184,0.65)';
-      ctx.lineWidth = 1.2;
-    }
-    // Draw upper-half ellipse arc (from left point going clockwise through top to right point)
-    ctx.beginPath();
-    ctx.ellipse(cx, Y - NR, span / 2, ry, 0, Math.PI, 0);
-    ctx.stroke();
-  }
-
-  // Draw nucleotide circles
+  // Draw bases
   for (let i = 0; i < n; i++) {
     const x = PAD + i * SP;
     const inBind = (i >= bindStart && i < bindEnd);
-    const isPaired = pairOf[i] !== -1;
+    const isPaired = struct[i] !== '.';
     const base = seq[i];
 
+    // Background
     ctx.beginPath(); ctx.arc(x, Y, NR, 0, Math.PI*2);
     if (inBind) {
-      ctx.fillStyle = isPaired ? 'rgba(248,113,113,0.28)' : 'rgba(0,212,170,0.20)';
+      ctx.fillStyle = isPaired ? 'rgba(248,113,113,0.25)' : 'rgba(0,212,170,0.18)';
     } else {
-      ctx.fillStyle = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+      ctx.fillStyle = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
     }
     ctx.fill();
+
+    // Ring
     ctx.strokeStyle = inBind ? (isPaired ? '#f87171' : '#00d4aa') : (baseCol[base] || '#6b7280');
-    ctx.lineWidth = inBind ? 1.8 : 1.2;
+    ctx.lineWidth = inBind ? 1.5 : 1;
     ctx.stroke();
 
-    ctx.font = 'bold 7px monospace';
+    // Letter
+    ctx.font = `bold 7px monospace`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = isLight ? (baseCol[base] || '#374151') : (baseCol[base] || '#e8eaf0');
     ctx.fillText(base, x, Y);
-    ctx.textBaseline = 'alphabetic';
   }
 
-  // Position label
-  const paired = pairOf.filter(v => v !== -1).length;
-  const bindPaired = Array.from({length: Math.max(0, bindEnd - bindStart)},
-    (_, k) => pairOf[bindStart + k] !== -1).filter(Boolean).length;
-  const lang = typeof _lang !== 'undefined' ? _lang : 'pl';
-  label.textContent = lang === 'en'
-    ? `${paired} pairs total · ${bindPaired} in binding region · [ ] = miRNA binding site`
-    : `${paired} par łącznie · ${bindPaired} w regionie wiązania · [ ] = miejsce wiązania miRNA`;
+  // Labels
+  ctx.font = '7px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = isLight ? '#64748b' : '#6b7280';
+
+  // Label the struct line count
+  const paired = struct.split('').filter(c => c !== '.').length;
+  const bindPaired = struct.slice(bindStart, bindEnd).split('').filter(c => c !== '.').length;
+  label.textContent = `${paired} par łącznie · ${bindPaired} w regionie wiązania · [ ] = miejsce wiązania miRNA`;
 }
 
 
@@ -10646,7 +9756,7 @@ Object.assign(HELP_TEXTS, {
 // ============================================================
 // SYSTEM JĘZYKA PL / EN — pełne pokrycie interfejsu
 // ============================================================
-var I18N = {
+const I18N = {
   pl:{
     // Nagłówek
     lang_btn:'🌐 EN', theme_dark:'🌙 Ciemny', theme_light:'☀️ Jasny',
@@ -10660,7 +9770,7 @@ var I18N = {
     btn_scan_all:'⚡ Skanuj wszystkie',
     lbl_organism:'Organizm',
     opt_human:'Człowiek (hsa)', opt_mouse:'Mysz (mmu)', opt_rat:'Szczur (rno)',
-    opt_plant:'Arabidopsis (ath)', opt_potato:'Ziemniak (stu)', opt_mammals:'Ssaki (hsa+mmu+rno)', opt_all:'Wszystkie',
+    opt_plant:'Arabidopsis (ath)', opt_mammals:'Ssaki (hsa+mmu+rno)', opt_all:'Wszystkie',
     lbl_minseed:'Min. seed WC', lbl_rankby:'Ranking wg',
     opt_cons:'Konserwacja', opt_acc:'Dostępność (Acc.)',
     lbl_topn:'Top wyników', lbl_dgfilter:'Próg ΔG ≤', lbl_noncan:'Niekanoniczne',
@@ -10690,9 +9800,9 @@ var I18N = {
     // Tabela wyników
     panel_results:'Tabela wyników',
     lbl_filter_mirna:'Filtruj miRNA', lbl_filter_seed:'Seed type',
-    lbl_filter_org:'Organizm', lbl_filter_cons:'Min. konserwacja', lbl_filter_consorg:'Konserwacja w',
+    lbl_filter_org:'Organizm', lbl_filter_cons:'Min. konserwacja',
     opt_filter_all:'Wszystkie', opt_cons_any:'Dowolna',
-    opt_cons_1:'≥1 gatunek', opt_cons_2:'≥2 gatunki', opt_cons_3:'≥3 gatunki', opt_cons_4:'Wszystkie 4',
+    opt_cons_1:'≥1 gatunek', opt_cons_2:'≥2 gatunki', opt_cons_3:'Wszystkie 3',
     btn_reset:'✕ Reset', btn_copy:'📋 Kopiuj',
     txt_empty_results:'Wyniki pojawią się po uruchomieniu skanowania.',
     th_org:'Org', th_pos:'Pos', th_seq:"Sekwencja 5'→3'",
@@ -10708,49 +9818,6 @@ var I18N = {
     shadow_legend:'🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Nakładanie &nbsp;|&nbsp; ⬜ wolny region',
     btn_dual_pdf:'📋 Eksport PDF (porównanie)',
     btn_dual_docx:'📝 Eksport DOCX (porównanie)',
-    dual_stat_dg:'ΔG:', dual_stat_dg1m:'ΔG(1M):', dual_stat_seed:'Seed:', dual_stat_wc:'WC:', dual_stat_gu:'G:U:', dual_stat_au:'AU%:', dual_stat_pos:'Pos:',
-    dual_compare_title:'Porównanie A vs B:', dual_better_a:'🔵 A silniejsze', dual_better_b:'🟠 B silniejsze', dual_equal:'⚪ Równe ΔG', dual_positions:'Pozycje',
-    dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— wybierz miRNA —', dual_pair_changed_note:'⚠ Zmieniono parę miRNA — uruchom ponownie analizę gąbki.',
-    alert_select_both_mirna:'Wybierz oba miRNA w Dual View.', alert_select_mirna_a:'Wybierz miRNA A w Dual View.', alert_enter_cerna:'Wpisz sekwencje ceRNA w polu powyżej.', alert_parse_seq:'Nie można sparsować sekwencji.\n\nUżyj formatu FASTA:\n>nazwa_genu\nSEKWENCJA...',
-    sponge_warning_no_headers:'⚠️ Brak nagłówków FASTA (>nazwa) — cały tekst potraktowany jako jedna sekwencja ceRNA-1. Dodaj nagłówki >nazwa przed każdą sekwencją dla poprawnego parsowania.',
-    sponge_results_title:'Sponge potential (binding capacity)',
-    sponge_model_note:'Model: Langmuir binding — bisekcja dokładna, Kd[kopie]=exp(ΔG/RT)·Na·V. ΔG ≤ {dgThreshold} kcal/mol',
-    sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect expected.',
-    sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Sites', sponge_table_header_best_dg:'Best ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
-    sponge_button_preview_sites:'👁 Sites', sponge_button_hide:'▲ Hide',
-    sponge_selectivity_title:'Sponge selectivity:', sponge_selectivity_balanced:'Sponge dilutes both miRNAs evenly.', sponge_selectivity_more_a:'Sponge sequesters <span style="color:#60a5fa">A</span> ({ratio}× more than B).', sponge_selectivity_more_b:'Sponge sequesters <span style="color:#fb923c">B</span> ({ratio}× more than A).',
-    sponge_update_titration:'🔄 Update titration curve', sponge_error_prefix:'❌ Error:', sponge_calculating:'⏳ Calculating...',
-    sponge_summary_sites:'{count} sites in {found}/{total} ceRNA · ', sponge_dilution_prefix:'Relative miRNA reduction:', sponge_free_mirna_prefix:'Free miRNA (% of total):',
-    sponge_bound_mirna_prefix:'Bound miRNA (copies):',
-    sponge_effect_low:'Low sponge effect: single binding site insufficient for significant miRNA sequestration',
-    sponge_effect_moderate:'Moderate sponge effect: partial miRNA depletion possible',
-    sponge_effect_high:'High sponge effect: significant miRNA depletion predicted',
-    sponge_no_effect:'No sponge effect expected',
-    sponge_chart_title:'Efekt gąbki: liczba ceRNA vs wolne miRNA',
-    sponge_chart_free_mirna:'Frakcja wolnych miRNA [%]',
-    sponge_chart_50_threshold:'Próg 50% wolnych miRNA',
-    sponge_chart_x_label:'Liczba kopii ceRNA',
-    sponge_chart_y_label:'Frakcja wolnych miRNA [%]',
-    sponge_preview_label_5p:"5' miRNA", sponge_preview_label_target:'target', sponge_preview_pos_label:'pos:',
-    titration_y_label:'P(zajętości)', titration_x_label:'[miRNA] / Kd', titration_kd_label:'Kd', titration_slider_note:'[B]/[A] = {ratio}× (suwak)', titration_sponge_line:'Sponge A: ×{a} / B: ×{b}', titration_model_exclusive:'Model: wyklucz. wzajemne', titration_model_independent:'Model: niezależne',
-    btn_clear_sponge:'✕ Wyczyść',
-    dual_overlap_note:'⚠ Nakładanie się miejsc ({overlap} nt) — wiązanie wzajemnie wykluczone',
-    dual_coop_note:'✅ Odległość {dist} nt — potencjalny efekt kooperatywny (13–35 nt)',
-    dual_no_coop_note:'📍 Odległość {dist} nt — brak efektu kooperatywnego',
-    comp_boltzmann_note:'Prawdopodobieństwo zajętości (Boltzmann, 37°C):',
-    comp_prob_a:'🔵 A:', comp_prob_b:'🟠 B:',
-    comp_both_free_line:'P(oba zajęte) = {both}% &nbsp;|&nbsp; P(wolne) = {free}%',
-    comp_model_note:'Model: p = 1/(1+exp(ΔG/RT)), RT=0.593 kcal/mol @ 37°C. Zakłada równe stężenia i brak efektów strukturalnych mRNA.',
-    comp_mutual_title:'Model konkurencji wzajemnie wykluczającej ({overlap} nt overlap)',
-    comp_equil_note:'Równowagowe prawdopodobieństwo zajęcia miejsca:',
-    comp_free_line:'P(wolne) = {free}% &nbsp;|&nbsp; {winner}',
-    comp_winner_a:'🔵 A dominuje ({ratio}× częściej zajmuje)',
-    comp_winner_b:'🟠 B dominuje ({ratio}× częściej zajmuje)',
-    comp_winner_equal:'⚪ Równa konkurencja',
-    winner_a:'🔵 A silniejsze', winner_b:'🟠 B silniejsze', winner_equal:'⚪ Równe',
-    comp_mutual_note:'Model: stany wzajemnie wykluczające się, funkcja podziału Z=1+exp(-ΔG_A/RT)+exp(-ΔG_B/RT). Zakłada równe stężenia i brak kooperatywności trzeciorzędowej.',
-    bolt_less_b:'mniej B', bolt_more_b:'więcej B', bolt_equal:'1.0× (równe)',
-    bolt_pa:'P(A) =', bolt_pb:'P(B) =', bolt_pfree:'P(wolne) =',
     btn_titration:'📈 Krzywa miareczkowania',
     btn_sponge:'🧽 Efekt gąbki',
     // Titration
@@ -10787,7 +9854,7 @@ var I18N = {
     btn_scan_all:'⚡ Scan all',
     lbl_organism:'Organism',
     opt_human:'Human (hsa)', opt_mouse:'Mouse (mmu)', opt_rat:'Rat (rno)',
-    opt_plant:'Arabidopsis (ath)', opt_potato:'Potato (stu)', opt_mammals:'Mammals (hsa+mmu+rno)', opt_all:'All',
+    opt_plant:'Arabidopsis (ath)', opt_mammals:'Mammals (hsa+mmu+rno)', opt_all:'All',
     lbl_minseed:'Min. seed WC', lbl_rankby:'Rank by',
     opt_cons:'Conservation', opt_acc:'Accessibility (Acc.)',
     lbl_topn:'Top results', lbl_dgfilter:'ΔG threshold ≤', lbl_noncan:'Non-canonical',
@@ -10814,9 +9881,9 @@ var I18N = {
     dash_top5_dg:'Top 5 — ΔG', dash_top5_au:'Top 5 — AU%', dash_top5_cons:'Top 5 — Conservation',
     panel_results:'Results table',
     lbl_filter_mirna:'Filter miRNA', lbl_filter_seed:'Seed type',
-    lbl_filter_org:'Organism', lbl_filter_cons:'Min. conservation', lbl_filter_consorg:'Conserved in',
+    lbl_filter_org:'Organism', lbl_filter_cons:'Min. conservation',
     opt_filter_all:'All', opt_cons_any:'Any',
-    opt_cons_1:'≥1 species', opt_cons_2:'≥2 species', opt_cons_3:'≥3 species', opt_cons_4:'All 4',
+    opt_cons_1:'≥1 species', opt_cons_2:'≥2 species', opt_cons_3:'All 3',
     btn_reset:'✕ Reset', btn_copy:'📋 Copy',
     txt_empty_results:'Results will appear after running a scan.',
     th_org:'Org', th_pos:'Pos', th_seq:"Sequence 5'→3'",
@@ -10830,49 +9897,6 @@ var I18N = {
     shadow_legend:'🔵 miRNA A &nbsp;|&nbsp; 🟠 miRNA B &nbsp;|&nbsp; 🟣 Overlap &nbsp;|&nbsp; ⬜ free region',
     btn_dual_pdf:'📋 Export PDF (comparison)',
     btn_dual_docx:'📝 Export DOCX (comparison)',
-    dual_stat_dg:'ΔG:', dual_stat_dg1m:'ΔG(1M):', dual_stat_seed:'Seed:', dual_stat_wc:'WC:', dual_stat_gu:'G:U:', dual_stat_au:'AU%:', dual_stat_pos:'Pos:',
-    dual_compare_title:'Comparison A vs B:', dual_better_a:'🔵 A stronger', dual_better_b:'🟠 B stronger', dual_equal:'⚪ Equal ΔG', dual_positions:'Positions',
-    dual_card_title_a:'🔵 miRNA A', dual_card_title_b:'🟠 miRNA B', dual_select_placeholder:'— select miRNA —', dual_pair_changed_note:'⚠ miRNA pair changed — rerun sponge analysis.',
-    alert_select_both_mirna:'Select both miRNAs in Dual View.', alert_select_mirna_a:'Select miRNA A in Dual View.', alert_enter_cerna:'Enter ceRNA sequences in the field above.', alert_parse_seq:'Unable to parse sequences.\n\nUse FASTA format:\n>gene_name\nSEQUENCE...',
-    sponge_warning_no_headers:'⚠️ Missing FASTA headers (>name) — the entire input was treated as one ceRNA sequence ceRNA-1. Add >name headers before each sequence for correct parsing.',
-    sponge_results_title:'Sponge potential (binding capacity)',
-    sponge_model_note:'Model: Langmuir binding — exact bisection, Kd[copies]=exp(ΔG/RT)·Na·V. ΔG ≤ {dgThreshold} kcal/mol',
-    sponge_no_sites:'No binding sites (ΔG ≤ {dgThreshold}) found in provided ceRNA → no sponge effect expected.',
-    sponge_table_header_cerna:'ceRNA', sponge_table_header_sites:'Sites', sponge_table_header_best_dg:'Best ΔG', sponge_table_header_seed:'Seed', sponge_table_header_ka:'Ka',
-    sponge_button_preview_sites:'👁 Sites', sponge_button_hide:'▲ Hide',
-    sponge_selectivity_title:'Sponge selectivity:', sponge_selectivity_balanced:'Sponge dilutes both miRNAs evenly.', sponge_selectivity_more_a:'Sponge sequesters <span style="color:#60a5fa">A</span> ({ratio}× more than B).', sponge_selectivity_more_b:'Sponge sequesters <span style="color:#fb923c">B</span> ({ratio}× more than A).',
-    sponge_update_titration:'🔄 Update titration curve', sponge_error_prefix:'❌ Error:', sponge_calculating:'⏳ Calculating...',
-    sponge_summary_sites:'{count} sites in {found}/{total} ceRNA · ', sponge_dilution_prefix:'Relative miRNA reduction:', sponge_free_mirna_prefix:'Free miRNA (% of total):',
-    sponge_bound_mirna_prefix:'Bound miRNA (copies):',
-    sponge_effect_low:'Low sponge effect: single binding site insufficient for significant miRNA sequestration',
-    sponge_effect_moderate:'Moderate sponge effect: partial miRNA depletion possible',
-    sponge_effect_high:'High sponge effect: significant miRNA depletion predicted',
-    sponge_no_effect:'No sponge effect expected',
-    sponge_chart_title:'Sponge effect: ceRNA copies vs free miRNA',
-    sponge_chart_free_mirna:'Free miRNA fraction [%]',
-    sponge_chart_50_threshold:'50% free miRNA threshold',
-    sponge_chart_x_label:'ceRNA copies',
-    sponge_chart_y_label:'Free miRNA fraction [%]',
-    sponge_preview_label_5p:"5' miRNA", sponge_preview_label_target:'target', sponge_preview_pos_label:'pos:',
-    titration_y_label:'Occupancy P', titration_x_label:'[miRNA] / Kd', titration_kd_label:'Kd', titration_slider_note:'[B]/[A] = {ratio}× (slider)', titration_sponge_line:'Sponge A: ×{a} / B: ×{b}', titration_model_exclusive:'Model: mutually exclusive', titration_model_independent:'Model: independent',
-    btn_clear_sponge:'✕ Clear',
-    dual_overlap_note:'⚠ Overlapping sites ({overlap} nt) — binding mutually exclusive',
-    dual_coop_note:'✅ Distance {dist} nt — potential cooperative effect (13–35 nt)',
-    dual_no_coop_note:'📍 Distance {dist} nt — no cooperative effect',
-    comp_boltzmann_note:'Occupancy probabilities (Boltzmann, 37°C):',
-    comp_prob_a:'🔵 A:', comp_prob_b:'🟠 B:',
-    comp_both_free_line:'P(both bound) = {both}% &nbsp;|&nbsp; P(free) = {free}%',
-    comp_model_note:'Model: p = 1/(1+exp(ΔG/RT)), RT=0.593 kcal/mol @ 37°C. Assumes equal concentrations and no mRNA structural effects.',
-    comp_mutual_title:'Mutually exclusive competition model ({overlap} nt overlap)',
-    comp_equil_note:'Equilibrium site occupancy:',
-    comp_free_line:'P(free) = {free}% &nbsp;|&nbsp; {winner}',
-    comp_winner_a:'🔵 A dominates ({ratio}× more likely)',
-    comp_winner_b:'🟠 B dominates ({ratio}× more likely)',
-    comp_winner_equal:'⚪ Equal competition',
-    winner_a:'🔵 A stronger', winner_b:'🟠 B stronger', winner_equal:'⚪ Equal',
-    comp_mutual_note:'Model: mutually exclusive states, partition function Z=1+exp(-ΔG_A/RT)+exp(-ΔG_B/RT). Assumes equal concentrations and no third-order cooperativity.',
-    bolt_less_b:'less B', bolt_more_b:'more B', bolt_equal:'1.0× (equal)',
-    bolt_pa:'P(A) =', bolt_pb:'P(B) =', bolt_pfree:'P(free) =',
     btn_titration:'📈 Titration curve',
     btn_sponge:'🧽 Sponge effect',
     titration_title:'📈 Titration curve — P(occupancy) vs concentration',
@@ -10895,29 +9919,7 @@ var I18N = {
     pdf_page:'Page', pdf_results:'Results',
   }
 };
-var _lang = localStorage.getItem('mirna-lang')||'pl';
-
-function repairMojibakeText(value){
-  if(typeof value !== 'string') return value;
-  // Detect common UTF-8 mojibake artifacts without relying on non-ASCII literals
-  if(!/(?:[\u00C0-\u00FF][\u0080-\u00BF])|â|đ|ď|�/.test(value)) return value;
-  try {
-    return decodeURIComponent(escape(value));
-  } catch(_) {
-    return value;
-  }
-}
-
-function normalizeI18NStrings(dict){
-  Object.keys(dict).forEach(function(lang){
-    var table = dict[lang];
-    Object.keys(table).forEach(function(key){
-      table[key] = repairMojibakeText(table[key]);
-    });
-  });
-}
-
-normalizeI18NStrings(I18N);
+let _lang = localStorage.getItem('mirna-lang')||'pl';
 
 function applyLang(lang) {
   _lang = lang;
@@ -10953,31 +9955,10 @@ function applyLang(lang) {
       sbtn.textContent = '♻ '+t.session_prefix+' ('+m[1]+' '+t.session_ago+', '+m[2]+' '+t.session_results+')';
     }
   }
-  if (typeof dualViewOpen !== 'undefined' && dualViewOpen) {
-    const dualBtn = document.getElementById('dualViewBtn');
-    const span = dualBtn && dualBtn.querySelector('span');
-    if (span) span.textContent = `${t.btn_dualview} ✓`;
-  }
   // Update status bar if showing default message
   const st = document.getElementById('st');
   if(st && (st.textContent === I18N.pl.status_ready || st.textContent === I18N.en.status_ready)) {
     st.textContent = t.status_ready;
-  }
-  if (typeof dualViewOpen !== 'undefined' && dualViewOpen) {
-    dualDraw('A');
-    dualDraw('B');
-    updateBoltzmannSlider();
-  }
-  if(lang==='en') {
-    HELP_TEXTS.consorg = {
-      title: 'Filter: Conserved in',
-      body: 'Use this order:\n1. First set the "Organism" filter (e.g., hsa)\n2. Then choose "Conserved in" (e.g., mmu)\n\nShows only results conserved in the selected organism.'
-    };
-  } else {
-    HELP_TEXTS.consorg = {
-      title: 'Filtr: Konserwacja w',
-      body: 'Użyj w tej kolejności:\n1. Najpierw ustaw filtr "Organizm" (np. hsa)\n2. Następnie wybierz "Konserwacja w" (np. mmu)\n\nPokazuje tylko te wyniki, które są konserwowane w wybranym organizmie.'
-    };
   }
   document.documentElement.lang = lang;
 }
@@ -10994,5 +9975,3 @@ function toggleLang() { applyLang(_lang === 'pl' ? 'en' : 'pl'); }
 </script>
 </body>
 </html>
-
-

@@ -430,7 +430,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <span id="rc" style="font-size:.68rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0"></span>
   </div>
   <div class="filter-row" id="filterRow">
-    <div><label data-i18n="lbl_filter_mirna">Filtruj miRNA</label><input type="text" id="fMirna" placeholder="np. miR-21" oninput="applyFilters()"></div>
+    <div><label data-i18n="lbl_filter_mirna">Filtruj miRNA</label><input type="text" id="fMirna" placeholder="np. miR-21" oninput="clearTimeout(_filterDebounceTimer);_filterDebounceTimer=setTimeout(applyFilters,200)"></div>
     <div><label data-i18n="lbl_filter_seed">Seed type</label>
       <select id="fSeed" onchange="applyFilters()">
         <option value="" data-i18n="opt_filter_all">Wszystkie</option>
@@ -7547,6 +7547,7 @@ const EXAMPLE="AUGCUACCGUGAUGAAGAACUGAUGCUUACCUACCUCACUGGAAUGUAAAGAAGUAUGUAUGACC
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 let RESULTS=[], CURRENT_MRNA='';
+let _tableRowCache=[], _orgsByFamily=new Map(), _filterDebounceTimer=null;
 
 let _exIdx=0;
 const _EXAMPLES=[EXAMPLE,BNT_UTR3];
@@ -7558,7 +7559,7 @@ function loadEx(){
   _exIdx=(_exIdx+1)%_EXAMPLES.length;
 }
 function clr(){
-  document.getElementById('mrna').value='';RESULTS=[];CURRENT_MRNA='';FASTA_SEQS=[];
+  document.getElementById('mrna').value='';RESULTS=[];CURRENT_MRNA='';FASTA_SEQS=[];_tableRowCache=[];_orgsByFamily=new Map();
   snpHistory = [];
   window._spongeDilutionA = 1.0; window._spongeDilutionB = 1.0; // reset sponge state
   ['rb'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
@@ -7884,10 +7885,12 @@ function sortTable(col){
     return typeof v==='string'?v.toLowerCase():v;
   };
   RESULTS.sort((a,b)=>{const va=getVal(a),vb=getVal(b);return SORT_DIR*(va>vb?1:va<vb?-1:0);});
-  applyFilters();
+  buildTableRows();
 }
 
 function applyFilters(){
+  if(_tableRowCache.length){_applyFiltersFast();return;}
+  _tableRowCache=[];
   const tb=document.getElementById('rb');tb.innerHTML='';
   if(!RESULTS.length){document.getElementById('es').style.display='block';return;}
   document.getElementById('tw').style.display='block';
@@ -7896,12 +7899,12 @@ function applyFilters(){
   const org=(document.getElementById('fOrg')||{}).value||'';
   const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
   const consOrg=(document.getElementById('fConsOrg')||{}).value||'';
-  const orgsByFamily = new Map();
+  _orgsByFamily=new Map();
   RESULTS.forEach(r=>{
     const fam = normalizeMirFamilyName(r.name);
     if(!fam) return;
-    if(!orgsByFamily.has(fam)) orgsByFamily.set(fam, new Set());
-    orgsByFamily.get(fam).add(r.org);
+    if(!_orgsByFamily.has(fam)) _orgsByFamily.set(fam, new Set());
+    _orgsByFamily.get(fam).add(r.org);
   });
   let shown=0;
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -7912,7 +7915,7 @@ function applyFilters(){
     if(consMin>0&&(r.hit.conservation?.score??0)<consMin) return;
     if(consOrg){
       const fam = normalizeMirFamilyName(r.name);
-      const famOrgs = orgsByFamily.get(fam);
+      const famOrgs = _orgsByFamily.get(fam);
       if(!famOrgs || !famOrgs.has(consOrg)) return;
       if(consOrg==='hsa'&&!(r.hit.conservation?.hsa)) return;
       if(consOrg==='mmu'&&!(r.hit.conservation?.mmu)) return;
@@ -7954,18 +7957,56 @@ function applyFilters(){
       <td style="font-size:.65rem;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis">${esc(r.mirna)}</td>
     `;
     tr.onclick=()=>showPrev(r,idx);
+    tr.dataset.ri=idx;
     tb.appendChild(tr);shown++;
+    _tableRowCache.push(tr);
   });
   if(!shown) tb.innerHTML='<tr><td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td></tr>';
 }
-function renderTable(res){applyFilters();}
+function _applyFiltersFast(){
+  const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
+  const st=(document.getElementById('fSeed')||{}).value||'';
+  const org=(document.getElementById('fOrg')||{}).value||'';
+  const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
+  const consOrg=(document.getElementById('fConsOrg')||{}).value||'';
+  let shown=0;
+  for(let i=0;i<_tableRowCache.length;i++){
+    const tr=_tableRowCache[i];
+    const r=RESULTS[i];
+    let visible=true;
+    if(txt&&!r.name.toLowerCase().includes(txt)) visible=false;
+    if(visible&&st&&r.hit.seedType!==st) visible=false;
+    if(visible&&org&&r.org!==org) visible=false;
+    if(visible&&consMin>0&&(r.hit.conservation?.score??0)<consMin) visible=false;
+    if(visible&&consOrg){
+      const fam=normalizeMirFamilyName(r.name);
+      const famOrgs=_orgsByFamily.get(fam);
+      if(!famOrgs||!famOrgs.has(consOrg)) visible=false;
+      if(visible&&consOrg==='hsa'&&!(r.hit.conservation?.hsa)) visible=false;
+      if(visible&&consOrg==='mmu'&&!(r.hit.conservation?.mmu)) visible=false;
+      if(visible&&consOrg==='rno'&&!(r.hit.conservation?.rno)) visible=false;
+      if(visible&&consOrg==='ath'&&!(r.hit.conservation?.ath)) visible=false;
+      if(visible&&consOrg==='stu'&&!(r.hit.conservation?.stu)) visible=false;
+    }
+    tr.style.display=visible?'':'none';
+    if(visible) shown++;
+  }
+  const tb=document.getElementById('rb');
+  let noRow=document.getElementById('_noResultsRow');
+  if(!shown){
+    if(!noRow){noRow=document.createElement('tr');noRow.id='_noResultsRow';noRow.innerHTML='<td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td>';tb.appendChild(noRow);}
+    noRow.style.display='';
+  } else if(noRow) noRow.style.display='none';
+}
+function buildTableRows(){_tableRowCache=[];_orgsByFamily=new Map();RESULTS.forEach(r=>{const fam=normalizeMirFamilyName(r.name);if(!fam)return;if(!_orgsByFamily.has(fam))_orgsByFamily.set(fam,new Set());_orgsByFamily.get(fam).add(r.org);});applyFilters();}
+function renderTable(res){buildTableRows();}
 function resetFilters(){['fMirna','fSeed','fOrg','fCons','fConsOrg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
 
 // ============================================================
 // SHOW PREVIEW
 // ============================================================
 function showPrev(r,idx){
-  document.querySelectorAll('tbody tr').forEach((t,i)=>t.classList.toggle('act',i===idx));
+  document.querySelectorAll('tbody tr[data-ri]').forEach(t=>t.classList.toggle('act',parseInt(t.dataset.ri)===idx));
   document.getElementById('sn').textContent=r.name;
   document.getElementById('ss').textContent=`${r.org==='hsa'?'Homo sapiens':r.org==='mmu'?'Mus musculus':r.org==='rno'?'Rattus norvegicus':r.org==='stu'?'Solanum tuberosum':'Arabidopsis thaliana'} · seed:${r.hit.seedPos>=0?r.hit.seedPos+1:r.hit.pos+1} | wiązanie:${r.hit.pos+1}–${r.hit.pos+r.mirna.length}`;
   const dg=r.hit.dg,sc=SEED_COLORS[r.hit.seedType]||'#6b7280';

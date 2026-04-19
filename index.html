@@ -538,6 +538,10 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
       <tbody id="rb"></tbody>
     </table>
   </div>
+  <div id="tablePager" style="display:none;align-items:center;gap:.5rem;justify-content:center;margin:.45rem 0 .15rem 0">
+    <button class="btn btn-g" id="loadMoreBtn" onclick="loadMoreResultsRows()" style="font-size:.68rem">Pokaż więcej</button>
+    <span id="tablePagerInfo" style="font-size:.64rem;color:var(--muted)"></span>
+  </div>
   <div class="erow">
     <button class="btn btn-g" id="expBtn" onclick="exportCSV()" style="display:none"><span data-i18n="btn_csv">⬇ CSV</span></button>
     <button class="btn btn-g" id="expManBtn" onclick="exportManuscript()" style="display:none"><span data-i18n="btn_manuscript">📄 Manuskrypt</span></button>
@@ -7834,6 +7838,9 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 let RESULTS=[], CURRENT_MRNA='';
 let _tableRowCache=[], _orgsByFamily=new Map(), _filterDebounceTimer=null;
+let _filteredResultIdx=[], _tableRenderedCount=0, _tableRenderLimit=400;
+const _tableRenderStep=400;
+let _tableAutoLoadLock=false;
 
 let _exIdx=0;
 const _EXAMPLES=[EXAMPLE,BNT_UTR3];
@@ -7846,6 +7853,7 @@ function loadEx(){
 }
 function clr(){
   document.getElementById('mrna').value='';RESULTS=[];CURRENT_MRNA='';FASTA_SEQS=[];_tableRowCache=[];_orgsByFamily=new Map();
+  _filteredResultIdx=[];_tableRenderedCount=0;_tableRenderLimit=_tableRenderStep;
   snpHistory = [];
   window._spongeDilutionA = 1.0; window._spongeDilutionB = 1.0; // reset sponge state
   ['rb'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
@@ -8254,38 +8262,52 @@ function displaySeedPos1(hit){
   return hit.seedType==='7mer-A1' ? base+1 : base;
 }
 
-function applyFilters(){
-  if(_tableRowCache.length){_applyFiltersFast();return;}
-  _tableRowCache=[];
-  const tb=document.getElementById('rb');tb.innerHTML='';
-  if(!RESULTS.length){document.getElementById('es').style.display='block';updateResultCounter(0,0);return;}
-  document.getElementById('tw').style.display='block';
+function _buildOrgFamilyMap(){
   _orgsByFamily=new Map();
   RESULTS.forEach(r=>{
     const fam = normalizeMirFamilyName(r.name);
     if(!fam) return;
-    if(!_orgsByFamily.has(fam)) _orgsByFamily.set(fam, new Set());
+    if(!_orgsByFamily.has(fam)) _orgsByFamily.set(fam,new Set());
     _orgsByFamily.get(fam).add(r.org);
   });
-  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  RESULTS.forEach((r,idx)=>{
-    const dg=r.hit.dg;
-    const dgCls=dg<-10?'dg-good':dg<-6?'dg-med':'dg-low';
-    const sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
-    const coopStr=r.hit.coopBonus<0?`<span style="color:var(--accent3)">${r.hit.dgCoop}⊕</span>`:r.hit.dgCoop;
-    const auBar=`<span>${r.hit.auPct}%</span><span style="display:inline-block;width:${Math.min(r.hit.auPct,100)*0.3}px;height:4px;background:${r.hit.auPct>60?'#fbbf24':'#6b7280'};border-radius:2px;margin-left:3px;vertical-align:middle"></span>`;
-    const orgColor=r.org==='hsa'?'var(--accent)':r.org==='mmu'?'#60a5fa':r.org==='rno'?'#f87171':r.org==='stu'?'#f59e0b':'var(--accent3)';
-    const tip={'8mer':'seed pos2-8 + A1 + m8','7mer-m8':'seed pos2-8 + m8','7mer-A1':'seed pos2-8 + A1','6mer':'seed pos2-7','centered':'11+ WC konsekutywne pos4-15','3prime-comp':'3+ WC pos13-16'};
-    const tr=document.createElement('tr');
-    const dgTotalCol = (r.hit.dgTotal??dg) < -10 ? 'var(--accent)' : (r.hit.dgTotal??dg) < -6 ? 'var(--gu)' : 'var(--muted)';
-    const accColor = r.hit.accessibility==='HIGH'?'#00d4aa':r.hit.accessibility==='MED'?'#fbbf24':'#f87171';
-    const accLabel = r.hit.accessibility ?? '—';
-    const accPct = r.hit.pctPaired ?? 0;
-    const accBarFill = Math.round(accPct * 0.5); // max 50px bar
-    const accBar = `<span style="font-size:.67rem;font-weight:700;color:${accColor}">${accLabel}</span>`
-                 + `<div style="display:inline-block;margin-left:4px;vertical-align:middle;width:30px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${accBarFill}px;height:100%;background:${accColor};border-radius:3px"></div></div>`;
-    const accTip = `ΔG_open: +${r.hit.dgOpen??0} kcal/mol · ${accPct}% zasad sparowanych · seed sparowane: ${r.hit.seedPaired??0}`;
-    tr.innerHTML=`
+}
+
+function _matchesActiveFilters(r,txt,st,org,consMin,consOrg){
+  if(txt && !r.name.toLowerCase().includes(txt)) return false;
+  if(st && r.hit.seedType!==st) return false;
+  if(org && r.org!==org) return false;
+  if(consMin>0 && (r.hit.conservation?.score??0)<consMin) return false;
+  if(consOrg){
+    const fam=normalizeMirFamilyName(r.name);
+    const famOrgs=_orgsByFamily.get(fam);
+    if(!famOrgs || !famOrgs.has(consOrg)) return false;
+    if(consOrg==='hsa' && !(r.hit.conservation?.hsa)) return false;
+    if(consOrg==='mmu' && !(r.hit.conservation?.mmu)) return false;
+    if(consOrg==='rno' && !(r.hit.conservation?.rno)) return false;
+    if(consOrg==='ath' && !(r.hit.conservation?.ath)) return false;
+    if(consOrg==='stu' && !(r.hit.conservation?.stu)) return false;
+  }
+  return true;
+}
+
+function _makeResultRow(r,idx){
+  const dg=r.hit.dg;
+  const dgCls=dg<-10?'dg-good':dg<-6?'dg-med':'dg-low';
+  const sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
+  const coopStr=r.hit.coopBonus<0?`<span style="color:var(--accent3)">${r.hit.dgCoop}⊕</span>`:r.hit.dgCoop;
+  const auBar=`<span>${r.hit.auPct}%</span><span style="display:inline-block;width:${Math.min(r.hit.auPct,100)*0.3}px;height:4px;background:${r.hit.auPct>60?'#fbbf24':'#6b7280'};border-radius:2px;margin-left:3px;vertical-align:middle"></span>`;
+  const orgColor=r.org==='hsa'?'var(--accent)':r.org==='mmu'?'#60a5fa':r.org==='rno'?'#f87171':r.org==='stu'?'#f59e0b':'var(--accent3)';
+  const tip={'8mer':'seed pos2-8 + A1 + m8','7mer-m8':'seed pos2-8 + m8','7mer-A1':'seed pos2-8 + A1','6mer':'seed pos2-7','centered':'11+ WC konsekutywne pos4-15','3prime-comp':'3+ WC pos13-16'};
+  const tr=document.createElement('tr');
+  const dgTotalCol = (r.hit.dgTotal??dg) < -10 ? 'var(--accent)' : (r.hit.dgTotal??dg) < -6 ? 'var(--gu)' : 'var(--muted)';
+  const accColor = r.hit.accessibility==='HIGH'?'#00d4aa':r.hit.accessibility==='MED'?'#fbbf24':'#f87171';
+  const accLabel = r.hit.accessibility ?? '—';
+  const accPct = r.hit.pctPaired ?? 0;
+  const accBarFill = Math.round(accPct * 0.5);
+  const accBar = `<span style="font-size:.67rem;font-weight:700;color:${accColor}">${accLabel}</span>`
+               + `<div style="display:inline-block;margin-left:4px;vertical-align:middle;width:30px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${accBarFill}px;height:100%;background:${accColor};border-radius:3px"></div></div>`;
+  const accTip = `ΔG_open: +${r.hit.dgOpen??0} kcal/mol · ${accPct}% zasad sparowanych · seed sparowane: ${r.hit.seedPaired??0}`;
+  tr.innerHTML=`
       <td style="color:var(--muted)">${idx+1}</td>
       <td class="nc">${esc(r.name)}${r.transcript?`<div style="font-size:.58rem;color:var(--muted)">${esc(r.transcript)}</div>`:''}</td>
       <td><span style="font-size:.65rem;color:${orgColor}">${esc(r.org)}</span></td>
@@ -8302,50 +8324,101 @@ function applyFilters(){
       <td data-tip="${accTip}">${accBar}</td>
       <td style="font-size:.65rem;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis">${esc(r.mirna)}</td>
     `;
-    tr.onclick=()=>showPrev(r,idx);
-    tr.dataset.ri=idx;
-    tb.appendChild(tr);
-    _tableRowCache.push(tr);
-  });
-  _applyFiltersFast();
+  tr.onclick=()=>showPrev(r,idx);
+  tr.dataset.ri=idx;
+  return tr;
 }
-function _applyFiltersFast(){
+
+function _updateTablePagerUI(){
+  const pager=document.getElementById('tablePager');
+  const btn=document.getElementById('loadMoreBtn');
+  const info=document.getElementById('tablePagerInfo');
+  if(!pager||!btn||!info) return;
+  const total=_filteredResultIdx.length;
+  const rendered=Math.min(_tableRenderLimit,total);
+  if(total<=0){
+    pager.style.display='none';
+    return;
+  }
+  info.textContent=`widok tabeli: ${rendered} / ${total}`;
+  btn.style.display = rendered<total ? '' : 'none';
+  pager.style.display = total>_tableRenderStep ? 'flex' : 'none';
+}
+
+function _renderFilteredRows(reset=true){
+  const tb=document.getElementById('rb');
+  if(reset){tb.innerHTML='';_tableRenderedCount=0;}
+  const target=Math.min(_tableRenderLimit,_filteredResultIdx.length);
+  const frag=document.createDocumentFragment();
+  for(let i=_tableRenderedCount;i<target;i++){
+    const idx=_filteredResultIdx[i];
+    frag.appendChild(_makeResultRow(RESULTS[idx],idx));
+  }
+  tb.appendChild(frag);
+  _tableRenderedCount=target;
+
+  let noRow=document.getElementById('_noResultsRow');
+  if(!target){
+    if(!noRow){noRow=document.createElement('tr');noRow.id='_noResultsRow';noRow.innerHTML='<td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td>';tb.appendChild(noRow);} 
+    noRow.style.display='';
+  }else if(noRow) noRow.style.display='none';
+
+  _updateTablePagerUI();
+}
+
+function applyFilters(){
+  const tb=document.getElementById('rb');
+  tb.innerHTML='';
+  if(!RESULTS.length){
+    document.getElementById('es').style.display='block';
+    updateResultCounter(0,0);
+    _filteredResultIdx=[];
+    _updateTablePagerUI();
+    return;
+  }
+  document.getElementById('tw').style.display='block';
+  if(!_orgsByFamily.size) _buildOrgFamilyMap();
   const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
   const st=(document.getElementById('fSeed')||{}).value||'';
   const org=(document.getElementById('fOrg')||{}).value||'';
   const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
   const consOrg=(document.getElementById('fConsOrg')||{}).value||'';
-  let shown=0;
-  for(let i=0;i<_tableRowCache.length;i++){
-    const tr=_tableRowCache[i];
-    const r=RESULTS[i];
-    let visible=true;
-    if(txt&&!r.name.toLowerCase().includes(txt)) visible=false;
-    if(visible&&st&&r.hit.seedType!==st) visible=false;
-    if(visible&&org&&r.org!==org) visible=false;
-    if(visible&&consMin>0&&(r.hit.conservation?.score??0)<consMin) visible=false;
-    if(visible&&consOrg){
-      const fam=normalizeMirFamilyName(r.name);
-      const famOrgs=_orgsByFamily.get(fam);
-      if(!famOrgs||!famOrgs.has(consOrg)) visible=false;
-      if(visible&&consOrg==='hsa'&&!(r.hit.conservation?.hsa)) visible=false;
-      if(visible&&consOrg==='mmu'&&!(r.hit.conservation?.mmu)) visible=false;
-      if(visible&&consOrg==='rno'&&!(r.hit.conservation?.rno)) visible=false;
-      if(visible&&consOrg==='ath'&&!(r.hit.conservation?.ath)) visible=false;
-      if(visible&&consOrg==='stu'&&!(r.hit.conservation?.stu)) visible=false;
-    }
-    tr.style.display=visible?'':'none';
-    if(visible) shown++;
+
+  _filteredResultIdx=[];
+  for(let i=0;i<RESULTS.length;i++){
+    if(_matchesActiveFilters(RESULTS[i],txt,st,org,consMin,consOrg)) _filteredResultIdx.push(i);
   }
-  const tb=document.getElementById('rb');
-  let noRow=document.getElementById('_noResultsRow');
-  if(!shown){
-    if(!noRow){noRow=document.createElement('tr');noRow.id='_noResultsRow';noRow.innerHTML='<td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td>';tb.appendChild(noRow);}
-    noRow.style.display='';
-  } else if(noRow) noRow.style.display='none';
-  updateResultCounter(shown,RESULTS.length);
+  _tableRenderLimit=Math.min(_tableRenderStep,_filteredResultIdx.length);
+  _renderFilteredRows(true);
+  updateResultCounter(_filteredResultIdx.length,RESULTS.length);
 }
-function buildTableRows(){_tableRowCache=[];_orgsByFamily=new Map();RESULTS.forEach(r=>{const fam=normalizeMirFamilyName(r.name);if(!fam)return;if(!_orgsByFamily.has(fam))_orgsByFamily.set(fam,new Set());_orgsByFamily.get(fam).add(r.org);});applyFilters();}
+
+function _applyFiltersFast(){applyFilters();}
+
+function loadMoreResultsRows(){
+  if(_tableRenderLimit>=_filteredResultIdx.length) return;
+  _tableRenderLimit=Math.min(_tableRenderLimit+_tableRenderStep,_filteredResultIdx.length);
+  _renderFilteredRows(false);
+}
+
+function initTableInfiniteScroll(){
+  const tw=document.getElementById('tw');
+  if(!tw || tw.dataset.infinitescroll==='1') return;
+  tw.dataset.infinitescroll='1';
+  tw.addEventListener('scroll',()=>{
+    if(_tableAutoLoadLock) return;
+    if(_tableRenderLimit>=_filteredResultIdx.length) return;
+    const left = tw.scrollHeight - (tw.scrollTop + tw.clientHeight);
+    if(left>90) return;
+    _tableAutoLoadLock=true;
+    requestAnimationFrame(()=>{
+      try{ loadMoreResultsRows(); }
+      finally{ _tableAutoLoadLock=false; }
+    });
+  },{passive:true});
+}
+
+function buildTableRows(){_tableRowCache=[];_buildOrgFamilyMap();applyFilters();}
 function renderTable(res){buildTableRows();}
 function resetFilters(){['fMirna','fSeed','fOrg','fCons','fConsOrg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
 
@@ -8357,25 +8430,16 @@ function showPrev(r,idx){
   document.getElementById('sn').textContent=r.name;
   document.getElementById('ss').textContent=`${r.org==='hsa'?'Homo sapiens':r.org==='mmu'?'Mus musculus':r.org==='rno'?'Rattus norvegicus':r.org==='stu'?'Solanum tuberosum':'Arabidopsis thaliana'} · seed:${displaySeedPos1(r.hit)} | wiązanie:${r.hit.pos+1}–${r.hit.pos+r.mirna.length}`;
   const dg=r.hit.dg,sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
-  const consHtml=r.hit.conservation?`<span class="pill">Cons: ${consIcons(r.hit.conservation,r.org)}</span>`:'';
-  const coopPill=r.hit.coopBonus<0?`<span class="pill b">ΔG+coop: ${r.hit.dgCoop}</span>`:'';
-  // In new UI, sp area shows seed type pill and coop
   document.getElementById('sp').innerHTML=`
     <span class="preview2-seed-pill" style="background:${sc}22;color:${sc};border:1px solid ${sc}44">${r.hit.seedType}</span>
     ${r.hit.coopBonus<0?'<span class="pill b" style="font-size:.63rem">⊕ cooperative</span>':''}
     ${r.hit.dg1M&&Math.abs(r.hit.dg1M-dg)>0.05?`<span class="pill" style="font-size:.62rem;color:var(--muted)">1M: ${r.hit.dg1M}</span>`:''}
   `;
 
-  r.hit.aln._auPct=r.hit.auPct;
   const canvas=document.getElementById('duplexCanvas');
-  drawDuplex2D(canvas,r.hit.aln,r.name,r.hit.pos,r.hit.centeredRange,r.hit.comp3Range);
-  // 3D model
+  drawDuplex2D(canvas, r.hit.aln, r.name, r.hit.pos, r.hit.centeredRange, r.hit.comp3Range);
   show3DModel(r.hit.aln, r.name, r.hit.pos);
-  // 3Dmol handles 3D tab
-  document.getElementById('expPNG').style.display='';
 
-  // ASCII — poprawna konwencja antyparalelna
-  // aln[0] = 5'miRNA ↔ 3'target, aln[len-1] = 3'miRNA ↔ 5'target
   // Linia miRNA:  5'→3' (i=0..len-1)  → aln[i].mb
   // Krechy:       i=0..len-1           → aln[i].type
   // Linia target: 3'→5' (i=0..len-1)  → aln[i].tb  (bo aln[i].tb paruje z aln[i].mb)
@@ -8390,7 +8454,6 @@ function showPrev(r,idx){
   document.getElementById('dv').innerHTML=html;
 
   const dgCol=dg<-10?'var(--accent)':dg<-6?'var(--gu)':'var(--muted)';
-  // Update preview2-header stats
   const _set=(id,val,col)=>{const el=document.getElementById(id);if(!el)return;el.textContent=val;if(col)el.style.color=col;};
   const _setHTML=(id,val)=>{const el=document.getElementById(id);if(el)el.innerHTML=val;};
   _set('stDG', dg, dgCol);
@@ -8399,10 +8462,8 @@ function showPrev(r,idx){
   _set('stSd',  r.hit.seedType);
   _set('stAU',  r.hit.auPct+'%', 'var(--gu)');
   _setHTML('stCons', consIcons(r.hit.conservation, r.org));
-  // Accessibility
   const accCol = r.hit.accessibility==='HIGH'?'var(--accent)':r.hit.accessibility==='MED'?'var(--gu)':'var(--seed)';
   _set('stAcc', r.hit.accessibility??'—', accCol);
-  // Show ΔG_open/ΔG_total pill and local RNA structure
   if (r.hit.dgOpen > 0 || r.hit.accStruct) {
     const pctBar = r.hit.pctPaired ?? 0;
     const seedPill = r.hit.seedPaired > 0
@@ -8410,16 +8471,13 @@ function showPrev(r,idx){
     const accPill = `<span class="pill" style="font-size:.61rem;color:${accCol}">ΔG_open: +${r.hit.dgOpen} · ΔG_total: ${r.hit.dgTotal} · ${pctBar}% par</span>${seedPill}`;
     document.getElementById('sp').innerHTML += accPill;
   }
-  // Draw local RNA structure (dot-bracket) if available
   if (r.hit.accStruct && r.hit.accWinSeq) {
     drawLocalRNAStruct(r.hit.accWinSeq, r.hit.accStruct, r.hit.accBindStart, r.hit.accBindEnd);
   }
   window.resultsOrg = r.org;
-  // Sync CURRENT_MRNA to this result's sequence (critical for batch mode)
   if (r.mrnaSeq) CURRENT_MRNA = r.mrnaSeq;
   updateMiRTarBaseLink(r.name, r.mrnaSeq || CURRENT_MRNA, r.hit.pos, r.mirna.length, r.org);
 
-  // --- Moduł SNP ---
   disableSNPMode();
   const snpBtn = document.getElementById('snpModeBtn');
   if (snpBtn) {
@@ -8432,7 +8490,7 @@ function showPrev(r,idx){
   const snpHelpBadge = document.getElementById('snpHelp');
   if (snpHelpBadge) snpHelpBadge.style.display = '';
   updateSnpUndoBtn();
-  // --- Eksport PDB ---
+
   const pdbBtn = document.getElementById('exportPDBBtn');
   if (pdbBtn) {
     pdbBtn.style.display = '';
@@ -8440,7 +8498,7 @@ function showPrev(r,idx){
   }
   const pdbHelpBadge = document.getElementById('pdbHelp');
   if (pdbHelpBadge) pdbHelpBadge.style.display = '';
-  // --- Heatmapa wrażliwości ---
+
   const sensBtn = document.getElementById('sensitivityBtn');
   if (sensBtn) {
     sensBtn.style.display = '';
@@ -8625,6 +8683,7 @@ const initConservationFilter = () => {
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
   initConservationFilter();
+  initTableInfiniteScroll();
   // Populate SEED_MAP from full DB
   MIRNA_DB.forEach(([name, org, seq]) => {
     if(!SEED_MAP[org]) return;

@@ -90,7 +90,7 @@ select,input[type=number],input[type=text]{width:100%;background:var(--surface2)
 .canvas-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:9px;overflow:auto;margin-bottom:.65rem;min-height:145px;display:flex;align-items:center;justify-content:center;padding:.4rem;}
 #duplexCanvas{display:block;}
 .dbox{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.85rem;overflow-x:auto;margin-bottom:.65rem;display:none;}
-.dmono{font-family:'JetBrains Mono',monospace;font-size:.72rem;white-space:pre;line-height:1.85;}
+.dmono{font-family:'JetBrains Mono',monospace;font-size:.84rem;white-space:pre;line-height:1.95;}
 .srow{display:grid;grid-template-columns:repeat(6,1fr);gap:.45rem;}
 .sbox{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.5rem;text-align:center;}
 .sv{font-size:1rem;font-weight:800;}
@@ -247,7 +247,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
 
     <div class="crow">
       <div><label><span data-i18n="lbl_organism">Organizm</span> <span class="help-badge" data-help="organism">?</span></label>
-        <select id="species">
+        <select id="species" onchange="refreshMirnaPick()">
           <option value="human" data-i18n="opt_human">Człowiek (hsa)</option>
           <option value="mouse" data-i18n="opt_mouse">Mysz (mmu)</option>
           <option value="rat" data-i18n="opt_rat">Szczur (rno)</option>
@@ -280,10 +280,10 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
           data-tip="Stężenie Na+. Turner 1M (standard), fizjologiczne 0.15M, jądro ~0.10M. Korekta: Owczarzy 2004 Eq.26, błąd ±0.14 kcal/mol">
       </div>
       <div><label><span data-i18n="lbl_topn">Top wyników</span> <span class="help-badge" data-help="topn">?</span></label>
-        <input id="topn" type="number" value="30" min="5" max="500">
+        <input id="topn" type="number" value="500" min="5" max="5000">
       </div>
       <div><label><span data-i18n="lbl_dgfilter">Próg ΔG ≤</span> <span class="help-badge" data-help="dgfilter">?</span></label>
-        <input type="number" id="dgFilter" value="-3.0" step="0.5" min="-25" max="-0.5"
+        <input type="number" id="dgFilter" value="-0.5" step="0.5" min="-25" max="5"
           style="width:72px" title="Minimalne ΔG aby wynik był uwzględniony. -3.0 = konserwatywne, -1.0 = liberalne (słabe miejsca)">
         <span style="font-size:.65rem;color:var(--muted)">kcal/mol</span>
       </div>
@@ -293,6 +293,30 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
           <option value="canonical" data-i18n="opt_canonical">Tylko kanoniczne</option>
           <option value="noncanonical" data-i18n="opt_noncanonical">Tylko niekan.</option>
         </select>
+      </div>
+      <div><label>Tryb skanowania <span class="help-badge" data-help="scanmode">?</span></label>
+        <select id="scanMode" onchange="toggleScanModeUI()">
+          <option value="all" selected>Skan wszystkich miRNA</option>
+          <option value="single">Skan jednego miRNA</option>
+        </select>
+      </div>
+    </div>
+    <div id="singleMirnaPanel" class="brow" style="display:none;align-items:flex-end;margin-top:.55rem;gap:.6rem;flex-wrap:wrap">
+      <div style="min-width:260px;flex:1 1 320px">
+        <label>miRNA z bazy</label>
+        <input type="text" id="mirnaPickSearch" placeholder="Szukaj miRNA..." oninput="filterMirnaPickOptions()" style="margin-bottom:.3rem">
+        <select id="mirnaPick" onchange="onMirnaPickChange()">
+          <option value="">— wybierz z listy —</option>
+          <option value="__custom__">Własne miRNA</option>
+        </select>
+        <div id="mirnaPickCount" style="margin-top:.22rem;font-size:.63rem;color:var(--muted)">znaleziono 0 miRNA</div>
+      </div>
+      <div id="customMirnaWrap" style="display:none;min-width:340px;flex:2 1 520px">
+        <label>Własne miRNA (nazwa + sekwencja RNA/DNA)</label>
+        <div style="display:flex;gap:.45rem;flex-wrap:wrap;align-items:center">
+          <input type="text" id="customMirnaName" placeholder="np. custom-miR-1" style="max-width:180px">
+          <input type="text" id="customMirnaSeq" placeholder="np. UGGCAGUGUCUUAGCUGGUUGU" style="flex:1 1 300px;font-family:'JetBrains Mono',monospace">
+        </div>
       </div>
     </div>
     <div class="brow">
@@ -522,6 +546,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <div class="dual-card">
       <div class="dual-card-title" data-i18n="dual_card_title_a">🔵 miRNA A</div>
       <div class="dual-select-row">
+        <input type="text" id="dualSearchA" placeholder="Szukaj miRNA A..." oninput="filterDualOptions('A')" style="min-width:170px;max-width:220px">
         <select id="dualSelA" onchange="dualDraw('A')"><option value="" data-i18n="dual_select_placeholder">— wybierz miRNA —</option></select>
         <span id="dualOrgA" style="font-size:.65rem;color:var(--muted)"></span>
       </div>
@@ -532,6 +557,7 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
     <div class="dual-card">
       <div class="dual-card-title" data-i18n="dual_card_title_b">🟠 miRNA B</div>
       <div class="dual-select-row">
+        <input type="text" id="dualSearchB" placeholder="Szukaj miRNA B..." oninput="filterDualOptions('B')" style="min-width:170px;max-width:220px">
         <select id="dualSelB" onchange="dualDraw('B')"><option value="" data-i18n="dual_select_placeholder">— wybierz miRNA —</option></select>
         <span id="dualOrgB" style="font-size:.65rem;color:var(--muted)"></span>
       </div>
@@ -6869,7 +6895,7 @@ function calcDG_1M(mirna, mrnaRev) {
   if(e==='G'||e==='C'){dH+=NN_DH['GC_init']||0;dS+=NN_DS['GC_init']||0;}
   else{dH+=NN_DH['AU_init']||3.72;dS+=NN_DS['AU_init']||10.5;}
   for(let i=0;i<len-1;i++){
-    const a=mirna[i],b=mirna[i+1],c=mrnaRev[len-1-i],d=mrnaRev[len-2-i];
+    const a=mirna[i],b=mirna[i+1],c=mrnaRev[i],d=mrnaRev[i+1];
     if(!c||!d) continue;
     const k=`${a}${b}/${c}${d}`;
     if(NN_DH[k]!==undefined){dH+=NN_DH[k];dS+=NN_DS[k];}
@@ -7162,43 +7188,57 @@ function fullAlign(mirna,mrna,pos){
   return aln;
 }
 
-function scanOne(mirna,mrna,minSeed,saltNa){
-  let best=null;
+function buildHitAtPos(mirna,mrna,pos,saltNa){
+  const seed=classifySeedSite(mirna,mrna,pos);
+  const len=Math.min(mirna.length,mrna.length-pos);
+  const tgt=mrna.slice(pos,pos+len).split('').reverse().join('');
+  const aln=fullAlign(mirna,mrna,pos);
+  let wc=0,gu=0,mm=0,gcCount=0;
+  for(const a of aln){
+    if(a.type==='wc'){wc++;if(a.mb==='G'||a.mb==='C')gcCount++;}
+    else if(a.type==='gu')gu++;else mm++;
+  }
+  const dg1M=calcDG_1M(mirna.slice(0,len),tgt);
+  const dg=correctDGForSalt(dg1M,gcCount,len,saltNa);
+  const score=wc*2+gu*0.5-mm;
+  const au=calcAURichness(mrna,pos,mirna.length);
+  const acc=calcAccessibility(mrna,pos,Math.min(mirna.length,len));
+  const dgTotal=Math.round((dg + acc.dgOpen)*100)/100;
+  const centered=scanCentered(mirna,mrna,pos);
+  const comp3=check3primeComp(mirna,mrna,pos);
+  const siteType=centered?'centered':comp3?'3prime-comp':seed.type;
+  const centeredRange=centered?{start:centered.start,end:centered.start+centered.maxRun}:null;
+  const comp3Range=comp3?{start:12,end:16}:null;
+  const seedPos=pos+len-8;
+  return{pos,seedPos,dg,dg1M,dgTotal,score:Math.round(score*10)/10,wc,gu,mm,gcCount,
+    seedWC:seed.seedWC,seedType:siteType,seedWeight:seed.weight,
+    auPct:au,coopBonus:0,dgCoop:dg,aln,centeredRange,comp3Range,
+    accessibility:acc.accessible,dgOpen:acc.dgOpen,dgOpenRaw:acc.dgOpenRaw,
+    pctPaired:acc.pctPaired,seedPaired:acc.seedPaired,
+    accStruct:acc.struct,accBindStart:acc.bindStart,accBindEnd:acc.bindEnd,accWinSeq:acc.winSeq};
+}
+
+function scanAllHits(mirna,mrna,minSeed,saltNa,opts={}){
+  const hits=[];
+  const dgFilter = Number.isFinite(opts.dgFilter)?opts.dgFilter:null;
+  const noncan = opts.noncan || 'all';
   for(let pos=0;pos<=mrna.length-7;pos++){
     const seed=classifySeedSite(mirna,mrna,pos);
     if(seed.seedWC<minSeed) continue;
-    const len=Math.min(mirna.length,mrna.length-pos);
-    const tgt=mrna.slice(pos,pos+len).split('').reverse().join('');
-    const aln=fullAlign(mirna,mrna,pos);
-    let wc=0,gu=0,mm=0,gcCount=0;
-    for(const a of aln){
-      if(a.type==='wc'){wc++;if(a.mb==='G'||a.mb==='C')gcCount++;}
-      else if(a.type==='gu')gu++;else mm++;
-    }
-    const dg1M=calcDG_1M(mirna.slice(0,len),tgt);
-    const dg=correctDGForSalt(dg1M,gcCount,len,saltNa);
-    const score=wc*2+gu*0.5-mm;
-    const au=calcAURichness(mrna,pos,mirna.length);
-    const acc=calcAccessibility(mrna,pos,Math.min(mirna.length,len));
-    const dgTotal=Math.round((dg + acc.dgOpen)*100)/100;
-    const centered=scanCentered(mirna,mrna,pos);
-    const comp3=check3primeComp(mirna,mrna,pos);
-    const siteType=centered?'centered':comp3?'3prime-comp':seed.type;
-    const centeredRange=centered?{start:centered.start,end:centered.start+centered.maxRun}:null;
-    const comp3Range=comp3?{start:12,end:16}:null;
-    if(!best||dg<best.dg){
-      // seedPos (0-based): pozycja 5' krańca seedu na mRNA = kompl. do miRNA poz 8 (i=7)
-      // seedPos+1 (1-based) = biologicznie znacząca pozycja wiązania (konwencja TargetScan)
-      const seedPos=pos+len-8;
-      best={pos,seedPos,dg,dg1M,dgTotal,score:Math.round(score*10)/10,wc,gu,mm,gcCount,
-        seedWC:seed.seedWC,seedType:siteType,seedWeight:seed.weight,
-        auPct:au,coopBonus:0,dgCoop:dg,aln,centeredRange,comp3Range,
-        accessibility:acc.accessible,dgOpen:acc.dgOpen,dgOpenRaw:acc.dgOpenRaw,
-        pctPaired:acc.pctPaired,seedPaired:acc.seedPaired,
-        accStruct:acc.struct,accBindStart:acc.bindStart,accBindEnd:acc.bindEnd,accWinSeq:acc.winSeq};
-    }
+    const hit=buildHitAtPos(mirna,mrna,pos,saltNa);
+    if(dgFilter!==null && hit.dg>dgFilter) continue;
+    const isCanon=['8mer','7mer-m8','7mer-A1','6mer'].includes(hit.seedType);
+    if(noncan==='canonical'&&!isCanon) continue;
+    if(noncan==='noncanonical'&&isCanon) continue;
+    hits.push(hit);
   }
-  return best;
+  return hits;
+}
+
+function scanOne(mirna,mrna,minSeed,saltNa){
+  const hits=scanAllHits(mirna,mrna,minSeed,saltNa,{noncan:'all'});
+  if(!hits.length) return null;
+  return hits.reduce((best,h)=>!best||h.dg<best.dg?h:best,null);
 }
 
 // Scan ALL binding sites above threshold — used by Sponge Effect
@@ -7375,20 +7415,24 @@ function drawDuplex2D(canvas, aln, mirnaName, pos, centeredRange, comp3Range) {
   const lbl=(col,txt,x,y,align='right')=>{ctx.font='bold 9px monospace';ctx.fillStyle=col;ctx.textAlign=align;ctx.fillText(txt,x,y);};
   lbl('rgba(0,212,170,0.8)',"5'",PAD-18,YM+4);lbl('rgba(0,212,170,0.8)',"3'",PAD+(len-1)*SP+NR+8,YM+4,'left');
   lbl('rgba(167,139,250,0.8)',"3'",PAD-18,YT+4);lbl('rgba(167,139,250,0.8)',"5'",PAD+(len-1)*SP+NR+8,YT+4,'left');
-  ctx.font='8px monospace';ctx.fillStyle='rgba(107,114,128,0.7)';ctx.textAlign='center';
+  ctx.font='9px monospace';ctx.fillStyle='rgba(107,114,128,0.75)';ctx.textAlign='center';
   // Lewa kolumna (i=0) = aln[0].tb = mRNA poz pos+len (3' kraniec wiązania)
   // Prawa kolumna (i=len-1) = aln[len-1].tb = mRNA poz pos+1 (5' kraniec = A1)
   ctx.fillText(`pos:${pos+len}`,PAD,YT+NR+18);ctx.fillText(`pos:${pos+1}`,PAD+(len-1)*SP,YT+NR+18);
   // Etykieta seedu: kolumna i=7 (miRNA poz 8) = 5' kraniec seedu na mRNA = pos+len-7 (1-based)
   if(len>7){
     const xSeed=PAD+7*SP;
+    const hasM8 = aln[7]?.type==='wc';
+    const hasA1 = aln[0]?.type==='wc';
+    const s2_7 = [1,2,3,4,5,6].every(i=>aln[i]?.type==='wc');
+    const seedDisplay = (!hasM8 && hasA1 && s2_7) ? (pos+len-6) : (pos+len-7);
     ctx.fillStyle='rgba(255,107,53,0.85)';ctx.textAlign='center';
-    ctx.fillText(`s:${pos+len-7}`,xSeed,YT+NR+18);
+    ctx.fillText(`s:${seedDisplay}`,xSeed,YT+NR+18);
   }
 
   // AU bar
   if(aln._auPct){
-    ctx.font='8px monospace';ctx.fillStyle='rgba(107,114,128,0.6)';ctx.textAlign='left';
+    ctx.font='9px monospace';ctx.fillStyle='rgba(107,114,128,0.68)';ctx.textAlign='left';
     ctx.fillText(`AU: ${aln._auPct}%`,4,H-5);
     ctx.fillStyle='rgba(251,191,36,0.25)';ctx.fillRect(4,H-14,aln._auPct*0.75,8);
     ctx.strokeStyle='rgba(251,191,36,0.4)';ctx.lineWidth=1;ctx.strokeRect(4,H-14,75,8);
@@ -7406,7 +7450,7 @@ function drawNt(ctx,x,y,base,type,isSeed,inCentered,inComp3){
   if(inComp3){ringColor='#60a5fa';ringWidth=2;}
   ctx.beginPath();ctx.arc(x,y,NR,0,Math.PI*2);ctx.fillStyle=bg[base]||'#1a1a1a';ctx.fill();
   ctx.strokeStyle=ringColor;ctx.lineWidth=ringWidth;ctx.stroke();
-  ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle=bc[base]||'#e8eaf0';ctx.fillText(base,x,y);ctx.textBaseline='alphabetic';
 }
 
@@ -7584,6 +7628,82 @@ function getDB(species){
   return MIRNA_DB;
 }
 
+function refreshMirnaPick(){
+  const search=document.getElementById('mirnaPickSearch');
+  if(search && !search.value) search.value='';
+  filterMirnaPickOptions(true);
+}
+
+function filterMirnaPickOptions(keepPrev=false){
+  const sel=document.getElementById('mirnaPick');
+  if(!sel) return;
+  const species=document.getElementById('species')?.value||'mammals';
+  const db=getDB(species);
+  const prev=sel.value;
+  const q=(document.getElementById('mirnaPickSearch')?.value||'').trim().toLowerCase();
+  const countEl=document.getElementById('mirnaPickCount');
+  const opts=['<option value="">— wybierz z listy —</option>','<option value="__custom__">Własne miRNA</option>'];
+  let matched=0;
+  for(const [name] of db){
+    if(q && !name.toLowerCase().includes(q)) continue;
+    opts.push(`<option value="${name}">${name}</option>`);
+    matched++;
+  }
+  sel.innerHTML=opts.join('');
+  if(countEl) countEl.textContent=`znaleziono ${matched} miRNA`;
+  if(prev && [...sel.options].some(o=>o.value===prev)) sel.value=prev;
+  else if(!keepPrev) sel.value='';
+  onMirnaPickChange();
+}
+
+function onMirnaPickChange(){
+  const wrap=document.getElementById('customMirnaWrap');
+  const pick=document.getElementById('mirnaPick')?.value||'';
+  if(wrap) wrap.style.display = pick==='__custom__' ? '' : 'none';
+  saveSettings();
+}
+
+function toggleScanModeUI(){
+  const mode=document.getElementById('scanMode')?.value||'all';
+  const panel=document.getElementById('singleMirnaPanel');
+  if(panel) panel.style.display = mode==='single' ? 'flex' : 'none';
+  if(mode==='single') refreshMirnaPick();
+  saveSettings();
+}
+
+function getMirnaScanList(species){
+  const mode=document.getElementById('scanMode')?.value||'all';
+  const db=getDB(species);
+  if(mode!=='single') return db;
+
+  const pick=document.getElementById('mirnaPick')?.value||'';
+  if(!pick){setst('⚠ Wybierz miRNA z listy lub opcję Własne miRNA.');return null;}
+  if(pick==='__custom__'){
+    const name=(document.getElementById('customMirnaName')?.value||'custom-miRNA').trim()||'custom-miRNA';
+    const seq=toRNA(document.getElementById('customMirnaSeq')?.value||'');
+    if(seq.length<6){setst('⚠ Własna sekwencja miRNA jest za krótka (min. 6 nt).');return null;}
+    return [[name,'custom',seq]];
+  }
+
+  const rec=db.find(r=>r[0]===pick) || MIRNA_DB.find(r=>r[0]===pick);
+  if(!rec){setst('⚠ Nie znaleziono wybranego miRNA w bazie.');return null;}
+  return [rec];
+}
+
+function sortResultsByRank(results, rankBy){
+  if(rankBy==='dg') results.sort((a,b)=>a.hit.dg-b.hit.dg);
+  else if(rankBy==='dgcoop') results.sort((a,b)=>a.hit.dgCoop-b.hit.dgCoop);
+  else if(rankBy==='score') results.sort((a,b)=>b.hit.score-a.hit.score);
+  else if(rankBy==='seed') results.sort((a,b)=>b.hit.seedWeight-a.hit.seedWeight||a.hit.dg-b.hit.dg);
+  else if(rankBy==='au') results.sort((a,b)=>b.hit.auPct-a.hit.auPct);
+  else if(rankBy==='cons') results.sort((a,b)=>b.hit.conservation.score-a.hit.conservation.score||a.hit.dg-b.hit.dg);
+  else if(rankBy==='acc') results.sort((a,b)=>{
+    const order={'HIGH':0,'MED':1,'LOW':2};
+    const oa=order[a.hit.accessibility??'MED']??1, ob=order[b.hit.accessibility??'MED']??1;
+    return oa!==ob ? oa-ob : a.hit.dg-b.hit.dg;
+  });
+}
+
 function runScan(mrnaOverride) {
   const mrna = mrnaOverride || getActiveMrna();
   if(!mrna||mrna.length<15){setst("⚠ Brak sekwencji lub za krótka.");return;}
@@ -7597,53 +7717,41 @@ function runScan(mrnaOverride) {
   const rankBy=document.getElementById('rankby').value;
   const noncan=document.getElementById('noncan').value;
   const saltNa=parseFloat(document.getElementById('saltConc').value)||0.15;
-  const dgFilter=parseFloat(document.getElementById('dgFilter')?.value??'-3.0')||null;
+  const dgRaw=parseFloat(document.getElementById('dgFilter')?.value??'-0.5');
+  const dgFilter=Number.isFinite(dgRaw)?dgRaw:null;
+  const useDgFilter = rankBy!=='seed' && dgFilter!==null;
   document.getElementById('saltBadge').textContent=`[Na⁺] ${saltNa}M${Math.abs(saltNa-1)>0.01?' (corr.)':''}`;
-  const db=getDB(species);
-  setst(`Skanowanie ${db.length} miRNA w sekwencji ${mrna.length} nt...`);
-  setProgress(0,`0 / ${db.length}`);
+  const mirnaList=getMirnaScanList(species);
+  if(!mirnaList||!mirnaList.length) return;
+  setst(`Skanowanie ${mirnaList.length} miRNA w sekwencji ${mrna.length} nt...`);
+  setProgress(0,`0 / ${mirnaList.length}`);
   document.getElementById('es').style.display='none';
   document.getElementById('tw').style.display='none';
   const results=[];let i=0;
   function chunk(){
-    const end=Math.min(i+20,db.length);
+    const end=Math.min(i+10,mirnaList.length);
     for(;i<end;i++){
-      const[name,org,seq]=db[i];
+      const[name,org,seq]=mirnaList[i];
       const mirna=toRNA(seq);
-      const hit=scanOne(mirna,mrna,minSeed,saltNa);
-      if(!hit) continue;
-      // filter by dg threshold
-      if(dgFilter !== null && hit.dg > dgFilter) continue;
-      // filter noncanonical
-      const isCanon=['8mer','7mer-m8','7mer-A1','6mer'].includes(hit.seedType);
-      if(noncan==='canonical'&&!isCanon) continue;
-      if(noncan==='noncanonical'&&isCanon) continue;
+      const hits=scanAllHits(mirna,mrna,minSeed,saltNa,{dgFilter:useDgFilter?dgFilter:null,noncan});
+      if(!hits.length) continue;
       const cons=getSeedConservation(mirna,org);
-      hit.conservation=cons;
-      results.push({name,org,mirna,hit,mrnaSeq:mrna});
+      for(const hit of hits){
+        hit.conservation=cons;
+        results.push({name,org,mirna,hit,mrnaSeq:mrna});
+      }
     }
-    const pct=Math.round(i/db.length*100);
-    setProgress(pct,`${i}/${db.length} — ${results.length} trafień`);
-    if(i<db.length){setTimeout(chunk,0);}
+    const pct=Math.round(i/mirnaList.length*100);
+    setProgress(pct,`${i}/${mirnaList.length} — ${results.length} miejsc`);
+    if(i<mirnaList.length){setTimeout(chunk,0);}
     else{
       addCoopBonus(results);
-      if(rankBy==='dg') results.sort((a,b)=>a.hit.dg-b.hit.dg);
-      else if(rankBy==='dgcoop') results.sort((a,b)=>a.hit.dgCoop-b.hit.dgCoop);
-      else if(rankBy==='score') results.sort((a,b)=>b.hit.score-a.hit.score);
-      else if(rankBy==='seed') results.sort((a,b)=>b.hit.seedWeight-a.hit.seedWeight||a.hit.dg-b.hit.dg);
-      else if(rankBy==='au') results.sort((a,b)=>b.hit.auPct-a.hit.auPct);
-      else if(rankBy==='cons') results.sort((a,b)=>b.hit.conservation.score-a.hit.conservation.score||a.hit.dg-b.hit.dg);
-      else if(rankBy==='acc') results.sort((a,b)=>{
-        const order={'HIGH':0,'MED':1,'LOW':2};
-        const oa=order[a.hit.accessibility??'MED']??1, ob=order[b.hit.accessibility??'MED']??1;
-        return oa!==ob ? oa-ob : a.hit.dg-b.hit.dg;
-      });
+      sortResultsByRank(results, rankBy);
       RESULTS=results.slice(0,topN);
       hideProgress();
       renderTable(RESULTS);
       renderDashboard(RESULTS, results.length);
-      setst(`✓ ${results.length} trafień (seed≥${minSeed}mer). Top ${RESULTS.length}. Ranking: ${rankBy}.`);
-      document.getElementById('rc').textContent=`${RESULTS.length} wyników`;
+      setst(`✓ ${results.length} miejsc wiązania (seed≥${minSeed}mer). Top ${RESULTS.length}. Ranking: ${rankBy}.`);
       ['expBtn','expManBtn','expPDF','expDOCX','expJSON','dualViewBtn'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
       document.getElementById('filterRow').style.display='flex';
       if(dualViewOpen) populateDualSelects();
@@ -7658,10 +7766,16 @@ async function scanAllSeqs(){
   snpHistory = []; updateSnpUndoBtn();
   const noncanFilter = document.getElementById('noncan').value;
   const minSeed=parseInt(document.getElementById('minseed').value);
+  const topN=parseInt(document.getElementById('topn').value)||30;
+  const rankBy=document.getElementById('rankby').value;
+  const dgRaw=parseFloat(document.getElementById('dgFilter')?.value??'-0.5');
+  const dgFilter=Number.isFinite(dgRaw)?dgRaw:null;
+  const useDgFilter = rankBy!=='seed' && dgFilter!==null;
   const saltNa=parseFloat(document.getElementById('saltConc').value)||0.15;
   const species=document.getElementById('species').value;
-  const db=getDB(species);
-  const totalSteps = FASTA_SEQS.length * db.length;
+  const mirnaList=getMirnaScanList(species);
+  if(!mirnaList||!mirnaList.length) return;
+  const totalSteps = FASTA_SEQS.length * mirnaList.length;
   let done = 0;
   let allResults=[];
 
@@ -7670,34 +7784,32 @@ async function scanAllSeqs(){
     const mrna=toRNA(FASTA_SEQS[si].seq);
     setst(`Sekwencja ${si+1}/${FASTA_SEQS.length}: ${seqName} (${mrna.length} nt)`);
 
-    for(const[name,org,seq] of db){
+    for(const[name,org,seq] of mirnaList){
       const mirna=toRNA(seq);
-      const hit=scanOne(mirna,mrna,minSeed,saltNa);
-      if(hit){
-        const isCanon=['8mer','7mer-m8','7mer-A1','6mer'].includes(hit.seedType);
-        if(noncanFilter==='canonical'&&!isCanon){done++;continue;}
-        if(noncanFilter==='noncanonical'&&isCanon){done++;continue;}
+      const hits=scanAllHits(mirna,mrna,minSeed,saltNa,{dgFilter:useDgFilter?dgFilter:null,noncan:noncanFilter});
+      if(hits.length){
         const cons=getSeedConservation(mirna,org);
-        hit.conservation=cons;
-        allResults.push({name,org,mirna,hit,transcript:seqName,mrnaSeq:mrna});
+        for(const hit of hits){
+          hit.conservation=cons;
+          allResults.push({name,org,mirna,hit,transcript:seqName,mrnaSeq:mrna});
+        }
       }
       done++;
       // Update progress every 200 steps to avoid UI overhead
       if(done % 200 === 0){
         const pct = Math.round(done/totalSteps*100);
-        setProgress(pct, `${si+1}/${FASTA_SEQS.length} sekwencji · ${seqName} · ${allResults.length} trafień`);
+        setProgress(pct, `${si+1}/${FASTA_SEQS.length} sekwencji · ${seqName} · ${allResults.length} miejsc`);
         await new Promise(r=>setTimeout(r,0));
       }
     }
   }
   addCoopBonus(allResults);
-  allResults.sort((a,b)=>a.hit.dg-b.hit.dg);
-  RESULTS=allResults.slice(0,parseInt(document.getElementById('topn').value)||30);
+  sortResultsByRank(allResults, rankBy);
+  RESULTS=allResults.slice(0,topN);
   hideProgress();
   renderTable(RESULTS);
   renderDashboard(RESULTS,allResults.length);
-  setst(`✓ Batch: ${allResults.length} trafień ze wszystkich sekwencji (${FASTA_SEQS.length} sekwencji). Top ${RESULTS.length}.`);
-  document.getElementById('rc').textContent=`${RESULTS.length} wyników`;
+  setst(`✓ Batch: ${allResults.length} miejsc ze wszystkich sekwencji (${FASTA_SEQS.length} sekwencji). Top ${RESULTS.length}.`);
   ['expBtn','expManBtn','expPDF','expDOCX','expJSON','dualViewBtn'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
   document.getElementById('filterRow').style.display='flex';
   if(dualViewOpen) populateDualSelects();
@@ -7888,17 +8000,24 @@ function sortTable(col){
   buildTableRows();
 }
 
+function updateResultCounter(shown,total){
+  const rc=document.getElementById('rc');
+  if(!rc) return;
+  const pct = total>0 ? Math.round((shown/total)*1000)/10 : 0;
+  rc.textContent=`pokazano ${shown} z ${total} miejsc (${pct}%)`;
+}
+
+function displaySeedPos1(hit){
+  const base = hit.seedPos>=0 ? hit.seedPos+1 : hit.pos+1;
+  return hit.seedType==='7mer-A1' ? base+1 : base;
+}
+
 function applyFilters(){
   if(_tableRowCache.length){_applyFiltersFast();return;}
   _tableRowCache=[];
   const tb=document.getElementById('rb');tb.innerHTML='';
-  if(!RESULTS.length){document.getElementById('es').style.display='block';return;}
+  if(!RESULTS.length){document.getElementById('es').style.display='block';updateResultCounter(0,0);return;}
   document.getElementById('tw').style.display='block';
-  const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
-  const st=(document.getElementById('fSeed')||{}).value||'';
-  const org=(document.getElementById('fOrg')||{}).value||'';
-  const consMin=parseInt((document.getElementById('fCons')||{}).value||'0');
-  const consOrg=(document.getElementById('fConsOrg')||{}).value||'';
   _orgsByFamily=new Map();
   RESULTS.forEach(r=>{
     const fam = normalizeMirFamilyName(r.name);
@@ -7906,23 +8025,8 @@ function applyFilters(){
     if(!_orgsByFamily.has(fam)) _orgsByFamily.set(fam, new Set());
     _orgsByFamily.get(fam).add(r.org);
   });
-  let shown=0;
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   RESULTS.forEach((r,idx)=>{
-    if(txt&&!r.name.toLowerCase().includes(txt)) return;
-    if(st&&r.hit.seedType!==st) return;
-    if(org&&r.org!==org) return;
-    if(consMin>0&&(r.hit.conservation?.score??0)<consMin) return;
-    if(consOrg){
-      const fam = normalizeMirFamilyName(r.name);
-      const famOrgs = _orgsByFamily.get(fam);
-      if(!famOrgs || !famOrgs.has(consOrg)) return;
-      if(consOrg==='hsa'&&!(r.hit.conservation?.hsa)) return;
-      if(consOrg==='mmu'&&!(r.hit.conservation?.mmu)) return;
-      if(consOrg==='rno'&&!(r.hit.conservation?.rno)) return;
-      if(consOrg==='ath'&&!(r.hit.conservation?.ath)) return;
-      if(consOrg==='stu'&&!(r.hit.conservation?.stu)) return;
-    }
     const dg=r.hit.dg;
     const dgCls=dg<-10?'dg-good':dg<-6?'dg-med':'dg-low';
     const sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
@@ -7948,7 +8052,7 @@ function applyFilters(){
       <td style="font-size:.72rem">${coopStr}</td>
       <td style="font-weight:700;color:${dgTotalCol};font-size:.72rem" data-tip="ΔG_binding(${dg}) + ΔG_open(+${r.hit.dgOpen??0})">${r.hit.dgTotal??dg}</td>
       <td><span data-tip="${tip[r.hit.seedType]||''}" style="padding:.1rem .32rem;border-radius:3px;font-size:.67rem;font-weight:700;background:${sc}22;color:${sc};border:1px solid ${sc}44">${esc(r.hit.seedType)}</span></td>
-      <td style="color:var(--seed)" title="5' kraniec seedu na mRNA (miRNA poz 8)">${r.hit.seedPos>=0?r.hit.seedPos+1:r.hit.pos+1}</td>
+      <td style="color:var(--seed)" title="pozycja początku site wg konwencji seed">${displaySeedPos1(r.hit)}</td>
       <td style="color:var(--match)">${r.hit.wc}</td>
       <td style="color:var(--gu)">${r.hit.gu}</td>
       <td>${auBar}</td>
@@ -7958,10 +8062,10 @@ function applyFilters(){
     `;
     tr.onclick=()=>showPrev(r,idx);
     tr.dataset.ri=idx;
-    tb.appendChild(tr);shown++;
+    tb.appendChild(tr);
     _tableRowCache.push(tr);
   });
-  if(!shown) tb.innerHTML='<tr><td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td></tr>';
+  _applyFiltersFast();
 }
 function _applyFiltersFast(){
   const txt=(document.getElementById('fMirna')||{}).value?.toLowerCase()||'';
@@ -7997,6 +8101,7 @@ function _applyFiltersFast(){
     if(!noRow){noRow=document.createElement('tr');noRow.id='_noResultsRow';noRow.innerHTML='<td colspan="15" style="text-align:center;color:var(--muted);padding:1rem">Brak wyników dla aktywnych filtrów.</td>';tb.appendChild(noRow);}
     noRow.style.display='';
   } else if(noRow) noRow.style.display='none';
+  updateResultCounter(shown,RESULTS.length);
 }
 function buildTableRows(){_tableRowCache=[];_orgsByFamily=new Map();RESULTS.forEach(r=>{const fam=normalizeMirFamilyName(r.name);if(!fam)return;if(!_orgsByFamily.has(fam))_orgsByFamily.set(fam,new Set());_orgsByFamily.get(fam).add(r.org);});applyFilters();}
 function renderTable(res){buildTableRows();}
@@ -8008,7 +8113,7 @@ function resetFilters(){['fMirna','fSeed','fOrg','fCons','fConsOrg'].forEach(id=
 function showPrev(r,idx){
   document.querySelectorAll('tbody tr[data-ri]').forEach(t=>t.classList.toggle('act',parseInt(t.dataset.ri)===idx));
   document.getElementById('sn').textContent=r.name;
-  document.getElementById('ss').textContent=`${r.org==='hsa'?'Homo sapiens':r.org==='mmu'?'Mus musculus':r.org==='rno'?'Rattus norvegicus':r.org==='stu'?'Solanum tuberosum':'Arabidopsis thaliana'} · seed:${r.hit.seedPos>=0?r.hit.seedPos+1:r.hit.pos+1} | wiązanie:${r.hit.pos+1}–${r.hit.pos+r.mirna.length}`;
+  document.getElementById('ss').textContent=`${r.org==='hsa'?'Homo sapiens':r.org==='mmu'?'Mus musculus':r.org==='rno'?'Rattus norvegicus':r.org==='stu'?'Solanum tuberosum':'Arabidopsis thaliana'} · seed:${displaySeedPos1(r.hit)} | wiązanie:${r.hit.pos+1}–${r.hit.pos+r.mirna.length}`;
   const dg=r.hit.dg,sc=SEED_COLORS[r.hit.seedType]||'#6b7280';
   const consHtml=r.hit.conservation?`<span class="pill">Cons: ${consIcons(r.hit.conservation,r.org)}</span>`:'';
   const coopPill=r.hit.coopBonus<0?`<span class="pill b">ΔG+coop: ${r.hit.dgCoop}</span>`:'';
@@ -8039,7 +8144,7 @@ function showPrev(r,idx){
   for(const{type}of aln){if(type==='wc')html+=`<span style="color:var(--match)">|</span>`;else if(type==='gu')html+=`<span style="color:var(--gu)">:</span>`;else html+=`<span style="color:var(--mm)"> </span>`;}
   html+=`\n<span style="color:var(--accent3)">3' target </span>`;
   for(let i=0;i<len;i++){const{tb,isSeed}=aln[i];html+=`<span style="color:${isSeed?'var(--seed)':'var(--text)'}">${tb}</span>`;}
-  html+=`  <span style="color:var(--muted)">5'\n</span><span style="color:var(--muted);font-size:.68em">          seed: ${r.hit.seedPos>=0?r.hit.seedPos+1:r.hit.pos+1} | mRNA: ${r.hit.pos+1}–${r.hit.pos+len} | ${r.hit.seedType} | AU: ${r.hit.auPct}% | ΔG: ${dg} | ΔG(1M): ${r.hit.dg1M??dg}</span>`;
+  html+=`  <span style="color:var(--muted)">5'\n</span><span style="color:var(--muted);font-size:.86em">          seed: ${displaySeedPos1(r.hit)} | mRNA: ${r.hit.pos+1}–${r.hit.pos+len} | ${r.hit.seedType} | AU: ${r.hit.auPct}% | ΔG: ${dg} | ΔG(1M): ${r.hit.dg1M??dg}</span>`;
   document.getElementById('dv').innerHTML=html;
 
   const dgCol=dg<-10?'var(--accent)':dg<-6?'var(--gu)':'var(--muted)';
@@ -8180,7 +8285,7 @@ async function copyTable(){
 // ============================================================
 // LOCALSTORAGE — remember settings
 // ============================================================
-const SETTINGS=['species','minseed','rankby','saltConc','topn','noncan'];
+const SETTINGS=['species','minseed','rankby','saltConc','topn','noncan','dgFilter','scanMode','mirnaPick','customMirnaName','customMirnaSeq'];
 function saveSettings(){SETTINGS.forEach(id=>{const el=document.getElementById(id);if(el)localStorage.setItem('mirna_v5_'+id,el.value);});}
 function loadSettings(){SETTINGS.forEach(id=>{const v=localStorage.getItem('mirna_v5_'+id);const el=document.getElementById(id);if(v&&el)el.value=v;});}
 SETTINGS.forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',saveSettings);});
@@ -8236,6 +8341,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if(badge) badge.textContent = `miRBase v22.1 · hsa:${c.hsa} mmu:${c.mmu} rno:${c.rno} ath:${c.ath} stu:${c.stu}`;
   // Re-apply saved settings to UI
   loadSettings();
+  toggleScanModeUI();
+  refreshMirnaPick();
 });
 
 
@@ -8491,6 +8598,10 @@ const HELP_TEXTS = {
     noncan: {
         title: 'Filtr wiązań niekanonicznych',
         body: 'Kontroluje wyświetlanie wiązań poza standardowym seedem:\n• Wszystkie — kanoniczne + centered + 3′comp\n• Tylko kanoniczne — seed 6–8mer (pozycje 2–8)\n• Tylko niekanoniczne — centered (poz. 4–14) i 3′comp (poz. 13–16) bez seed\n\nWiązania centered i 3′comp mogą być funkcjonalne mimo słabego regionu seed.'
+    },
+    scanmode: {
+      title: 'Tryb skanowania',
+      body: 'Wybiera zakres analizy:\n• Skan wszystkich miRNA — przeszukuje całą bazę dla wybranego organizmu i zwraca wszystkie miejsca wiązania spełniające filtry.\n• Skan jednego miRNA — analizuje tylko jedno wskazane miRNA (z listy lub własne), ale nadal zwraca wszystkie jego miejsca wiązania.\n\nDo testów konkretnej hipotezy (np. hsa-miR-34a-5p vs jeden gen) użyj trybu jednego miRNA.'
     },
     dg: {
         title: 'Energia swobodna ΔG (kcal/mol)',
@@ -9050,23 +9161,37 @@ function toggleDualView() {
 
 function populateDualSelects() {
     if (!RESULTS.length) return;
-    ['A','B'].forEach(side => {
-        const sel = document.getElementById(`dualSel${side}`);
-        const prev = sel.value;
-        const t = I18N[_lang] || I18N.pl;
-        sel.innerHTML = `<option value="">${t.dual_select_placeholder}</option>`;
-        RESULTS.forEach((r, i) => {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.textContent = `${r.name} (${r.hit.seedType}, ${t.dual_stat_dg.replace(':','')} ${r.hit.dg})`;
-            sel.appendChild(opt);
-        });
-        // auto-select first two
-        if (prev) sel.value = prev;
-        else sel.value = side === 'A' ? 0 : Math.min(1, RESULTS.length - 1);
-    });
-    dualDraw('A');
-    dualDraw('B');
+  filterDualOptions('A', true);
+  filterDualOptions('B', true);
+}
+
+function filterDualOptions(side, useDefault=false) {
+  const sel = document.getElementById(`dualSel${side}`);
+  const searchEl = document.getElementById(`dualSearch${side}`);
+  if (!sel) return;
+  const prev = sel.value;
+  const q = (searchEl?.value || '').trim().toLowerCase();
+  const t = I18N[_lang] || I18N.pl;
+  sel.innerHTML = `<option value="">${t.dual_select_placeholder}</option>`;
+  RESULTS.forEach((r, i) => {
+    const label = `${r.name} ${r.org} ${r.hit.seedType} ${r.hit.dg}`.toLowerCase();
+    if (q && !label.includes(q)) return;
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${r.name} (${r.hit.seedType}, ${t.dual_stat_dg.replace(':','')} ${r.hit.dg})`;
+    sel.appendChild(opt);
+  });
+
+  const hasPrev = [...sel.options].some(o => o.value === prev);
+  if (hasPrev) sel.value = prev;
+  else if (useDefault && sel.options.length > 1) {
+    sel.value = String(side === 'A' ? sel.options[1].value : (sel.options[2]?.value ?? sel.options[1].value));
+  } else if (sel.options.length > 1) {
+    sel.value = sel.options[1].value;
+  } else {
+    sel.value = '';
+  }
+  dualDraw(side);
 }
 
 function dualDraw(side) {
@@ -9418,7 +9543,11 @@ async function sessionSave() {
                 saltConc: document.getElementById('saltConc').value,
                 topn:     document.getElementById('topn').value,
                 noncan:   document.getElementById('noncan').value,
-                dgFilter: document.getElementById('dgFilter')?.value ?? '-3.0',
+              dgFilter: document.getElementById('dgFilter')?.value ?? '-0.5',
+              scanMode: document.getElementById('scanMode')?.value ?? 'all',
+              mirnaPick: document.getElementById('mirnaPick')?.value ?? '',
+              customMirnaName: document.getElementById('customMirnaName')?.value ?? '',
+              customMirnaSeq: document.getElementById('customMirnaSeq')?.value ?? '',
             },
             uiState: {
                 activeIdx,
@@ -9481,6 +9610,8 @@ async function sessionRestore() {
             Object.entries(record.settings).forEach(([k,v]) => {
                 const el = document.getElementById(k); if (el) el.value = v;
             });
+          toggleScanModeUI();
+          refreshMirnaPick();
         }
         if (CURRENT_MRNA) document.getElementById('mrna').value = CURRENT_MRNA;
 

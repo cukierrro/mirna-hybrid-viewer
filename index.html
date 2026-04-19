@@ -392,10 +392,26 @@ td.nc{font-family:'Syne',sans-serif;font-weight:600;color:var(--text);font-size:
       </div>
     </div>
     <div id="panel3d" style="display:none">
+      <div style="display:flex;gap:.45rem;align-items:center;flex-wrap:wrap;margin-bottom:.45rem">
+        <label style="margin:0;font-size:.66rem;color:var(--muted)">Styl 3D</label>
+        <select id="view3dStyle" onchange="render3DModel()" style="max-width:210px">
+          <option value="cinematic" selected>Cinematic (video-like)</option>
+          <option value="readable">Bio-readable (polecany)</option>
+          <option value="publication">Publication (clean)</option>
+          <option value="atoms">Atomistic</option>
+        </select>
+        <button class="btn btn-g" onclick="apply3DCamera('front')" style="font-size:.66rem">Front</button>
+        <button class="btn btn-g" onclick="apply3DCamera('side')" style="font-size:.66rem">Side</button>
+        <button class="btn btn-g" onclick="apply3DCamera('top')" style="font-size:.66rem">Top</button>
+        <button class="btn btn-g" onclick="apply3DCamera('hero')" style="font-size:.66rem">Hero</button>
+        <button class="btn btn-g" id="spin3DBtn" onclick="toggle3DSpin()" style="font-size:.66rem">Spin: off</button>
+        <button class="btn btn-g" id="anim3DBtn" onclick="toggle3DAssemblyAnimation()" style="font-size:.66rem">▶ Animacja</button>
+        <button class="btn btn-g" onclick="export3DPNG()" style="font-size:.66rem">🖼 PNG 3D</button>
+      </div>
       <div class="canvas-wrap" style="min-height:380px;position:relative;padding:0">
         <div id="3dmolviewer" style="width:100%;height:380px;border-radius:9px;overflow:hidden;"></div>
       </div>
-      <div style="font-size:.63rem;color:var(--muted);margin-top:.3rem;text-align:center" data-i18n="hint_3d">Przeciągnij myszą aby obracać · scroll = zoom · Kolory: 🟢 WC · 🟡 G:U · 🟣 mismatch · 🟠 seed region</div>
+      <div style="font-size:.63rem;color:var(--muted);margin-top:.3rem;text-align:center" data-i18n="hint_3d">Przeciągnij myszą aby obracać · scroll = zoom · Style: readable / publication / atomistic · Kolory: 🟢 WC · 🟡 G:U · 🟣 mismatch · 🟠 seed</div>
     </div>
 
     <!-- stats now in preview2-header -->
@@ -7464,88 +7480,229 @@ function roundRect(ctx,x,y,w,h,r){
 // 3D VISUALIZATION — 3Dmol.js
 // ============================================================
 let global3DViewer = null;
+let _current3DData = null;
+let _spin3D = false;
+let _camera3D = 'front';
+let _activePreviewTab = '2d';
+let _anim3DTimer = null;
+let _anim3DRunning = false;
 
-function generateRNA3D(aln, pos) {
-  // Build a pseudo-PDB with two RNA strands in A-form helix geometry
-  let pdb = '';
-  const len = aln.length;
-  // A-form RNA helix params: rise=2.81Å, twist=32.7°, radius=9.3Å
-  const rise = 2.81, twist = 32.7 * Math.PI / 180, radius = 9.3;
-  const pairDist = 6.5; // distance between paired strands
-  const atomTypes = {'A':'N9','U':'N1','G':'N9','C':'N1','-':'C1\''}; 
+function apply3DStyles(styleMode, revealTo=null){
+  if(!global3DViewer) return;
+  const palette = {
+    wc:'#00d4aa',
+    gu:'#fbbf24',
+    mm:'#a78bfa',
+    seed:'#ff6b35',
+    chainA:'#34d399',
+    chainB:'#60a5fa',
+    muted:'#6b7280'
+  };
+  global3DViewer.setStyle({},{});
 
-  // Colors by type (stored in B-factor hack: 1=wc, 2=gu, 3=mm, 4=seed-wc)
-  let serial = 1;
-  for (let i = 0; i < len; i++) {
-    const {mb, tb, type, isSeed} = aln[i];
-    const angle = i * twist;
-    // miRNA strand (chain A) — helical path
-    const xA = radius * Math.cos(angle);
-    const yA = radius * Math.sin(angle);
-    const zA = i * rise;
-    // mRNA strand (chain B) — opposite side
-    const xB = radius * Math.cos(angle + Math.PI);
-    const yB = radius * Math.sin(angle + Math.PI);
-    const zB = i * rise;
-         const bfac = isSeed ? '4.00' : type === 'wc' ? '1.00' : type === 'gu' ? '2.00' : '3.00';
-        const at = atomTypes[mb] || 'C1';
-        const bt = atomTypes[tb] || 'C1';
-    pdb += `ATOM  ${String(serial).padStart(5)}  ${at.padEnd(4)} ${mb === '-' ? 'X' : mb}   A${String(i+1).padStart(4)}    ${xA.toFixed(3).padStart(8)}${yA.toFixed(3).padStart(8)}${zA.toFixed(3).padStart(8)}  1.00 ${bfac}           N
-`;
-    serial++;
-    pdb += `ATOM  ${String(serial).padStart(5)}  ${bt.padEnd(4)} ${tb === '-' ? 'X' : tb}   B${String(i+1).padStart(4)}    ${xB.toFixed(3).padStart(8)}${yB.toFixed(3).padStart(8)}${zB.toFixed(3).padStart(8)}  1.00 ${bfac}           N
-`;
-    serial++;
-    // Hydrogen bond between paired atoms
-    if (type === 'wc' || type === 'gu') {
-      const hx = (xA + xB) / 2, hy = (yA + yB) / 2, hz = (zA + zB) / 2;
-      pdb += `HETATM${String(serial).padStart(5)}  H   HOH A${String(500+i).padStart(4)}    ${hx.toFixed(3).padStart(8)}${hy.toFixed(3).padStart(8)}${hz.toFixed(3).padStart(8)}  1.00 ${bfac}           O
-`;
-      serial++;
-    }
+  // Global fallback so model remains visible even if chain metadata is missing.
+  global3DViewer.setStyle({atom:'P'},{sphere:{scale:0.62,color:'#53c7be',opacity:0.95},stick:{radius:0.22,color:'#43b6ad',opacity:0.9}});
+  global3DViewer.setStyle({atom:'N1'},{sphere:{scale:0.52,color:'#f1a2b8',opacity:0.95},stick:{radius:0.18,color:'#d88ca1',opacity:0.92}});
+  if(revealTo!==null){
+    const range = `1-${revealTo}`;
+    global3DViewer.setStyle({atom:'P'},{sphere:{scale:0.26,color:'#8fd9cf',opacity:0.12}});
+    global3DViewer.setStyle({atom:'N1'},{sphere:{scale:0.3,color:'#d9a6b1',opacity:0.12}});
+    global3DViewer.setStyle({atom:'P',resi:range},{sphere:{scale:0.46,color:'#9fe8dc',opacity:0.95}});
+    global3DViewer.setStyle({atom:'N1',resi:range,resn:'A'},{sphere:{scale:0.43,color:'#f7c6cf',opacity:0.96}});
+    global3DViewer.setStyle({atom:'N1',resi:range,resn:'U'},{sphere:{scale:0.43,color:'#f4a9b8',opacity:0.96}});
+    global3DViewer.setStyle({atom:'N1',resi:range,resn:'G'},{sphere:{scale:0.43,color:'#cc6a80',opacity:0.96}});
+    global3DViewer.setStyle({atom:'N1',resi:range,resn:'C'},{sphere:{scale:0.43,color:'#ffe9df',opacity:0.96}});
+    global3DViewer.setStyle({atom:'N1',resi:range,resn:'X'},{sphere:{scale:0.39,color:'#c9c9c9',opacity:0.85}});
+    global3DViewer.setStyle({atom:'N1',resi:range,b:4},{sphere:{scale:0.48,color:'#ff8b5a',opacity:1}});
+    global3DViewer.setStyle({resn:'HOH'},{sphere:{scale:0.08,color:'#ffffff',opacity:0.18}});
+    return;
   }
-  // CONECT records for backbone
-  for (let i = 0; i < len - 1; i++) {
-    const a1 = i*2+1, a2 = (i+1)*2+1;
-    const b1 = i*2+2, b2 = (i+1)*2+2;
-    pdb += `CONECT${String(a1).padStart(5)}${String(a2).padStart(5)}
-`;
-    pdb += `CONECT${String(b1).padStart(5)}${String(b2).padStart(5)}
-`;
-  }
-    pdb += 'END\n';
-  return pdb;
-}
 
-function show3DModel(aln, mirnaName, pos) {
-  const viewerDiv = document.getElementById('3dmolviewer');
-  if (!viewerDiv) return;
-  const isLight = document.body.classList.contains('light');
-  const bg3d = isLight ? 0xf5f7fa : 0x111318;
-  try {
-    // Always recreate viewer so background color updates with theme
-    if (global3DViewer) { try { global3DViewer.clear(); } catch(e){} }
-    global3DViewer = $3Dmol.createViewer(viewerDiv, {
-      backgroundColor: bg3d,
-      defaultcolors: $3Dmol.elementColors.rasmol
-    });
-    const pdbData = generateRNA3D(aln, pos);
-    global3DViewer.addModel(pdbData, 'pdb');
-    // Color by B-factor: 4=seed(orange), 1=wc(green), 2=gu(yellow), 3=mm(purple)
+  if(styleMode==='cinematic'){
+    // Soft bead-like look inspired by explainer videos
+    // mRNA scaffold (chain B) dominant turquoise
+    global3DViewer.setStyle({chain:'B',atom:'P'},{sphere:{scale:0.88,color:'#41d6c3',opacity:1},stick:{radius:0.34,color:'#2fc6b2',opacity:0.95}});
+    global3DViewer.setStyle({chain:'B',atom:'N1',resn:'A'},{sphere:{scale:0.66,color:'#ff8fa8',opacity:1},stick:{radius:0.22,color:'#ff7d99',opacity:0.96}});
+    global3DViewer.setStyle({chain:'B',atom:'N1',resn:'U'},{sphere:{scale:0.66,color:'#ff7294',opacity:1},stick:{radius:0.22,color:'#f96589',opacity:0.96}});
+    global3DViewer.setStyle({chain:'B',atom:'N1',resn:'G'},{sphere:{scale:0.66,color:'#c94d69',opacity:1},stick:{radius:0.22,color:'#b6405b',opacity:0.96}});
+    global3DViewer.setStyle({chain:'B',atom:'N1',resn:'C'},{sphere:{scale:0.66,color:'#ffd6c8',opacity:1},stick:{radius:0.22,color:'#efbda8',opacity:0.96}});
+    global3DViewer.setStyle({chain:'B',atom:'N1',resn:'X'},{sphere:{scale:0.58,color:'#bbbbbb',opacity:0.95},stick:{radius:0.18,color:'#a7a7a7',opacity:0.92}});
+
+    // miRNA docked strand (chain A) slightly smaller and more contrasted
+    global3DViewer.setStyle({chain:'A',atom:'P'},{sphere:{scale:0.80,color:'#6cb6ff',opacity:1},stick:{radius:0.30,color:'#54a7f7',opacity:0.95}});
+    global3DViewer.setStyle({chain:'A',atom:'N1',resn:'A'},{sphere:{scale:0.62,color:'#ffc0d0',opacity:1},stick:{radius:0.2,color:'#f3a6bb',opacity:0.96}});
+    global3DViewer.setStyle({chain:'A',atom:'N1',resn:'U'},{sphere:{scale:0.62,color:'#ff9fba',opacity:1},stick:{radius:0.2,color:'#ef8caa',opacity:0.96}});
+    global3DViewer.setStyle({chain:'A',atom:'N1',resn:'G'},{sphere:{scale:0.62,color:'#c86c8d',opacity:1},stick:{radius:0.2,color:'#b95e81',opacity:0.96}});
+    global3DViewer.setStyle({chain:'A',atom:'N1',resn:'C'},{sphere:{scale:0.62,color:'#ffe3d8',opacity:1},stick:{radius:0.2,color:'#edc8ba',opacity:0.96}});
+    global3DViewer.setStyle({chain:'A',atom:'N1',resn:'X'},{sphere:{scale:0.56,color:'#c0c0c0',opacity:0.95},stick:{radius:0.17,color:'#ababab',opacity:0.92}});
+    global3DViewer.setStyle({chain:'A',atom:'N1',b:4},{sphere:{scale:0.78,color:'#ff7a3d',opacity:1},stick:{radius:0.28,color:'#ff6a2a',opacity:1}});
+
+    // Pair bridges thickness by pairing class (b-factor carried on N1 atoms).
+    global3DViewer.setStyle({atom:'N1',b:1},{stick:{radius:0.26,color:'#13d6b0',opacity:0.98}}); // WC
+    global3DViewer.setStyle({atom:'N1',b:2},{stick:{radius:0.2,color:'#f4c13b',opacity:0.98}});  // G:U
+    global3DViewer.setStyle({atom:'N1',b:3},{stick:{radius:0.16,color:'#9f86e9',opacity:0.92}}); // mismatch
+    global3DViewer.setStyle({atom:'N1',b:4},{stick:{radius:0.3,color:'#ff6a2a',opacity:1}});     // seed
+  } else if(styleMode==='publication'){
+    global3DViewer.setStyle({chain:'A'},{stick:{radius:0.22,color:palette.chainA,opacity:0.95}});
+    global3DViewer.setStyle({chain:'B'},{stick:{radius:0.22,color:palette.chainB,opacity:0.95}});
+    global3DViewer.setStyle({b:4},{stick:{radius:0.3,color:palette.seed},sphere:{scale:0.18,color:palette.seed}});
+    global3DViewer.setStyle({resn:'HOH'},{sphere:{scale:0.11,color:'#ffffff',opacity:0.35}});
+  }else if(styleMode==='atoms'){
     global3DViewer.setStyle({chain:'A'}, {sphere:{scale:0.35,colorscheme:{prop:'b',
       gradient:'linear', min:1, max:4,
-      colors:['#00d4aa','#fbbf24','#a78bfa','#ff6b35']
-    }}, stick:{radius:0.12, color:'#00d4aa', opacity:0.7}});
+      colors:[palette.wc,palette.gu,palette.mm,palette.seed]
+    }}, stick:{radius:0.12, color:palette.chainA, opacity:0.75}});
     global3DViewer.setStyle({chain:'B'}, {sphere:{scale:0.35,colorscheme:{prop:'b',
       gradient:'linear', min:1, max:4,
-      colors:['#00d4aa','#fbbf24','#a78bfa','#ff6b35']
-    }}, stick:{radius:0.12, color:'#a78bfa', opacity:0.7}});
-    // HOH = hydrogen bonds
+      colors:[palette.wc,palette.gu,palette.mm,palette.seed]
+    }}, stick:{radius:0.12, color:palette.chainB, opacity:0.75}});
     global3DViewer.setStyle({resn:'HOH'}, {sphere:{scale:0.15,color:'#ffffff',opacity:0.5}});
-    // Add backbone labels for 5' ends
-    global3DViewer.addLabel("5' miRNA", {position:{x:0,y:0,z:0}, fontColor:'#00d4aa', fontSize:10, backgroundColor:'transparent'});
+  }else{
+    // readable
+    global3DViewer.setStyle({chain:'A'},{stick:{radius:0.25,color:palette.chainA,opacity:0.95}});
+    global3DViewer.setStyle({chain:'B'},{stick:{radius:0.25,color:palette.chainB,opacity:0.95}});
+    global3DViewer.setStyle({b:1},{stick:{radius:0.25,color:palette.wc,opacity:0.98}});
+    global3DViewer.setStyle({b:2},{stick:{radius:0.25,color:palette.gu,opacity:0.98}});
+    global3DViewer.setStyle({b:3},{stick:{radius:0.25,color:palette.mm,opacity:0.9}});
+    global3DViewer.setStyle({b:4},{stick:{radius:0.33,color:palette.seed,opacity:1}});
+    global3DViewer.setStyle({resn:'HOH'},{sphere:{scale:0.09,color:'#ffffff',opacity:0.2}});
+  }
+}
+
+function generateRNA3D(aln, pos) {
+  // mRNA scaffold + local miRNA docking model (biologically intuitive orientation)
+  let pdb = '';
+  const len = aln.length;
+  const center = (len - 1) / 2;
+  const stepX = 2.65;
+  const baseOffset = 1.15;
+  const dockDist = 3.0;
+
+  let serial = 1;
+  const aBack = [], bBack = [], aBase = [], bBase = [];
+  const labelsA = [], labelsB = [];
+  const norm = (x,y,z)=>{const m=Math.hypot(x,y,z)||1;return{x:x/m,y:y/m,z:z/m};};
+  const res3 = b => ({A:'ADE',U:'URA',G:'GUA',C:'CYT','-':'UNK',X:'UNK'})[b] || 'UNK';
+  function atomRec(serialNum, atomName, resn3, chainId, resi, x, y, z, bfac, elem){
+    const rec = 'ATOM  ';
+    const serialField = String(serialNum).padStart(5);
+    const atomField = String(atomName).padEnd(4);
+    const resField = String(resn3).padStart(3);
+    const chainField = String(chainId).charAt(0);
+    const resiField = String(resi).padStart(4);
+    const xField = Number(x).toFixed(3).padStart(8);
+    const yField = Number(y).toFixed(3).padStart(8);
+    const zField = Number(z).toFixed(3).padStart(8);
+    const occField = '1.00'.padStart(6);
+    const bField = Number(bfac).toFixed(2).padStart(6);
+    const elemField = String(elem).padStart(2);
+    return `${rec}${serialField} ${atomField} ${resField} ${chainField}${resiField}    ${xField}${yField}${zField}${occField}${bField}          ${elemField}\n`;
+  }
+
+  for (let i = 0; i < len; i++) {
+    const {mb, tb, type, isSeed} = aln[i];
+    const bfac = isSeed ? 4 : type === 'wc' ? 1 : type === 'gu' ? 2 : 3;
+    // mRNA (chain B): folded scaffold-like path
+    const xB = (i - center) * stepX;
+    const yB = 2.4*Math.sin(i*0.45) + 1.1*Math.sin(i*0.17);
+    const zB = 1.7*Math.cos(i*0.37);
+    const n = norm(Math.cos(i*0.33), 0.32, Math.sin(i*0.33));
+
+    // Base on mRNA points outward from scaffold
+    const bx = xB + n.x * baseOffset;
+    const by = yB + n.y * baseOffset;
+    const bz = zB + n.z * baseOffset;
+
+    // miRNA (chain A): docks along binding site on opposite side of mRNA scaffold
+    const xA = xB - n.x * dockDist;
+    const yA = yB - n.y * dockDist + 0.45;
+    const zA = zB - n.z * dockDist;
+    const ax = xA - n.x * (baseOffset*0.85);
+    const ay = yA - n.y * (baseOffset*0.85);
+    const az = zA - n.z * (baseOffset*0.85);
+
+    // Backbone beads
+    pdb += atomRec(serial, 'P',  res3(mb), 'A', i+1, xA, yA, zA, 9, 'P');
+    aBack.push(serial); serial++;
+    pdb += atomRec(serial, 'P',  res3(tb), 'B', i+1, xB, yB, zB, 9, 'P');
+    bBack.push(serial); serial++;
+
+    // Base beads
+    pdb += atomRec(serial, 'N1', res3(mb), 'A', i+1, ax, ay, az, bfac, 'N');
+    aBase.push(serial); serial++;
+    pdb += atomRec(serial, 'N1', res3(tb), 'B', i+1, bx, by, bz, bfac, 'N');
+    bBase.push(serial); serial++;
+
+    labelsA.push({base:mb,x:ax,y:ay,z:az,chain:'A',i,isSeed:!!isSeed});
+    labelsB.push({base:tb,x:bx,y:by,z:bz,chain:'B',i,isSeed:!!isSeed});
+
+    // Midpoint pseudo-atoms removed: they produced dotted-line artifacts in cinematic mode.
+  }
+
+  for (let i = 0; i < len - 1; i++) {
+    pdb += `CONECT${String(aBack[i]).padStart(5)}${String(aBack[i+1]).padStart(5)}\n`;
+    pdb += `CONECT${String(bBack[i]).padStart(5)}${String(bBack[i+1]).padStart(5)}\n`;
+  }
+  for (let i = 0; i < len; i++) {
+    pdb += `CONECT${String(aBack[i]).padStart(5)}${String(aBase[i]).padStart(5)}\n`;
+    pdb += `CONECT${String(bBack[i]).padStart(5)}${String(bBase[i]).padStart(5)}\n`;
+    // Inter-strand base connection: visible molecular bridge between miRNA and mRNA.
+    pdb += `CONECT${String(aBase[i]).padStart(5)}${String(bBase[i]).padStart(5)}\n`;
+  }
+  pdb += 'END\n';
+  return {
+    pdb,
+    labelsA,
+    labelsB,
+    ends:{
+      mirna5: labelsA[0],
+      mirna3: labelsA[len-1],
+      mrna3: labelsB[0],
+      mrna5: labelsB[len-1]
+    }
+  };
+}
+
+function render3DModel() {
+  if(!_current3DData) return;
+  const {aln,mirnaName,pos} = _current3DData;
+  const viewerDiv = document.getElementById('3dmolviewer');
+  if (!viewerDiv) return;
+  const styleMode = document.getElementById('view3dStyle')?.value || 'readable';
+  const isLight = document.body.classList.contains('light');
+  const bg3d = styleMode==='cinematic' ? 0xe4d7d1 : (isLight ? 0xf5f7fa : 0x111318);
+  try {
+    if (!global3DViewer) {
+      global3DViewer = $3Dmol.createViewer(viewerDiv, {
+        backgroundColor: bg3d,
+        defaultcolors: $3Dmol.elementColors.rasmol
+      });
+    }
+    try { global3DViewer.setBackgroundColor(bg3d); } catch(e){}
+    try { global3DViewer.removeAllModels(); } catch(e){}
+    try { global3DViewer.removeAllLabels(); } catch(e){}
+    const modelData = generateRNA3D(aln, pos);
+    global3DViewer.addModel(modelData.pdb, 'pdb');
+    apply3DStyles(styleMode);
+
+    // Endpoint labels and nucleotide letters (focus on readability in cinematic mode)
+    if(modelData.ends?.mirna5) global3DViewer.addLabel("5' miRNA", {position:modelData.ends.mirna5, fontColor:'#00d4aa', fontSize:10, backgroundColor:'transparent'});
+    if(modelData.ends?.mirna3) global3DViewer.addLabel("3' miRNA", {position:modelData.ends.mirna3, fontColor:'#00d4aa', fontSize:10, backgroundColor:'transparent'});
+    if(modelData.ends?.mrna5)  global3DViewer.addLabel("5' mRNA",  {position:modelData.ends.mrna5,  fontColor:'#a78bfa', fontSize:10, backgroundColor:'transparent'});
+    if(modelData.ends?.mrna3)  global3DViewer.addLabel("3' mRNA",  {position:modelData.ends.mrna3,  fontColor:'#a78bfa', fontSize:10, backgroundColor:'transparent'});
+
+    // Nucleotide letters hidden in 3D: geometry and bonds should remain the primary visual cue.
     global3DViewer.zoomTo();
-    global3DViewer.spin(true);
+    if(styleMode==='cinematic') global3DViewer.zoom(2.5);
+    else if(styleMode==='publication') global3DViewer.zoom(1.45);
+    if(_camera3D==='side') global3DViewer.rotate(90,'y');
+    else if(_camera3D==='top') global3DViewer.rotate(90,'x');
+    else if(_camera3D==='hero'){
+      global3DViewer.rotate(18,'x');
+      global3DViewer.rotate(-28,'y');
+      if(styleMode==='cinematic') global3DViewer.zoom(1.14);
+    }
+    global3DViewer.spin(_spin3D);
     global3DViewer.render();
   } catch(e) {
     console.warn('3Dmol not loaded:', e);
@@ -7565,10 +7722,92 @@ function show3DModel(aln, mirnaName, pos) {
     }
   }
 }
+
+function show3DModel(aln, mirnaName, pos) {
+  _current3DData = {aln, mirnaName, pos};
+  if(_activePreviewTab==='3d') render3DModel();
+}
+
+function apply3DCamera(preset){
+  _camera3D = preset;
+  render3DModel();
+}
+
+function toggle3DSpin(){
+  _spin3D = !_spin3D;
+  const btn=document.getElementById('spin3DBtn');
+  if(btn) btn.textContent = _spin3D ? 'Spin: on' : 'Spin: off';
+  if(global3DViewer){
+    try{global3DViewer.spin(_spin3D);global3DViewer.render();}catch(e){}
+  }
+}
+
+function stop3DAssemblyAnimation(){
+  if(_anim3DTimer){clearInterval(_anim3DTimer);_anim3DTimer=null;}
+  _anim3DRunning=false;
+  const btn=document.getElementById('anim3DBtn');
+  if(btn) btn.textContent='▶ Animacja';
+}
+
+function toggle3DAssemblyAnimation(){
+  if(!_current3DData || !global3DViewer) return;
+  if(_anim3DRunning){
+    stop3DAssemblyAnimation();
+    render3DModel();
+    return;
+  }
+  stop3DAssemblyAnimation();
+  _anim3DRunning=true;
+  const btn=document.getElementById('anim3DBtn');
+  if(btn) btn.textContent='■ Stop';
+  const styleMode=document.getElementById('view3dStyle')?.value || 'publication';
+  const len=(_current3DData.aln||[]).length;
+  let step=1;
+  _anim3DTimer=setInterval(()=>{
+    if(!global3DViewer||_activePreviewTab!=='3d'){
+      stop3DAssemblyAnimation();
+      return;
+    }
+    if(step>len){
+      stop3DAssemblyAnimation();
+      render3DModel();
+      return;
+    }
+    try{
+      apply3DStyles(styleMode, step);
+      global3DViewer.zoomTo();
+      if(_camera3D==='side') global3DViewer.rotate(90,'y');
+      else if(_camera3D==='top') global3DViewer.rotate(90,'x');
+      else if(_camera3D==='hero'){
+        global3DViewer.rotate(18,'x');
+        global3DViewer.rotate(-28,'y');
+      }
+      global3DViewer.render();
+    }catch(e){
+      stop3DAssemblyAnimation();
+    }
+    step++;
+  }, 70);
+}
+
+function export3DPNG(){
+  if(!global3DViewer) return;
+  try{
+    global3DViewer.render();
+    const uri = global3DViewer.pngURI();
+    const a=document.createElement('a');
+    a.href=uri;
+    a.download=buildExportFileName('png','3d_duplex');
+    a.click();
+  }catch(e){
+    setst('⚠ Nie udało się wyeksportować PNG 3D.');
+  }
+}
 // ============================================================
 // TAB SWITCH
 // ============================================================
 function switchTab(tab){
+  _activePreviewTab=tab;
   ['2d','text','3d'].forEach(t=>{
     document.getElementById(`tab${t}`).classList.toggle('active',t===tab);
     const pid=t==='text'?'panel-text':('panel'+t);
@@ -7576,8 +7815,11 @@ function switchTab(tab){
     if(el) el.style.display=t===tab?(t==='text'?'block':''):'none';
   });
   // Trigger 3Dmol render when switching to 3D
-  if(tab==='3d' && global3DViewer) {
-    setTimeout(()=>{ try{global3DViewer.render();}catch(e){} }, 50);
+  if(tab==='3d') {
+    setTimeout(()=>{ try{render3DModel();}catch(e){} }, 20);
+  } else if(global3DViewer){
+    stop3DAssemblyAnimation();
+    try{global3DViewer.spin(false);global3DViewer.render();}catch(e){}
   }
 }
 switchTab('2d');
@@ -8228,11 +8470,42 @@ function resetPrev(){
 // ============================================================
 // EXPORTS
 // ============================================================
+function sanitizeFilenamePart(s){
+  return String(s||'mrna')
+    .replace(/[\\/:*?"<>|]+/g,'-')
+    .replace(/\s+/g,' ')
+    .trim()
+    .replace(/\s/g,'_')
+    .slice(0,80) || 'mrna';
+}
+
+function getCurrentSequenceContext(){
+  let seqNumber = 1;
+  let targetName = '';
+  const sel = document.getElementById('seqSelect');
+  const raw = document.getElementById('mrna')?.value?.trim() || '';
+  const seqs = (FASTA_SEQS && FASTA_SEQS.length) ? FASTA_SEQS : parseFASTAMulti(raw);
+  if(seqs.length){
+    const idxRaw = parseInt(sel?.value || '0');
+    const idx = Number.isFinite(idxRaw) ? Math.min(Math.max(idxRaw,0),seqs.length-1) : 0;
+    seqNumber = idx + 1;
+    targetName = seqs[idx]?.name || '';
+  }
+  if(!targetName) targetName = RESULTS[0]?.transcript || document.getElementById('ncbiId')?.value?.trim() || 'mrna';
+  return {seqNumber, targetName:sanitizeFilenamePart(targetName)};
+}
+
+function buildExportFileName(ext, suffix=''){
+  const {seqNumber, targetName} = getCurrentSequenceContext();
+  const tail = suffix ? `_${sanitizeFilenamePart(suffix)}` : '';
+  return `_${seqNumber}_${targetName}_mirna viewer 1.0${tail}.${ext}`;
+}
+
 function exportCSV(){
   if(!RESULTS.length) return;
   const rows=[['#','miRNA','Org','DG','DG_1M','DG_coop','SeedType','Pos','WC','GU','MM','AU_pct','Cons_score','Seq']];
   RESULTS.forEach((r,i)=>rows.push([i+1,r.name,r.org,r.hit.dg,r.hit.dg1M??r.hit.dg,r.hit.dgCoop,r.hit.seedType,r.hit.seedPos>=0?r.hit.seedPos+1:r.hit.pos+1,r.hit.wc,r.hit.gu,r.hit.mm,r.hit.auPct,r.hit.conservation?.score??'',r.mirna]));
-  dl(rows.map(r=>r.join(',')).join('\n'),'text/csv','mirna_hits_v5.csv');
+  dl(rows.map(r=>r.join(',')).join('\n'),'text/csv',buildExportFileName('csv'));
 }
 
 function exportManuscript(){
@@ -8254,13 +8527,13 @@ function exportManuscript(){
     txt+=[i+1,r.name,r.org,r.hit.dg,r.hit.dg1M??r.hit.dg,r.hit.dgCoop,r.hit.seedType,r.hit.seedPos>=0?r.hit.seedPos+1:r.hit.pos+1,r.hit.wc,r.hit.gu,r.hit.mm,r.hit.auPct+'%',c.score??'',c.mmu?'yes':'no',c.rno?'yes':'no',r.mirna].join('\t')+'\n';
   });
   txt+='\n# Seed type definitions:\n# 8mer: WC seed pos2-8 + pos1=A + pos8 match\n# 7mer-m8: WC seed pos2-8 + pos8 match\n# 7mer-A1: WC seed pos2-8 + pos1=A\n# 6mer: WC seed pos2-7\n# centered: ≥11 consecutive WC pairs in positions 4-15\n# 3prime-comp: ≥3 WC pairs in positions 13-16\n';
-  dl(txt,'text/plain','mirna_manuscript_v5.txt');
+  dl(txt,'text/plain',buildExportFileName('txt','manuscript'));
 }
 
 function exportPNG(){
   const a=document.createElement('a');
   a.href=document.getElementById('duplexCanvas').toDataURL('image/png');
-  a.download='mirna_duplex_v5.png';a.click();
+  a.download=buildExportFileName('png','duplex_2d');a.click();
 }
 
 function dl(data,type,name){
@@ -8454,7 +8727,7 @@ async function exportPDF() {
         y+=rowH;
       }
     }
-    pdf.save(`mirna_report_v1.0_${filtered.length}wynikow.pdf`);
+    pdf.save(buildExportFileName('pdf',`results_${filtered.length}`));
   } catch(e){alert('PDF export error: '+e.message);console.error(e);}
 }
 
@@ -8516,7 +8789,7 @@ async function exportDOCX() {
     });
     const blob=_docxBuilder.results(filtered,{na,hsa:_dbc.hsa,mmu:_dbc.mmu,rno:_dbc.rno,ath:_dbc.ath,stu:_dbc.stu});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='mirna_report_v1.0_'+filtered.length+'wynikow.docx';a.click();URL.revokeObjectURL(a.href);
+    a.download=buildExportFileName('docx',`results_${filtered.length}`);a.click();URL.revokeObjectURL(a.href);
   } catch(e){alert('B\u0142\u0105d eksportu DOCX: '+e.message);console.error(e);}
 }
 
@@ -8544,7 +8817,7 @@ function toggleTheme() {
             const canvas = document.getElementById('duplexCanvas');
             drawDuplex2D(canvas, result.hit.aln, result.name, result.hit.pos, result.hit.centeredRange, result.hit.comp3Range);
             if (sensitivityData) drawSensitivityHeatmap();
-            show3DModel(result.hit.aln, result.name, result.hit.pos);
+          if (_activePreviewTab === '3d') show3DModel(result.hit.aln, result.name, result.hit.pos);
             // Fix 2: redraw local RNA structure with new theme colors
             if (result.hit.accStruct && result.hit.accWinSeq) {
                 drawLocalRNAStruct(result.hit.accWinSeq, result.hit.accStruct,
@@ -8912,7 +9185,7 @@ function exportCurrentToPDB() {
     const blob = new Blob([pdb], {type: 'text/plain'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${result.name}_duplex.pdb`;
+    link.download = buildExportFileName('pdb',`${result.name}_duplex`);
     link.click();
     URL.revokeObjectURL(link.href);
 }
@@ -9488,7 +9761,7 @@ async function exportDualPDF() {
         tRows.forEach((row,ri)=>{pdf.setFillColor(ri===0?20:ri%2===0?17:22,ri===0?40:19,ri===0?30:24);pdf.rect(m,yc-3,W-2*m,5.5,'F');if(ri===0){pdf.setFont('helvetica','bold');pdf.setTextColor(0,212,170);}else{pdf.setFont('helvetica','normal');pdf.setTextColor(...(isLight?[51,65,85]:[200,208,224]));}pdf.setFontSize(7);row.forEach((cell,ci)=>pdf.text(String(cell),m+ci*69,yc+1.5));yc+=5.5;});
         pdf.setFont('helvetica','italic');pdf.setFontSize(6.5);pdf.setTextColor(107,114,128);
         pdf.text('miRNA Hybrid Viewer v1.0 | PRAMĀ Institute | '+new Date().toISOString().slice(0,10),m,H-4);
-        pdf.save('dual_comparison_'+A.name+'_vs_'+B.name+'.pdf');
+        pdf.save(buildExportFileName('pdf',`dual_${A.name}_vs_${B.name}`));
     } catch(e){alert('Błąd eksportu PDF: '+e.message);console.error(e);}
 }
 // ── DUAL EXPORT DOCX ─────────────────────────────────────────────
@@ -9502,7 +9775,7 @@ async function exportDualDOCX() {
         A.mrnaLen=CURRENT_MRNA.length;
         const blob=_docxBuilder.dual(A,B,ov);
         const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-        a.download='dual_comparison_'+A.name+'_vs_'+B.name+'.docx';
+        a.download=buildExportFileName('docx',`dual_${A.name}_vs_${B.name}`);
         a.click();URL.revokeObjectURL(a.href);
     } catch(e){alert('Błąd eksportu DOCX: '+e.message);console.error(e);}
 }
@@ -9720,7 +9993,7 @@ function exportJSON() {
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `mirna_results_${new Date().toISOString().slice(0,10)}.json`;
+    a.download = buildExportFileName('json','results');
     a.click();
     URL.revokeObjectURL(a.href);
 }
@@ -9929,7 +10202,7 @@ function exportTitrationPNG() {
     const canvas = document.getElementById('titrationCanvas');
     const a = document.createElement('a');
     a.href = canvas.toDataURL('image/png');
-    a.download = 'titration_curve.png';
+    a.download = buildExportFileName('png','titration_curve');
     a.click();
 }
 

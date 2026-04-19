@@ -7322,7 +7322,7 @@ function parseFASTAMulti(raw) {
     const l = line.trim();
     if(l.startsWith('>')) {
       if(cur) seqs.push(cur);
-      cur = {name: l.slice(1).split(/\s+/)[0]||'seq'+(seqs.length+1), seq:''};
+      cur = {name: l.slice(1).split(/\s+/)[0]||'seq'+(seqs.length+1), header: l.slice(1), seq:''};
     } else if(cur) {
       cur.seq += l;
     }
@@ -8479,6 +8479,30 @@ function sanitizeFilenamePart(s){
     .slice(0,80) || 'mrna';
 }
 
+function extractAccessionAndGene(headerText){
+  const header = String(headerText||'');
+  const accMatch = header.match(/\b([NX][MR]_\d+(?:\.\d+)?|[A-Z]{1,2}\d{5,8}(?:\.\d+)?)\b/);
+  const accession = accMatch ? accMatch[1] : '';
+
+  let gene = '';
+  let m = header.match(/\bgene=([A-Za-z0-9._-]+)/i);
+  if(!m) m = header.match(/\bGN=([A-Za-z0-9._-]+)/i);
+  if(m) gene = m[1];
+
+  if(!gene && accession){
+    const after = header.slice((accMatch.index||0) + accession.length);
+    const stop = new Set(['homo','sapiens','mus','musculus','rattus','norvegicus','predicted','transcript','variant','mrna','rna','partial','complete','cds','gene']);
+    const tokens = after.split(/[^A-Za-z0-9._-]+/).filter(Boolean);
+    for(const tok of tokens){
+      const low = tok.toLowerCase();
+      if(stop.has(low)) continue;
+      if(/^(nm|nr|xm|xr)_\d+/i.test(tok)) continue;
+      if(/^[A-Za-z][A-Za-z0-9-]{1,14}$/.test(tok)){ gene = tok; break; }
+    }
+  }
+  return { accession, gene };
+}
+
 function getCurrentSequenceContext(){
   let seqNumber = 1;
   let targetName = '';
@@ -8489,7 +8513,12 @@ function getCurrentSequenceContext(){
     const idxRaw = parseInt(sel?.value || '0');
     const idx = Number.isFinite(idxRaw) ? Math.min(Math.max(idxRaw,0),seqs.length-1) : 0;
     seqNumber = idx + 1;
-    targetName = seqs[idx]?.name || '';
+    const picked = seqs[idx] || {};
+    const header = picked.header || picked.name || '';
+    const ag = extractAccessionAndGene(header);
+    if(ag.accession && ag.gene) targetName = `${ag.accession}_${ag.gene}`;
+    else if(ag.accession) targetName = ag.accession;
+    else targetName = picked.name || '';
   }
   if(!targetName) targetName = RESULTS[0]?.transcript || document.getElementById('ncbiId')?.value?.trim() || 'mrna';
   return {seqNumber, targetName:sanitizeFilenamePart(targetName)};
@@ -8498,7 +8527,7 @@ function getCurrentSequenceContext(){
 function buildExportFileName(ext, suffix=''){
   const {seqNumber, targetName} = getCurrentSequenceContext();
   const tail = suffix ? `_${sanitizeFilenamePart(suffix)}` : '';
-  return `_${seqNumber}_${targetName}_mirna viewer 1.0${tail}.${ext}`;
+  return `_${seqNumber}_${targetName}_mirna_viewer${tail}.${ext}`;
 }
 
 function exportCSV(){
